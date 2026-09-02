@@ -1,8 +1,18 @@
 import os
 import re
-import pandas as pd
-import streamlit as st
 from google.cloud import vision
+
+from kivy.app import App
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.scrollview import ScrollView
+from kivy.uix.label import Label
+from kivy.uix.button import Button
+from kivy.uix.textinput import TextInput
+from kivy.uix.checkbox import CheckBox
+from kivy.uix.popup import Popup
+from kivy.uix.filechooser import FileChooserIconView
+from kivy.core.window import Window
 
 # ----------------------------------------------------
 # 1. Google Cloud Vision API 인증 설정
@@ -11,12 +21,11 @@ KEY_PATH = "front-project-497802-81eb2e26c470.json"
 if os.path.exists(KEY_PATH):
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = KEY_PATH
 
-st.set_page_config(page_title="영수증 더치페이 정산기", layout="centered")
-st.title("🧾 영수증 메뉴/수량 정밀 정산")
-
+# 모바일 화면 크기 시뮬레이션 (PC 테스트용)
+Window.size = (360, 680)
 
 # ----------------------------------------------------
-# 2. 음식 메뉴, 수량, 가격 정밀 파싱 함수
+# 2. OCR 파싱 함수 (기존 로직 유지)
 # ----------------------------------------------------
 def parse_receipt_items_and_total(image_bytes):
     try:
@@ -49,7 +58,6 @@ def parse_receipt_items_and_total(image_bytes):
             if not line_str:
                 continue
 
-            # 총액 파싱
             if any(keyword in line_str for keyword in total_keywords):
                 numbers = re.findall(r"[\d,]+", line_str)
                 if numbers:
@@ -58,14 +66,10 @@ def parse_receipt_items_and_total(image_bytes):
                         detected_total = val
                 continue
 
-            # 기타 메타데이터 필터링
             if any(k in line_str for k in ignore_keywords):
                 continue
 
-            # 1) 패턴 A: [메뉴명] [수량] [가격] 형태 (예: "삼겹살 2 20,000")
             match_three = re.search(r"^(.+?)\s+(\d+)\s+([\d,]+)원?$", line_str)
-            
-            # 2) 패턴 B: [메뉴명] [가격] 형태 (예: "삼겹살 2인분 20,000")
             match_two = re.search(r"^(.+?)\s+([\d,]+)원?$", line_str)
 
             if match_three:
@@ -73,7 +77,6 @@ def parse_receipt_items_and_total(image_bytes):
                 item_qty = int(match_three.group(2))
                 price_str = match_three.group(3).replace(",", "")
                 
-                # 가맹점 정보 등 제외
                 if not any(k in item_name for k in ignore_keywords) and price_str.isdigit():
                     price = int(price_str)
                     if 500 <= price <= 1000000:
@@ -82,18 +85,16 @@ def parse_receipt_items_and_total(image_bytes):
             elif match_two:
                 item_name = match_two.group(1).strip()
                 price_str = match_two.group(2).replace(",", "")
-
                 item_name_cleaned = re.sub(r"[\[\]\(\)\{\}\:\-\=\.\,]", "", item_name).strip()
+                
                 if item_name_cleaned.isdigit() or len(item_name_cleaned) == 0:
                     continue
 
                 if price_str.isdigit():
                     price = int(price_str)
                     if 500 <= price <= 1000000:
-                        # 메뉴명에 포함된 수량(예: 2인분, 3개) 추출
                         qty_match = re.search(r"(\d+)\s*(인분|개|병|잔|개입|줄)?", item_name)
                         item_qty = int(qty_match.group(1)) if qty_match else 1
-                        
                         items.append({"item": item_name, "price": price, "qty": item_qty})
 
         if detected_total == 0 and items:
@@ -102,125 +103,201 @@ def parse_receipt_items_and_total(image_bytes):
         return items, detected_total
 
     except Exception as e:
-        st.error(f"OCR 처리 중 오류가 발생했습니다: {e}")
+        print(f"OCR Error: {e}")
         return [], 0
 
 
 # ----------------------------------------------------
-# 3. Streamlit UI 및 수량 제한 정산
+# 3. Kivy 모바일 메인 앱
 # ----------------------------------------------------
-uploaded_file = st.file_uploader("영수증 이미지를 업로드하세요", type=["jpg", "jpeg", "png"])
+class ReceiptApp(App):
+    def build(self):
+        self.items = []
+        self.receipt_total = 0
+        self.members = []
+        self.member_inputs = {}  # { (item_idx, member_name): {"chk": CheckBox, "qty": TextInput} }
 
-if uploaded_file is not None:
-    st.image(uploaded_file, caption="업로드된 영수증", use_container_width=True)
+        # 메인 최상위 레이아웃
+        main_layout = BoxLayout(orientation='vertical', padding=10, spacing=8)
 
-    with st.spinner("영수증을 분석하는 중..."):
-        items, receipt_total = parse_receipt_items_and_total(uploaded_file.getvalue())
+        # 1. 헤더 영역
+        title = Label(text="🧾 영수증 더치페이 정산기", font_size='18sp', bold=True, size_hint_y=None, height=35)
+        main_layout.add_widget(title)
 
-    if not items:
-        st.warning("영수증에서 메뉴를 찾지 못했습니다. 예시 데이터를 표시합니다.")
-        items = [
+        # 2. 이미지 업로드 & 샘플 로드 버튼
+        btn_top_box = BoxLayout(orientation='horizontal', size_hint_y=None, height=40, spacing=5)
+        
+        file_btn = Button(text="📷 영수증 선택", background_color=(0.3, 0.7, 0.4, 1))
+        file_btn.bind(on_press=self.open_file_chooser)
+        
+        sample_btn = Button(text="🧪 샘플 로드")
+        sample_btn.bind(on_press=self.load_sample_data)
+        
+        btn_top_box.add_widget(file_btn)
+        btn_top_box.add_widget(sample_btn)
+        main_layout.add_widget(btn_top_box)
+
+        # 3. 참여자 입력 영역
+        member_box = BoxLayout(orientation='horizontal', size_hint_y=None, height=40, spacing=5)
+        member_box.add_widget(Label(text="참여자:", size_hint_x=0.25))
+        self.member_input_field = TextInput(text="철수, 영희, 민수", multiline=False, size_hint_x=0.75)
+        member_box.add_widget(self.member_input_field)
+        main_layout.add_widget(member_box)
+
+        # 4. 동적 스크롤 영역 (인식된 메뉴 및 먹은 수량 선택)
+        self.scroll = ScrollView(size_hint=(1, 1))
+        self.content_layout = BoxLayout(orientation='vertical', size_hint_y=None, spacing=10)
+        self.content_layout.bind(minimum_height=self.content_layout.setter('height'))
+        self.scroll.add_widget(self.content_layout)
+        main_layout.add_widget(self.scroll)
+
+        # 5. 하단 정산 실행 버튼
+        calc_btn = Button(text="⚡ 정산하기", size_hint_y=None, height=50, background_color=(0.2, 0.6, 1, 1), bold=True)
+        calc_btn.bind(on_press=self.calculate_settlement)
+        main_layout.add_widget(calc_btn)
+
+        return main_layout
+
+    # ----------------------------------------------------
+    # 데이터 로드 및 UI 동적 업데이트
+    # ----------------------------------------------------
+    def load_sample_data(self, instance):
+        """샘플 데이터 로드"""
+        self.items = [
             {"item": "삼겹살", "price": 20000, "qty": 2},
             {"item": "된장찌개", "price": 7000, "qty": 1},
             {"item": "소주", "price": 10000, "qty": 2},
         ]
-        receipt_total = 37000
+        self.receipt_total = 37000
+        self.render_items_ui()
 
-    st.subheader("📋 인식된 메뉴 목록")
-    display_df = pd.DataFrame([{"메뉴명": i["item"], "가격": f"{i['price']:,}원", "영수증 전체 수량": f"{i['qty']}개"} for i in items])
-    st.dataframe(display_df, use_container_width=True)
-    st.markdown(f"**영수증 인식 총액:** `{receipt_total:,}원`")
+    def open_file_chooser(self, instance):
+        """파일 선택 팝업창"""
+        content = BoxLayout(orientation='vertical')
+        file_chooser = FileChooserIconView(path=".")
+        btn_box = BoxLayout(size_hint_y=None, height=40)
+        
+        select_btn = Button(text="선택")
+        cancel_btn = Button(text="취소")
+        btn_box.add_widget(select_btn)
+        btn_box.add_widget(cancel_btn)
+        
+        content.add_widget(file_chooser)
+        content.add_widget(btn_box)
 
-    st.markdown("---")
-    st.subheader("1. 정산 참여 인원 설정")
-    members_input = st.text_input("참여하는 사람 이름을 쉼표(,)로 구분하여 입력하세요", "철수, 영희, 민수")
-    members = [name.strip() for name in members_input.split(",") if name.strip()]
+        popup = Popup(title="영수증 이미지 선택", content=content, size_hint=(0.9, 0.9))
 
-    if members:
-        st.subheader("2. 음식별 먹은 인원 및 개수 선택")
-        st.caption("남은 수량이 0이 되면 추가 개수 증가 및 신규 선택이 자동으로 비활성화됩니다.")
+        def on_select(btn_obj):
+            if file_chooser.selection:
+                file_path = file_chooser.selection[0]
+                with open(file_path, "rb") as f:
+                    img_bytes = f.read()
+                self.items, self.receipt_total = parse_receipt_items_and_total(img_bytes)
+                if not self.items:
+                    self.load_sample_data(None)
+                else:
+                    self.render_items_ui()
+            popup.dismiss()
 
-        member_totals = {member: 0.0 for member in members}
+        select_btn.bind(on_press=on_select)
+        cancel_btn.bind(on_press=popup.dismiss)
+        popup.open()
 
-        for idx, entry in enumerate(items):
-            item_name = entry["item"]
+    def render_items_ui(self):
+        """인식된 메뉴별 참여자 선택 UI 동적 생성"""
+        self.content_layout.clear_widgets()
+        self.member_inputs.clear()
+
+        # 참여자 파싱
+        self.members = [m.strip() for m in self.member_input_field.text.split(",") if m.strip()]
+        if not self.members:
+            self.members = ["철수", "영희", "민수"]
+
+        # 총액 표시
+        total_label = Label(
+            text=f"📋 인식 총액: {self.receipt_total:,}원", 
+            size_hint_y=None, height=30, bold=True, color=(1, 0.8, 0.2, 1)
+        )
+        self.content_layout.add_widget(total_label)
+
+        # 메뉴 카드별 UI 생성
+        for idx, item in enumerate(self.items):
+            card = BoxLayout(orientation='vertical', size_hint_y=None, padding=8, spacing=5)
+            card.height = 40 + (len(self.members) * 35)
+
+            # 메뉴 기본 정보 Header
+            header_text = f"🍽️ {item['item']} ({item['price']:,}원 / 총 {item['qty']}개)"
+            card.add_widget(Label(text=header_text, size_hint_y=None, height=25, bold=True, halign='left'))
+
+            # 멤버별 체크박스 및 수량 입력 줄
+            for member in self.members:
+                row = BoxLayout(orientation='horizontal', size_hint_y=None, height=30, spacing=5)
+                
+                chk = CheckBox(size_hint_x=0.15, active=True)
+                m_label = Label(text=member, size_hint_x=0.4, halign='left')
+                qty_input = TextInput(text="1", multiline=False, input_filter='int', size_hint_x=0.45)
+
+                row.add_widget(chk)
+                row.add_widget(m_label)
+                row.add_widget(qty_input)
+                card.add_widget(row)
+
+                self.member_inputs[(idx, member)] = {"chk": chk, "qty": qty_input}
+
+            self.content_layout.add_widget(card)
+
+    # ----------------------------------------------------
+    # 4. 정산 결과 계산 및 팝업
+    # ----------------------------------------------------
+    def calculate_settlement(self, instance):
+        if not self.items:
+            return
+
+        self.members = [m.strip() for m in self.member_input_field.text.split(",") if m.strip()]
+        member_totals = {m: 0.0 for m in self.members}
+
+        # 메뉴별 지분 계산
+        for idx, entry in enumerate(self.items):
             price = entry["price"]
-            total_max_qty = entry["qty"]
-
-            st.write(f"🍽️ **{item_name}** ({price:,}원 / **전체 총 {total_max_qty}개**)")
-
-            cols = st.columns(len(members))
-            
-            # 선택된 인원의 수량 추적
             item_shares = {}
-            current_allocated_sum = 0
 
-            # 1단계: 현재 입력된 총 개수 파악
-            for m_idx, member in enumerate(members):
-                if st.session_state.get(f"chk_{idx}_{m_idx}", False):
-                    val = st.session_state.get(f"num_{idx}_{m_idx}", 1)
-                    current_allocated_sum += val
-
-            # 2단계: 각 인원별 체크박스 및 수량 컨트롤러 생성
-            for m_idx, member in enumerate(members):
-                with cols[m_idx]:
-                    chk_key = f"chk_{idx}_{m_idx}"
-                    num_key = f"num_{idx}_{m_idx}"
-
-                    # 남은 수량이 없고 본인이 체크되지 않았다면 체크박스 비활성화
-                    is_checked = st.session_state.get(chk_key, False)
-                    remaining_for_others = total_max_qty - (current_allocated_sum - (st.session_state.get(num_key, 1) if is_checked else 0))
+            for member in self.members:
+                key = (idx, member)
+                if key in self.member_inputs:
+                    chk_val = self.member_inputs[key]["chk"].active
+                    qty_val = self.member_inputs[key]["qty"].text
                     
-                    chk_disabled = (remaining_for_others <= 0) and not is_checked
+                    if chk_val and qty_val.isdigit() and int(qty_val) > 0:
+                        item_shares[member] = int(qty_val)
 
-                    is_eaten = st.checkbox(member, value=is_checked, disabled=chk_disabled, key=chk_key)
-
-                    if is_eaten:
-                        curr_val = st.session_state.get(num_key, 1)
-                        # 다른 사람들이 할당받고 남은 상한선 계산
-                        max_allowed = max(1, remaining_for_others)
-
-                        # 수량 선택 (최대치 달성 시 더 이상 늘어나지 않도록 max_value 제한)
-                        count = st.number_input(
-                            f"{member} 개수",
-                            min_value=1,
-                            max_value=max_allowed,
-                            value=min(curr_val, max_allowed),
-                            step=1,
-                            key=num_key
-                        )
-                        item_shares[member] = count
-
-            # 비례 분배 금액 계산
             total_selected_qty = sum(item_shares.values())
             if total_selected_qty > 0:
-                st.caption(f"선택 수량: {total_selected_qty} / {total_max_qty}개 (남은 수량: {total_max_qty - total_selected_qty}개)")
                 for member, share in item_shares.items():
                     member_totals[member] += (price * (share / total_selected_qty))
-            else:
-                st.caption("선택된 인원이 없습니다.")
 
-            st.markdown("---")
-
-        # ----------------------------------------------------
-        # 4. 정산 결과
-        # ----------------------------------------------------
-        st.subheader("3. 최종 개인별 정산 금액")
-
-        result_data = []
+        # 메시지 구성
+        msg = "[더치페이 정산 요청]\n\n"
         calculated_total = 0
         for member, total_price in member_totals.items():
             final_amount = round(total_price)
-            result_data.append({"이름": member, "정산 금액": f"{final_amount:,}원"})
             calculated_total += final_amount
+            msg += f"• {member}: {final_amount:,}원\n"
+            
+        msg += f"\n인식 총액: {self.receipt_total:,}원"
+        msg += f"\n계산 총액: {calculated_total:,}원"
 
-        st.table(pd.DataFrame(result_data))
-        st.write(f"**계산된 총 정산 금액:** {calculated_total:,}원")
+        # 결과 팝업 표시
+        popup_content = BoxLayout(orientation='vertical', padding=10, spacing=10)
+        res_label = Label(text=msg, halign='left', valign='top')
+        close_btn = Button(text="확인", size_hint_y=None, height=40)
 
-        st.subheader("4. 정산 요청 메시지")
-        share_text = "[더치페이 정산 요청]\n"
-        for member, total_price in member_totals.items():
-            share_text += f"• {member}: {round(total_price):,}원\n"
-        share_text += f"\n총액: {receipt_total:,}원"
+        popup_content.add_widget(res_label)
+        popup_content.add_widget(close_btn)
 
-        st.code(share_text, language="text")
+        popup = Popup(title="최종 정산 결과", content=popup_content, size_hint=(0.85, 0.65))
+        close_btn.bind(on_press=popup.dismiss)
+        popup.open()
+
+
+if __name__ == '__main__':
+    ReceiptApp().run()
