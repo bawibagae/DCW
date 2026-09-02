@@ -1,3 +1,9 @@
+# 1. 빌드 부산물 및 임시 파일 (제외)
+.buildozer/
+bin/
+
+# 2. 서비스 계정 및 보안 인증 키 (제외)
+*.json
 front-project-497802-81eb2e26c470.json
-.buildozer
+
 buildozer.spec
