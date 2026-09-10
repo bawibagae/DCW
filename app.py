@@ -23,65 +23,57 @@ st.set_page_config(
 )
 
 # ----------------------------------------------------
-# 2. 모바일 UI & 테마 가독성 CSS (다크/라이트 자동 지원)
+# 2. 모바일 강제 가독성 CSS (WebKit 오버라이드 및 폰트 크기/색상 고정)
 # ----------------------------------------------------
 st.markdown(
     """
     <style>
-    /* 기본 폰트 설정 */
-    html, body, [class*="css"] {
+    /* Streamlit 전체 텍스트 강제 적용 */
+    html, body, [class*="css"], [data-testid="stMarkdownContainer"] p, span, label, div {
+        color: #000000 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    /* 입력창 내부/외부 텍스트 고정 */
+    input, textarea, select {
+        color: #000000 !important;
+        background-color: #ffffff !important;
+        border: 1px solid #cccccc !important;
+        -webkit-text-fill-color: #000000 !important;
+        opacity: 1 !important;
+    }
+
+    /* 체크박스 글자 안보임 문제 강제 해결 */
+    [data-testid="stCheckbox"] span {
+        color: #000000 !important;
+        font-weight: bold !important;
         font-size: 16px !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
-    /* 앱 레이아웃 및 자동 테마 색상 설정 (배경 대비 텍스트 명암 자동 조정) */
-    .stApp {
-        max-width: 500px;
-        margin: 0 auto;
-        padding-bottom: 60px;
-        color: var(--text-color, #111111);
-        background-color: var(--background-color, #ffffff);
+    /* st.number_input 내부 수량 글자 강제 지정 */
+    [data-testid="stNumberInput"] input {
+        color: #000000 !important;
+        font-weight: bold !important;
+        background-color: #f0f2f6 !important;
     }
-    
-    /* 카드 디자인 (라이트/다크 대응) */
+
+    /* 카드 스타일 */
     .card {
-        background: var(--secondary-background-color, #f8f9fa);
-        border: 1px solid rgba(128, 128, 128, 0.2);
-        border-radius: 14px;
-        padding: 18px;
-        margin-bottom: 14px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        background-color: #ffffff !important;
+        border: 2px solid #e0e0e0 !important;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
     }
-
     .card-title {
         font-weight: bold;
-        font-size: 17px;
-        color: var(--text-color, #111111);
+        font-size: 18px;
+        color: #000000 !important;
     }
-
     .card-sub {
         font-size: 14px;
-        opacity: 0.8;
-        margin-top: 4px;
-    }
-
-    /* 입력창 및 텍스트 자동 가독성 */
-    input, textarea {
-        font-size: 16px !important;
-        color: var(--text-color, #111111) !important;
-        background-color: var(--secondary-background-color, #f0f2f6) !important;
-    }
-
-    /* 흰 배경이면 검은 글자, 검은 배경이면 흰 글자 자동 처리 */
-    @media (prefers-color-scheme: light) {
-        .stApp, .card, p, span, div, h1, h2, h3, h4, h5, h6, label {
-            color: #111111 !important;
-        }
-    }
-    @media (prefers-color-scheme: dark) {
-        .stApp, .card, p, span, div, h1, h2, h3, h4, h5, h6, label {
-            color: #ffffff !important;
-        }
+        color: #444444 !important;
     }
     </style>
     """,
@@ -215,7 +207,7 @@ def render_header():
 if st.session_state["page"] == "home":
     render_header()
     
-    st.markdown("### 📋 정산 내역")
+    st.markdown("<h3 style='color:#000000;'>📋 정산 내역</h3>", unsafe_allow_html=True)
 
     history = st.session_state["history"]
     if not history:
@@ -245,7 +237,7 @@ if st.session_state["page"] == "home":
 # ====================================================
 elif st.session_state["page"] == "login":
     render_header()
-    st.markdown("### 🔑 로그인")
+    st.markdown("<h3 style='color:#000000;'>🔑 로그인</h3>", unsafe_allow_html=True)
 
     email = st.text_input("이메일", placeholder="example@email.com")
     password = st.text_input("비밀번호", type="password")
@@ -274,7 +266,7 @@ elif st.session_state["page"] == "login":
 # ====================================================
 elif st.session_state["page"] == "signup":
     render_header()
-    st.markdown("### 📝 회원가입")
+    st.markdown("<h3 style='color:#000000;'>📝 회원가입</h3>", unsafe_allow_html=True)
 
     name = st.text_input("이름", placeholder="홍길동")
     email = st.text_input("이메일", placeholder="example@email.com")
@@ -303,7 +295,7 @@ elif st.session_state["page"] == "mypage":
     user = st.session_state["current_user"]
 
     if user:
-        st.markdown("### 👤 마이페이지")
+        st.markdown("<h3 style='color:#000000;'>👤 마이페이지</h3>", unsafe_allow_html=True)
         st.markdown(
             f"""
             <div class="card">
@@ -324,12 +316,11 @@ elif st.session_state["page"] == "mypage":
 
 
 # ====================================================
-# [PAGE 5] 스마트폰 카메라 직접 호출 및 자동 정산 화면 이동
+# [PAGE 5] 카메라 호출
 # ====================================================
 elif st.session_state["page"] == "camera":
     render_header()
 
-    # 샘플 테스트 버튼
     if st.button("🧪 [테스트] 샘플 영수증으로 바로 정산하기", type="primary", use_container_width=True):
         st.session_state["items"] = [
             {"item": "삼겹살 2인분", "price": 36000, "qty": 2},
@@ -343,45 +334,19 @@ elif st.session_state["page"] == "camera":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # capture="environment" 속성이 적용된 카메라 버튼 & Streamlit 통신 로직
     cam_html = """
     <!DOCTYPE html>
     <html>
     <head>
         <style>
-            body {
-                margin: 0;
-                padding: 0;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                background: transparent;
-            }
-            .cam-container {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                padding: 10px 0;
-            }
+            body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; background: transparent; }
+            .cam-container { display: flex; justify-content: center; align-items: center; padding: 10px 0; }
             .cam-button {
-                width: 90px;
-                height: 90px;
-                border-radius: 50%;
-                background-color: #3b82f6;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                cursor: pointer;
+                width: 90px; height: 90px; border-radius: 50%; background-color: #3b82f6;
+                display: flex; justify-content: center; align-items: center; cursor: pointer;
                 box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
-                transition: transform 0.1s ease, background-color 0.2s ease;
             }
-            .cam-button:active {
-                transform: scale(0.92);
-                background-color: #2563eb;
-            }
-            input[type="file"] {
-                display: none;
-            }
+            input[type="file"] { display: none; }
         </style>
     </head>
     <body>
@@ -394,18 +359,13 @@ elif st.session_state["page"] == "camera":
             </label>
             <input type="file" id="native_camera" accept="image/*" capture="environment" onchange="handleFile(this)">
         </div>
-
         <script>
             function handleFile(input) {
                 if (input.files && input.files[0]) {
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         const base64Data = e.target.result.split(',')[1];
-                        // 부모 Streamlit 프레임으로 base64 데이터 전달
-                        window.parent.postMessage({
-                            type: 'CAMERA_CAPTURED',
-                            image: base64Data
-                        }, '*');
+                        window.parent.postMessage({ type: 'CAMERA_CAPTURED', image: base64Data }, '*');
                     };
                     reader.readAsDataURL(input.files[0]);
                 }
@@ -415,18 +375,14 @@ elif st.session_state["page"] == "camera":
     </html>
     """
 
-    # 컴포넌트 렌더링
     components.html(cam_html, height=130)
 
-    # 갤러리 업로드 수단용 표준 file_uploader
     uploaded_file = st.file_uploader("", type=["jpg", "jpeg", "png"], label_visibility="collapsed")
     
     image_bytes_to_process = None
-
     if uploaded_file is not None:
         image_bytes_to_process = uploaded_file.getvalue()
 
-    # OCR 및 페이지 이동 로직
     if image_bytes_to_process:
         with st.spinner("영수증 글자를 읽는 중입니다..."):
             parsed_items, parsed_total = parse_receipt_items_and_total(image_bytes_to_process)
@@ -446,11 +402,13 @@ elif st.session_state["page"] == "camera":
 
 
 # ====================================================
-# [PAGE 6] 분석 결과 및 정산 화면
+# [PAGE 6] 정산 화면 (글자 안보임 문제 원천 수정)
 # ====================================================
 elif st.session_state["page"] == "settle":
     render_header()
-    st.markdown("### 🧾 영수증 정산")
+    
+    # 순수 HTML 렌더링으로 글자 강제 표기
+    st.markdown("<h3 style='color:#000000 !important; font-weight:bold;'>🧾 영수증 정산</h3>", unsafe_allow_html=True)
 
     current_items = st.session_state.get("items", [])
 
@@ -460,7 +418,7 @@ elif st.session_state["page"] == "settle":
             st.session_state["page"] = "camera"
             st.rerun()
     else:
-        st.markdown("#### 🏦 입금받을 계좌 정보")
+        st.markdown("<h4 style='color:#000000 !important;'>🏦 입금받을 계좌 정보</h4>", unsafe_allow_html=True)
         col_bank, col_acc = st.columns([1, 2])
         with col_bank:
             bank_name = st.text_input("은행명", placeholder="예: 토스뱅크", key="bank_input")
@@ -469,12 +427,14 @@ elif st.session_state["page"] == "settle":
 
         kakaopay_url = st.text_input("🟡 카카오페이 송금링크 (선택)", placeholder="예: https://qr.kakaopay.com/...", key="kakaopay_input")
 
-        st.markdown("#### 👥 참여자 입력")
+        st.markdown("<h4 style='color:#000000 !important;'>👥 참여자 입력</h4>", unsafe_allow_html=True)
         member_input_text = st.text_input("참여자 이름 (쉼표 구분)", value="", placeholder="예: 철수, 영희, 민수")
         members = [m.strip() for m in member_input_text.split(",") if m.strip()]
 
         st.markdown("---")
-        st.markdown(f"#### 📋 인식 총액: **{st.session_state.get('receipt_total', 0):,}원**")
+        
+        total_val = st.session_state.get('receipt_total', 0)
+        st.markdown(f"<div style='font-size:18px; color:#000000 !important; font-weight:bold;'>📋 인식 총액: <span style='color:#0064FF;'>{total_val:,}원</span></div><br>", unsafe_allow_html=True)
         
         if not members:
             st.info("💡 정산에 참여할 사람의 이름을 위에 먼저 입력해 주세요.")
@@ -487,7 +447,16 @@ elif st.session_state["page"] == "settle":
                 price = item["price"]
                 max_qty = item["qty"]
 
-                st.write(f"🍽️ **{item_name}** ({price:,}원 / **총 {max_qty}개**)")
+                # 메뉴 이름 및 가격 HTML 강제 표기
+                st.markdown(
+                    f"""
+                    <div style='background-color:#f8f9fa; padding:10px; border-radius:8px; margin-bottom:8px; border-left:4px solid #3b82f6;'>
+                        <span style='color:#000000 !important; font-size:16px; font-weight:bold;'>🍽️ {item_name}</span>
+                        <span style='color:#555555 !important; font-size:14px;'> ({price:,}원 / 총 {max_qty}개)</span>
+                    </div>
+                    """, 
+                    unsafe_allow_html=True
+                )
                 
                 allocated_sum = 0
                 for m_idx, member in enumerate(members):
@@ -512,6 +481,7 @@ elif st.session_state["page"] == "settle":
 
                         chk_disabled = (remaining_qty <= 0) and not is_checked
 
+                        # 모바일 브라우저 글자 보임 보장형 라벨 렌더링
                         is_eaten = st.checkbox(
                             member, 
                             value=is_checked, 
@@ -522,12 +492,13 @@ elif st.session_state["page"] == "settle":
                         if is_eaten:
                             max_allowed = max(1, remaining_qty)
                             selected_qty = st.number_input(
-                                f"{member}", 
+                                "수량", 
                                 min_value=1, 
                                 max_value=max_allowed, 
                                 value=min(st.session_state.get(qty_key, 1), max_allowed), 
                                 step=1, 
-                                key=qty_key
+                                key=qty_key,
+                                label_visibility="collapsed" # 모바일에서 중복 라벨로 인해 글자가 증발하는 현상 방지
                             )
                             item_shares[member] = selected_qty
 
@@ -538,7 +509,7 @@ elif st.session_state["page"] == "settle":
                     for member, share in item_shares.items():
                         member_totals[member] += (price * (share / total_selected_qty))
 
-                st.markdown("---")
+                st.markdown("<hr style='margin:12px 0; border:0; border-top:1px solid #eee;'>", unsafe_allow_html=True)
 
             if st.button("⚡ 정산하기", use_container_width=True, type="primary"):
                 has_unallocated = any(selected < max_q for selected, max_q in item_allocated_totals)
@@ -585,7 +556,7 @@ elif st.session_state["page"] == "settle":
                         result_table = [{"이름": m, "정산 금액": f"{amt:,}원"} for m, amt in final_member_totals.items()]
                         st.table(pd.DataFrame(result_table))
                         
-                        st.markdown(f"**입금 계좌:** `{bank_name} {account_number}`")
+                        st.markdown(f"<p style='color:#000000 !important;'><b>입금 계좌:</b> <code>{bank_name} {account_number}</code></p>", unsafe_allow_html=True)
                         
                         first_amt = list(final_member_totals.values())[0] if final_member_totals else 0
                         pay_html = f"""
@@ -623,7 +594,7 @@ elif st.session_state["page"] == "settle":
                         components.html(pay_html, height=130)
 
                         st.markdown("---")
-                        st.markdown("### 💬 카톡방 공유 문구")
+                        st.markdown("<h3 style='color:#000000 !important;'>💬 카톡방 공유 문구</h3>", unsafe_allow_html=True)
                         st.text_area("복사해서 단톡방에 전달하세요:", value=full_share_text, height=180)
 
                         if st.button("홈으로 이동", use_container_width=True):
