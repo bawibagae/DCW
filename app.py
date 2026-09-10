@@ -1,31 +1,114 @@
 import os
 import re
+import datetime
+import urllib.parse
+import pandas as pd
+import streamlit as st
+import streamlit.components.v1 as components
 from google.cloud import vision
 
-from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.scrollview import ScrollView
-from kivy.uix.label import Label
-from kivy.uix.button import Button
-from kivy.uix.textinput import TextInput
-from kivy.uix.checkbox import CheckBox
-from kivy.uix.popup import Popup
-from kivy.uix.filechooser import FileChooserIconView
-from kivy.core.window import Window
-
 # ----------------------------------------------------
-# 1. Google Cloud Vision API 인증 설정
+# 1. Google Cloud Vision API 인증 및 기본 설정
 # ----------------------------------------------------
 KEY_PATH = "front-project-497802-81eb2e26c470.json"
 if os.path.exists(KEY_PATH):
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = KEY_PATH
 
-# 모바일 화면 크기 시뮬레이션 (PC 테스트용)
-Window.size = (360, 680)
+st.set_page_config(
+    page_title="영수증 더치페이",
+    page_icon="🧾",
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
 
 # ----------------------------------------------------
-# 2. OCR 파싱 함수 (기존 로직 유지)
+# 2. 모바일 앱 UI 및 CSS
+# ----------------------------------------------------
+st.markdown(
+    """
+    <style>
+    .stApp {
+        max-width: 500px;
+        margin: 0 auto;
+        background-color: #f8f9fa;
+        padding-bottom: 80px;
+    }
+    .card {
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    div[data-testid="stCameraInput"] {
+        border-radius: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    
+    /* 하단 원형 카메라 FAB 버튼 */
+    div[data-testid="stColumn"]:has(button[key="btn_camera_fab"]) {
+        display: flex;
+        justify-content: center;
+    }
+    
+    button[key="btn_camera_fab"] {
+        width: 70px !important;
+        height: 70px !important;
+        border-radius: 50% !important;
+        background-color: #3b82f6 !important;
+        border: none !important;
+        box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4) !important;
+        padding: 0 !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        margin: 10px auto !important;
+    }
+
+    button[key="btn_camera_fab"]:active {
+        transform: scale(0.92) !important;
+        background-color: #2563eb !important;
+    }
+
+    button[key="btn_camera_fab"] p {
+        display: none !important;
+    }
+
+    button[key="btn_camera_fab"]::before {
+        content: "";
+        width: 32px;
+        height: 32px;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>');
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+        display: block;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# ----------------------------------------------------
+# 3. 세션 상태 초기화
+# ----------------------------------------------------
+if "page" not in st.session_state:
+    st.session_state["page"] = "home"
+if "users_db" not in st.session_state:
+    st.session_state["users_db"] = {}
+if "current_user" not in st.session_state:
+    st.session_state["current_user"] = None
+if "history" not in st.session_state:
+    st.session_state["history"] = []
+if "items" not in st.session_state:
+    st.session_state["items"] = []
+if "receipt_total" not in st.session_state:
+    st.session_state["receipt_total"] = 0
+
+
+# ----------------------------------------------------
+# 4. OCR 파싱 함수
 # ----------------------------------------------------
 def parse_receipt_items_and_total(image_bytes):
     try:
@@ -103,201 +186,375 @@ def parse_receipt_items_and_total(image_bytes):
         return items, detected_total
 
     except Exception as e:
-        print(f"OCR Error: {e}")
+        st.error(f"OCR Error: {e}")
         return [], 0
 
 
 # ----------------------------------------------------
-# 3. Kivy 모바일 메인 앱
+# 5. 네비게이션 헤더
 # ----------------------------------------------------
-class ReceiptApp(App):
-    def build(self):
-        self.items = []
-        self.receipt_total = 0
-        self.members = []
-        self.member_inputs = {}  # { (item_idx, member_name): {"chk": CheckBox, "qty": TextInput} }
+def render_header():
+    col_logo, col_user = st.columns([2, 1])
+    with col_logo:
+        if st.button("🧾 DutchPay", key="btn_home_logo"):
+            st.session_state["page"] = "home"
+            st.rerun()
 
-        # 메인 최상위 레이아웃
-        main_layout = BoxLayout(orientation='vertical', padding=10, spacing=8)
+    with col_user:
+        if st.session_state["current_user"]:
+            if st.button("👤 마이페이지", key="btn_mypage_nav"):
+                st.session_state["page"] = "mypage"
+                st.rerun()
+        else:
+            if st.button("🔑 로그인", key="btn_login_nav"):
+                st.session_state["page"] = "login"
+                st.rerun()
 
-        # 1. 헤더 영역
-        title = Label(text="🧾 영수증 더치페이 정산기", font_size='18sp', bold=True, size_hint_y=None, height=35)
-        main_layout.add_widget(title)
 
-        # 2. 이미지 업로드 & 샘플 로드 버튼
-        btn_top_box = BoxLayout(orientation='horizontal', size_hint_y=None, height=40, spacing=5)
-        
-        file_btn = Button(text="📷 영수증 선택", background_color=(0.3, 0.7, 0.4, 1))
-        file_btn.bind(on_press=self.open_file_chooser)
-        
-        sample_btn = Button(text="🧪 샘플 로드")
-        sample_btn.bind(on_press=self.load_sample_data)
-        
-        btn_top_box.add_widget(file_btn)
-        btn_top_box.add_widget(sample_btn)
-        main_layout.add_widget(btn_top_box)
+# ====================================================
+# [PAGE 1] 홈 화면
+# ====================================================
+if st.session_state["page"] == "home":
+    render_header()
+    
+    st.markdown("### 📋 정산 내역")
 
-        # 3. 참여자 입력 영역
-        member_box = BoxLayout(orientation='horizontal', size_hint_y=None, height=40, spacing=5)
-        member_box.add_widget(Label(text="참여자:", size_hint_x=0.25))
-        self.member_input_field = TextInput(text="철수, 영희, 민수", multiline=False, size_hint_x=0.75)
-        member_box.add_widget(self.member_input_field)
-        main_layout.add_widget(member_box)
+    history = st.session_state["history"]
+    if not history:
+        st.info("아직 더치페이 내역이 없습니다.")
+    else:
+        for item in reversed(history):
+            st.markdown(
+                f"""
+                <div class="card">
+                    <div style="font-weight:bold; font-size:16px;">{item['date']} 정산</div>
+                    <div style="color:#666; font-size:14px;">총액: {item['total']:,}원 ({len(item['members'])}명)</div>
+                    <div style="color:#333; font-size:13px; margin-top:4px;">참여자: {', '.join(item['members'])}</div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
-        # 4. 동적 스크롤 영역 (인식된 메뉴 및 먹은 수량 선택)
-        self.scroll = ScrollView(size_hint=(1, 1))
-        self.content_layout = BoxLayout(orientation='vertical', size_hint_y=None, spacing=10)
-        self.content_layout.bind(minimum_height=self.content_layout.setter('height'))
-        self.scroll.add_widget(self.content_layout)
-        main_layout.add_widget(self.scroll)
+    st.markdown("---")
+    
+    col_l, col_btn, col_r = st.columns([1, 1, 1])
+    with col_btn:
+        if st.button("", key="btn_camera_fab"):
+            st.session_state["page"] = "camera"
+            st.rerun()
 
-        # 5. 하단 정산 실행 버튼
-        calc_btn = Button(text="⚡ 정산하기", size_hint_y=None, height=50, background_color=(0.2, 0.6, 1, 1), bold=True)
-        calc_btn.bind(on_press=self.calculate_settlement)
-        main_layout.add_widget(calc_btn)
 
-        return main_layout
+# ====================================================
+# [PAGE 2] 로그인 화면
+# ====================================================
+elif st.session_state["page"] == "login":
+    render_header()
+    st.markdown("### 🔑 로그인")
 
-    # ----------------------------------------------------
-    # 데이터 로드 및 UI 동적 업데이트
-    # ----------------------------------------------------
-    def load_sample_data(self, instance):
-        """샘플 데이터 로드"""
-        self.items = [
-            {"item": "삼겹살", "price": 20000, "qty": 2},
-            {"item": "된장찌개", "price": 7000, "qty": 1},
-            {"item": "소주", "price": 10000, "qty": 2},
-        ]
-        self.receipt_total = 37000
-        self.render_items_ui()
+    email = st.text_input("이메일", placeholder="example@email.com")
+    password = st.text_input("비밀번호", type="password")
 
-    def open_file_chooser(self, instance):
-        """파일 선택 팝업창"""
-        content = BoxLayout(orientation='vertical')
-        file_chooser = FileChooserIconView(path=".")
-        btn_box = BoxLayout(size_hint_y=None, height=40)
-        
-        select_btn = Button(text="선택")
-        cancel_btn = Button(text="취소")
-        btn_box.add_widget(select_btn)
-        btn_box.add_widget(cancel_btn)
-        
-        content.add_widget(file_chooser)
-        content.add_widget(btn_box)
+    if st.button("로그인", type="primary", use_container_width=True):
+        users = st.session_state["users_db"]
+        if email in users and users[email]["password"] == password:
+            st.session_state["current_user"] = {
+                "email": email,
+                "name": users[email]["name"]
+            }
+            st.success(f"{users[email]['name']}님 환영합니다!")
+            st.session_state["page"] = "home"
+            st.rerun()
+        else:
+            st.error("이메일 또는 비밀번호가 일치하지 않습니다.")
 
-        popup = Popup(title="영수증 이미지 선택", content=content, size_hint=(0.9, 0.9))
+    st.markdown("---")
+    if st.button("회원가입 하러가기", use_container_width=True):
+        st.session_state["page"] = "signup"
+        st.rerun()
 
-        def on_select(btn_obj):
-            if file_chooser.selection:
-                file_path = file_chooser.selection[0]
-                with open(file_path, "rb") as f:
-                    img_bytes = f.read()
-                self.items, self.receipt_total = parse_receipt_items_and_total(img_bytes)
-                if not self.items:
-                    self.load_sample_data(None)
-                else:
-                    self.render_items_ui()
-            popup.dismiss()
 
-        select_btn.bind(on_press=on_select)
-        cancel_btn.bind(on_press=popup.dismiss)
-        popup.open()
+# ====================================================
+# [PAGE 3] 회원가입 화면
+# ====================================================
+elif st.session_state["page"] == "signup":
+    render_header()
+    st.markdown("### 📝 회원가입")
 
-    def render_items_ui(self):
-        """인식된 메뉴별 참여자 선택 UI 동적 생성"""
-        self.content_layout.clear_widgets()
-        self.member_inputs.clear()
+    name = st.text_input("이름", placeholder="홍길동")
+    email = st.text_input("이메일", placeholder="example@email.com")
+    password = st.text_input("비밀번호", type="password")
 
-        # 참여자 파싱
-        self.members = [m.strip() for m in self.member_input_field.text.split(",") if m.strip()]
-        if not self.members:
-            self.members = ["철수", "영희", "민수"]
+    if st.button("가입완료", type="primary", use_container_width=True):
+        if not name or not email or not password:
+            st.warning("모든 항목을 입력해 주세요.")
+        elif email in st.session_state["users_db"]:
+            st.error("이미 가입된 이메일입니다.")
+        else:
+            st.session_state["users_db"][email] = {
+                "password": password,
+                "name": name
+            }
+            st.success("회원가입이 완료되었습니다! 로그인해 주세요.")
+            st.session_state["page"] = "login"
+            st.rerun()
 
-        # 총액 표시
-        total_label = Label(
-            text=f"📋 인식 총액: {self.receipt_total:,}원", 
-            size_hint_y=None, height=30, bold=True, color=(1, 0.8, 0.2, 1)
+
+# ====================================================
+# [PAGE 4] 마이페이지 화면
+# ====================================================
+elif st.session_state["page"] == "mypage":
+    render_header()
+    user = st.session_state["current_user"]
+
+    if user:
+        st.markdown("### 👤 마이페이지")
+        st.markdown(
+            f"""
+            <div class="card">
+                <div style="font-size:18px; font-weight:bold;">{user['name']} 님</div>
+                <div style="color:#666; font-size:14px; margin-top:4px;">{user['email']}</div>
+            </div>
+            """,
+            unsafe_allow_html=True
         )
-        self.content_layout.add_widget(total_label)
 
-        # 메뉴 카드별 UI 생성
-        for idx, item in enumerate(self.items):
-            card = BoxLayout(orientation='vertical', size_hint_y=None, padding=8, spacing=5)
-            card.height = 40 + (len(self.members) * 35)
+        if st.button("로그아웃", use_container_width=True):
+            st.session_state["current_user"] = None
+            st.session_state["page"] = "home"
+            st.rerun()
+    else:
+        st.session_state["page"] = "login"
+        st.rerun()
 
-            # 메뉴 기본 정보 Header
-            header_text = f"🍽️ {item['item']} ({item['price']:,}원 / 총 {item['qty']}개)"
-            card.add_widget(Label(text=header_text, size_hint_y=None, height=25, bold=True, halign='left'))
 
-            # 멤버별 체크박스 및 수량 입력 줄
-            for member in self.members:
-                row = BoxLayout(orientation='horizontal', size_hint_y=None, height=30, spacing=5)
+# ====================================================
+# [PAGE 5] 영수증 촬영 화면
+# ====================================================
+elif st.session_state["page"] == "camera":
+    render_header()
+    st.markdown("### 📸 영수증 촬영")
+
+    # [테스트용] 카메라 인식 과정 없이 즉시 샘플 데이터로 넘어가기
+    if st.button("🧪 [테스트] 샘플 영수증 데이터로 바로 넘어가기", type="primary", use_container_width=True):
+        st.session_state["items"] = [
+            {"item": "삼겹살 2인분", "price": 36000, "qty": 2},
+            {"item": "차돌된장찌개", "price": 8000, "qty": 1},
+            {"item": "공기밥", "price": 2000, "qty": 2},
+            {"item": "음료수", "price": 2000, "qty": 1}
+        ]
+        st.session_state["receipt_total"] = 48000
+        st.session_state["page"] = "settle"
+        st.rerun()
+
+    st.markdown("---")
+
+    camera_image = st.camera_input("영수증을 글자가 잘 보이도록 중앙에 대고 촬영하세요.")
+
+    if camera_image is not None:
+        with st.spinner("영수증을 분석 중입니다..."):
+            image_bytes = camera_image.getvalue()
+            parsed_items, parsed_total = parse_receipt_items_and_total(image_bytes)
+
+            if parsed_items:
+                st.session_state["items"] = parsed_items
+                st.session_state["receipt_total"] = parsed_total
+                st.session_state["page"] = "settle"
+                st.rerun()
+            else:
+                st.error("⚠️ 영수증에서 메뉴나 금액을 인식하지 못했습니다.")
+
+    if st.button("취소", use_container_width=True):
+        st.session_state["page"] = "home"
+        st.rerun()
+
+
+# ====================================================
+# [PAGE 6] 분석 결과 및 정산 화면
+# ====================================================
+elif st.session_state["page"] == "settle":
+    render_header()
+    st.markdown("### 🧾 영수증 정산")
+
+    current_items = st.session_state.get("items", [])
+
+    if not current_items:
+        st.warning("인식된 영수증 정보가 없습니다. 영수증을 다시 촬영해 주세요.")
+        if st.button("📸 영수증 다시 찍기", type="primary", use_container_width=True):
+            st.session_state["page"] = "camera"
+            st.rerun()
+    else:
+        st.markdown("#### 🏦 입금받을 계좌 정보")
+        col_bank, col_acc = st.columns([1, 2])
+        with col_bank:
+            bank_name = st.text_input("은행명", placeholder="예: 토스뱅크", key="bank_input")
+        with col_acc:
+            account_number = st.text_input("계좌번호", placeholder="예: 100083353659", key="acc_input")
+
+        kakaopay_url = st.text_input("🟡 카카오페이 송금링크 (선택사항)", placeholder="예: https://qr.kakaopay.com/...", key="kakaopay_input")
+
+        st.markdown("#### 👥 참여자 입력")
+        member_input_text = st.text_input("참여자 이름 (쉼표 구분)", value="", placeholder="예: 철수, 영희, 민수")
+        members = [m.strip() for m in member_input_text.split(",") if m.strip()]
+
+        st.markdown("---")
+        st.markdown(f"#### 📋 인식 총액: {st.session_state.get('receipt_total', 0):,}원")
+        
+        if not members:
+            st.info("💡 정산에 참여할 사람의 이름을 위에 먼저 입력해 주세요.")
+        else:
+            member_totals = {m: 0.0 for m in members}
+            item_allocated_totals = []
+
+            for idx, item in enumerate(current_items):
+                item_name = item["item"]
+                price = item["price"]
+                max_qty = item["qty"]
+
+                st.write(f"🍽️ **{item_name}** ({price:,}원 / **총 {max_qty}개**)")
                 
-                chk = CheckBox(size_hint_x=0.15, active=True)
-                m_label = Label(text=member, size_hint_x=0.4, halign='left')
-                qty_input = TextInput(text="1", multiline=False, input_filter='int', size_hint_x=0.45)
+                allocated_sum = 0
+                for m_idx, member in enumerate(members):
+                    chk_key = f"chk_{idx}_{m_idx}"
+                    qty_key = f"qty_{idx}_{m_idx}"
+                    if st.session_state.get(chk_key, False):
+                        allocated_sum += st.session_state.get(qty_key, 1)
 
-                row.add_widget(chk)
-                row.add_widget(m_label)
-                row.add_widget(qty_input)
-                card.add_widget(row)
+                cols = st.columns(len(members))
+                item_shares = {}
 
-                self.member_inputs[(idx, member)] = {"chk": chk, "qty": qty_input}
+                for m_idx, member in enumerate(members):
+                    with cols[m_idx]:
+                        chk_key = f"chk_{idx}_{m_idx}"
+                        qty_key = f"qty_{idx}_{m_idx}"
 
-            self.content_layout.add_widget(card)
+                        is_checked = st.session_state.get(chk_key, False)
+                        current_user_qty = st.session_state.get(qty_key, 1) if is_checked else 0
+                        
+                        other_allocated = allocated_sum - current_user_qty
+                        remaining_qty = max_qty - other_allocated
 
-    # ----------------------------------------------------
-    # 4. 정산 결과 계산 및 팝업
-    # ----------------------------------------------------
-    def calculate_settlement(self, instance):
-        if not self.items:
-            return
+                        chk_disabled = (remaining_qty <= 0) and not is_checked
 
-        self.members = [m.strip() for m in self.member_input_field.text.split(",") if m.strip()]
-        member_totals = {m: 0.0 for m in self.members}
+                        is_eaten = st.checkbox(
+                            member, 
+                            value=is_checked, 
+                            disabled=chk_disabled, 
+                            key=chk_key
+                        )
 
-        # 메뉴별 지분 계산
-        for idx, entry in enumerate(self.items):
-            price = entry["price"]
-            item_shares = {}
+                        if is_eaten:
+                            max_allowed = max(1, remaining_qty)
+                            selected_qty = st.number_input(
+                                f"{member}", 
+                                min_value=1, 
+                                max_value=max_allowed, 
+                                value=min(st.session_state.get(qty_key, 1), max_allowed), 
+                                step=1, 
+                                key=qty_key
+                            )
+                            item_shares[member] = selected_qty
 
-            for member in self.members:
-                key = (idx, member)
-                if key in self.member_inputs:
-                    chk_val = self.member_inputs[key]["chk"].active
-                    qty_val = self.member_inputs[key]["qty"].text
+                total_selected_qty = sum(item_shares.values())
+                item_allocated_totals.append((total_selected_qty, max_qty))
+
+                if total_selected_qty > 0:
+                    for member, share in item_shares.items():
+                        member_totals[member] += (price * (share / total_selected_qty))
+
+                st.markdown("---")
+
+            if st.button("⚡ 정산하기", use_container_width=True, type="primary"):
+                has_unallocated = any(selected < max_q for selected, max_q in item_allocated_totals)
+
+                if has_unallocated:
+                    st.warning("⚠️ 선택되지 않은 메뉴 수량이 있습니다.")
+                elif not bank_name or not account_number:
+                    st.warning("⚠️ 은행명과 계좌번호를 입력해 주세요.")
+                else:
+                    final_member_totals = {m: round(amt) for m, amt in member_totals.items()}
                     
-                    if chk_val and qty_val.isdigit() and int(qty_val) > 0:
-                        item_shares[member] = int(qty_val)
+                    param_list = [f"{m}:{amt}" for m, amt in final_member_totals.items()]
+                    data_param = ",".join(param_list)
+                    
+                    encoded_data = urllib.parse.quote(data_param)
+                    encoded_bank = urllib.parse.quote(bank_name.strip())
+                    encoded_acc = urllib.parse.quote(account_number.strip())
 
-            total_selected_qty = sum(item_shares.values())
-            if total_selected_qty > 0:
-                for member, share in item_shares.items():
-                    member_totals[member] += (price * (share / total_selected_qty))
+                    base_web_url = "https://bawibagae.github.io/DCW-web/"
+                    share_url = f"{base_web_url}?data={encoded_data}&bank={encoded_bank}&acc={encoded_acc}"
+                    if kakaopay_url:
+                        share_url += f"&kakaopay={urllib.parse.quote(kakaopay_url.strip())}"
 
-        # 메시지 구성
-        msg = "[더치페이 정산 요청]\n\n"
-        calculated_total = 0
-        for member, total_price in member_totals.items():
-            final_amount = round(total_price)
-            calculated_total += final_amount
-            msg += f"• {member}: {final_amount:,}원\n"
-            
-        msg += f"\n인식 총액: {self.receipt_total:,}원"
-        msg += f"\n계산 총액: {calculated_total:,}원"
+                    # 카카오톡 연동용 공유 텍스트 (자동 [송금] 버튼 호환)
+                    message_lines = ["📢 정산이 완료되었습니다!\n"]
+                    for m, amt in final_member_totals.items():
+                        message_lines.append(f"• {m}: {amt:,}원")
+                    
+                    message_lines.append(f"\n🏦 입금계좌: {bank_name} {account_number}")
+                    if kakaopay_url:
+                        message_lines.append(f"🟡 카카오페이: {kakaopay_url.strip()}")
+                    
+                    message_lines.append(f"\n🔗 상세 내역 및 송금 링크:\n{share_url}")
+                    
+                    full_share_text = "\n".join(message_lines)
 
-        # 결과 팝업 표시
-        popup_content = BoxLayout(orientation='vertical', padding=10, spacing=10)
-        res_label = Label(text=msg, halign='left', valign='top')
-        close_btn = Button(text="확인", size_hint_y=None, height=40)
+                    # 히스토리 저장
+                    st.session_state["history"].append({
+                        "date": datetime.date.today().strftime("%Y-%m-%d"),
+                        "total": st.session_state["receipt_total"],
+                        "members": members
+                    })
 
-        popup_content.add_widget(res_label)
-        popup_content.add_widget(close_btn)
+                    # 결과 다이얼로그
+                    @st.dialog("최종 정산 결과")
+                    def show_result_dialog():
+                        result_table = [{"이름": m, "정산 금액": f"{amt:,}원"} for m, amt in final_member_totals.items()]
+                        st.table(pd.DataFrame(result_table))
+                        
+                        st.markdown(f"**입금 계좌:** `{bank_name} {account_number}`")
+                        
+                        # 앱 내 원클릭 송금 실행 컴포넌트 (테스트용)
+                        first_amt = list(final_member_totals.values())[0] if final_member_totals else 0
+                        pay_html = f"""
+                        <div style="font-family: sans-serif; text-align: center; margin-top: 10px;">
+                            <button onclick="payToss()" style="
+                                width: 100%; padding: 12px; margin-bottom: 8px;
+                                background-color: #0064FF; color: white; border: none;
+                                border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer;">
+                                🔹 토스 앱 실행 ({first_amt:,}원 자동 입력)
+                            </button>
+                            <button onclick="payKakao()" style="
+                                width: 100%; padding: 12px;
+                                background-color: #FEE500; color: #191919; border: none;
+                                border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer;">
+                                🟡 계좌 복사 후 카카오톡 실행
+                            </button>
+                        </div>
+                        <script>
+                        function payToss() {{
+                            const b = "{bank_name}";
+                            const a = "{account_number}";
+                            const amt = "{first_amt}";
+                            navigator.clipboard.writeText(b + " " + a);
+                            window.top.location.href = `supertoss://send?bank=${{encodeURIComponent(b)}}&accountNo=${{a}}&amount=${{amt}}`;
+                        }}
+                        function payKakao() {{
+                            const acc = "{bank_name} {account_number}";
+                            navigator.clipboard.writeText(acc).then(() => {{
+                                alert("계좌번호(" + acc + ")가 복사되었습니다!");
+                                window.top.location.href = "kakaotalk://";
+                            }});
+                        }}
+                        </script>
+                        """
+                        components.html(pay_html, height=120)
 
-        popup = Popup(title="최종 정산 결과", content=popup_content, size_hint=(0.85, 0.65))
-        close_btn.bind(on_press=popup.dismiss)
-        popup.open()
+                        st.markdown("---")
+                        st.markdown("### 💬 카톡방 공유 문구")
+                        st.text_area("복사해서 단톡방에 전달하세요:", value=full_share_text, height=180)
 
+                        if st.button("홈으로 이동", use_container_width=True):
+                            st.session_state["page"] = "home"
+                            st.rerun()
 
-if __name__ == '__main__':
-    ReceiptApp().run()
+                    show_result_dialog()
