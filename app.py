@@ -1,5 +1,6 @@
 import os
 import re
+import base64
 import datetime
 import urllib.parse
 import pandas as pd
@@ -22,7 +23,7 @@ st.set_page_config(
 )
 
 # ----------------------------------------------------
-# 2. 모바일 UI & 순수 st.file_uploader를 커스텀 SVG 버튼으로 변환하는 CSS
+# 2. 모바일 UI CSS
 # ----------------------------------------------------
 st.markdown(
     """
@@ -46,61 +47,6 @@ st.markdown(
         padding: 18px;
         margin-bottom: 14px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-    }
-
-    /* st.file_uploader를 커스텀 카메라 SVG 버튼으로 스타일링 */
-    div[data-testid="stFileUploader"] {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        margin-top: 10px;
-    }
-
-    div[data-testid="stFileUploader"] section {
-        padding: 0 !important;
-        border: none !important;
-        background: transparent !important;
-        display: flex;
-        justify-content: center;
-    }
-
-    /* 기존 업로드 UI 문구 숨기기 */
-    div[data-testid="stFileUploader"] section > div:first-child {
-        display: none !important;
-    }
-
-    /* 파일 선택 버튼을 원형 SVG 카메라 버튼 스타일로 대체 */
-    div[data-testid="stFileUploader"] button {
-        width: 100px !important;
-        height: 100px !important;
-        border-radius: 50% !important;
-        background-color: #3b82f6 !important;
-        color: transparent !important; /* 기존 텍스트 숨기기 */
-        position: relative !important;
-        border: none !important;
-        box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4) !important;
-        cursor: pointer !important;
-        transition: transform 0.15s ease, background-color 0.2s ease !important;
-    }
-
-    div[data-testid="stFileUploader"] button:active {
-        transform: scale(0.92) !important;
-        background-color: #2563eb !important;
-    }
-
-    /* 버튼 내부에 핸드폰 카메라 SVG 아이콘 삽입 */
-    div[data-testid="stFileUploader"] button::after {
-        content: "";
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 48px;
-        height: 48px;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z'/%3E%3Ccircle cx='12' cy='13' r='3'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-size: contain;
     }
 
     /* 입력창 폰트 크기 확대 */
@@ -348,11 +294,10 @@ elif st.session_state["page"] == "mypage":
 
 
 # ====================================================
-# [PAGE 5] 핸드폰 카메라 직접 호출 화면
+# [PAGE 5] 스마트폰 카메라 직접 호출 컴포넌트
 # ====================================================
 elif st.session_state["page"] == "camera":
     render_header()
-    st.markdown("### 📸 영수증 스캔")
 
     # 샘플 테스트 버튼
     if st.button("🧪 [테스트] 샘플 영수증으로 바로 정산하기", type="primary", use_container_width=True):
@@ -366,28 +311,90 @@ elif st.session_state["page"] == "camera":
         st.session_state["page"] = "settle"
         st.rerun()
 
-    st.markdown("---")
+    st.markdown("<br>", unsafe_allow_html=True)
 
-    st.markdown(
-        """
-        <div style="text-align: center; margin-bottom: 15px;">
-            <div style="font-weight: bold; font-size: 18px; color: #111;">아래 카메라 버튼을 누르세요</div>
-            <div style="font-size: 14px; color: #3b82f6; margin-top: 4px;">스마트폰의 기본 카메라 앱이 바로 활성화됩니다</div>
+    # capture="environment" 속성이 강제 적용된 순수 HTML5 카메라 커스텀 버튼
+    cam_html = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background: transparent;
+            }
+            .cam-container {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 20px 0;
+            }
+            .cam-button {
+                width: 90px;
+                height: 90px;
+                border-radius: 50%;
+                background-color: #3b82f6;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                cursor: pointer;
+                box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+                transition: transform 0.1s ease, background-color 0.2s ease;
+            }
+            .cam-button:active {
+                transform: scale(0.92);
+                background-color: #2563eb;
+            }
+            input[type="file"] {
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="cam-container">
+            <label for="native_camera" class="cam-button">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                    <circle cx="12" cy="13" r="3"/>
+                </svg>
+            </label>
+            <input type="file" id="native_camera" accept="image/*" capture="environment" onchange="handleFile(this)">
         </div>
-        """,
-        unsafe_allow_html=True
-    )
 
-    # CSS로 카메라 SVG 버튼으로 변경된 file_uploader
-    native_cam_file = st.file_uploader(
-        "카메라", 
-        type=["jpg", "jpeg", "png"], 
-        label_visibility="collapsed"
-    )
+        <script>
+            function handleFile(input) {
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const base64Data = e.target.result.split(',')[1];
+                        // parent 영역으로 이미지 데이터 전달
+                        window.parent.postMessage({
+                            type: 'STREAMLIT_CAMERA_IMAGE',
+                            image: base64Data
+                        }, '*');
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+        </script>
+    </body>
+    </html>
+    """
 
-    # 이미지 파싱 처리
-    if native_cam_file is not None:
-        image_bytes = native_cam_file.getvalue()
+    # 컴포넌트 렌더링
+    components.html(cam_html, height=150)
+
+    # JS 이벤트 수신 (카메라로 촬영한 사진 데이터)
+    image_data_key = "captured_cam_base64"
+    if image_data_key in st.session_state and st.session_state[image_data_key]:
+        base64_str = st.session_state[image_data_key]
+        st.session_state[image_data_key] = None  # 중복 실행 방지 초기화
+        
+        image_bytes = base64.b64decode(base64_str)
         with st.spinner("영수증 글자를 읽는 중입니다..."):
             parsed_items, parsed_total = parse_receipt_items_and_total(image_bytes)
 
@@ -399,7 +406,53 @@ elif st.session_state["page"] == "camera":
             else:
                 st.error("⚠️ 영수증 글자를 인식하지 못했습니다. 더 밝고 선명한 곳에서 촬영해 주세요.")
 
-    st.markdown("<br><br>", unsafe_allow_html=True)
+    # parent window listener 주입
+    st.markdown(
+        """
+        <script>
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'STREAMLIT_CAMERA_IMAGE') {
+                const imgData = event.data.image;
+                // Streamlit session state 연동용 쿼리
+                const url = new URL(window.location.href);
+                // 브라우저 세션스토리지에 전달 후 리로드
+                sessionStorage.setItem('temp_cam_image', imgData);
+            }
+        });
+        </script>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # 세션스토리지 데이터를 Streamlit 상태로 변환 처리
+    st.components.v1.html(
+        """
+        <script>
+        const img = sessionStorage.getItem('temp_cam_image');
+        if (img) {
+            sessionStorage.removeItem('temp_cam_image');
+            const inputs = window.parent.document.querySelectorAll('input');
+            // 세션 스토리지 전달
+            window.parent.postMessage({type: 'CAM_DONE', img: img}, '*');
+        }
+        </script>
+        """,
+        height=0
+    )
+
+    # 갤러리 업로드 수단용 백업 file_uploader (필요 시 최소화 사용)
+    uploaded_fallback = st.file_uploader("", type=["jpg", "jpeg", "png"], label_visibility="collapsed")
+    if uploaded_fallback is not None:
+        image_bytes = uploaded_fallback.getvalue()
+        with st.spinner("영수증 글자를 읽는 중입니다..."):
+            parsed_items, parsed_total = parse_receipt_items_and_total(image_bytes)
+            if parsed_items:
+                st.session_state["items"] = parsed_items
+                st.session_state["receipt_total"] = parsed_total
+                st.session_state["page"] = "settle"
+                st.rerun()
+
+    st.markdown("<br>", unsafe_allow_html=True)
     if st.button("취소 및 홈으로", use_container_width=True):
         st.session_state["page"] = "home"
         st.rerun()
