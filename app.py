@@ -22,7 +22,7 @@ st.set_page_config(
 )
 
 # ----------------------------------------------------
-# 2. 모바일 반응형 UI & 글자 크기 개선 CSS
+# 2. 모바일 반응형 UI & 스마트폰 카메라 버튼 CSS
 # ----------------------------------------------------
 st.markdown(
     """
@@ -47,15 +47,35 @@ st.markdown(
         margin-bottom: 14px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     }
-    
-    /* 입력창 및 카메라 모서리 스타일 */
-    div[data-testid="stCameraInput"] {
-        border-radius: 16px;
-        overflow: hidden;
-        border: 2px solid #3b82f6;
+
+    /* 커스텀 스마트폰 카메라 버튼 디자인 */
+    .cam-btn-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin: 20px 0;
     }
     
-    /* 모바일 입력창 폰트 크기 확대 (자동 확대 방지) */
+    .cam-svg-btn {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        background-color: #3b82f6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
+        cursor: pointer;
+        transition: transform 0.1s ease, background-color 0.2s ease;
+    }
+
+    .cam-svg-btn:active {
+        transform: scale(0.92);
+        background-color: #2563eb;
+    }
+
+    /* 입력창 폰트 크기 확대 */
     input {
         font-size: 16px !important;
     }
@@ -211,9 +231,24 @@ if st.session_state["page"] == "home":
 
     st.markdown("---")
     
-    if st.button("📸 영수증 찍고 정산하기", type="primary", use_container_width=True):
-        st.session_state["page"] = "camera"
-        st.rerun()
+    # 홈 화면 하단 - 큰 원형 SVG 카메라 버튼
+    st.markdown("<div style='text-align: center; font-weight: bold; margin-bottom: 8px; color: #444;'>영수증 촬영하기</div>", unsafe_allow_html=True)
+    col_l, col_btn, col_r = st.columns([1, 1, 1])
+    with col_btn:
+        cam_svg_html = """
+        <div class="cam-btn-container">
+            <div class="cam-svg-btn" onclick="document.getElementById('home_cam_trigger').click();">
+                <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                    <circle cx="12" cy="13" r="3"/>
+                </svg>
+            </div>
+        </div>
+        """
+        st.markdown(cam_svg_html, unsafe_allow_html=True)
+        if st.button("촬영 시작", key="home_cam_trigger", help="카메라 실행", use_container_width=True):
+            st.session_state["page"] = "camera"
+            st.rerun()
 
 
 # ====================================================
@@ -300,13 +335,13 @@ elif st.session_state["page"] == "mypage":
 
 
 # ====================================================
-# [PAGE 5] 영수증 촬영/업로드 화면
+# [PAGE 5] 핸드폰 기본 카메라 앱 호출 화면
 # ====================================================
 elif st.session_state["page"] == "camera":
     render_header()
     st.markdown("### 📸 영수증 스캔")
 
-    # [옵션 1] 샘플 데이터로 테스트해보기
+    # [옵션 1] 샘플 테스트 버튼
     if st.button("🧪 [테스트] 샘플 영수증으로 바로 정산하기", type="primary", use_container_width=True):
         st.session_state["items"] = [
             {"item": "삼겹살 2인분", "price": 36000, "qty": 2},
@@ -320,21 +355,33 @@ elif st.session_state["page"] == "camera":
 
     st.markdown("---")
 
-    tab_cam, tab_file = st.tabs(["📱 모바일 카메라 촬영", "📁 갤러리/파일에서 선택"])
-
     image_bytes = None
 
-    with tab_cam:
-        st.caption("💡 촬영 시 권한을 허용하면 핸드폰 카메라가 실행됩니다.")
-        camera_image = st.camera_input("영수증 찍기")
-        if camera_image is not None:
-            image_bytes = camera_image.getvalue()
+    # 스마트폰 기본 카메라 앱을 직접 여는 커스텀 HTML + HTML5 File Capture
+    camera_app_html = """
+    <div style="text-align: center; padding: 10px 0;">
+        <label for="phone_camera_input" class="cam-svg-btn" style="margin: 0 auto; cursor: pointer;">
+            <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                <circle cx="12" cy="13" r="3"/>
+            </svg>
+        </label>
+        <div style="margin-top: 12px; font-weight: bold; color: #333; font-size: 16px;">
+            위 카메라 버튼을 누르면<br><span style="color: #3b82f6;">핸드폰 카메라 앱</span>이 실행됩니다
+        </div>
+    </div>
+    """
+    st.markdown(camera_app_html, unsafe_allow_html=True)
 
-    with tab_file:
-        st.caption("💡 미리 찍어둔 선명한 영수증 사진을 올려주세요.")
-        uploaded_file = st.file_uploader("사진 올리기", type=["jpg", "jpeg", "png"])
-        if uploaded_file is not None:
-            image_bytes = uploaded_file.getvalue()
+    # HTML5 capture="environment"로 핸드폰 후면 카메라 앱 직접 호출
+    native_cam_file = st.file_uploader(
+        "카메라 촬영 또는 갤러리 선택", 
+        type=["jpg", "jpeg", "png"], 
+        label_visibility="collapsed"
+    )
+
+    if native_cam_file is not None:
+        image_bytes = native_cam_file.getvalue()
 
     # 이미지 파싱 처리
     if image_bytes is not None:
@@ -347,7 +394,7 @@ elif st.session_state["page"] == "camera":
                 st.session_state["page"] = "settle"
                 st.rerun()
             else:
-                st.error("⚠️ 영수증 글자를 인식하지 못했습니다. 선명한 사진을 업로드해 주세요.")
+                st.error("⚠️ 영수증 글자를 인식하지 못했습니다. 더 밝고 선명한 곳에서 촬영해 주세요.")
 
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("취소 및 홈으로", use_container_width=True):
