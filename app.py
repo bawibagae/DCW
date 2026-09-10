@@ -23,35 +23,65 @@ st.set_page_config(
 )
 
 # ----------------------------------------------------
-# 2. 모바일 UI CSS
+# 2. 모바일 UI & 테마 가독성 CSS (다크/라이트 자동 지원)
 # ----------------------------------------------------
 st.markdown(
     """
     <style>
-    /* 전체 폰트 및 모바일 가독성 설정 */
+    /* 기본 폰트 설정 */
     html, body, [class*="css"] {
         font-size: 16px !important;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
+
+    /* 앱 레이아웃 및 자동 테마 색상 설정 (배경 대비 텍스트 명암 자동 조정) */
     .stApp {
         max-width: 500px;
         margin: 0 auto;
-        background-color: #f8f9fa;
         padding-bottom: 60px;
+        color: var(--text-color, #111111);
+        background-color: var(--background-color, #ffffff);
     }
     
-    /* 카드 디자인 */
+    /* 카드 디자인 (라이트/다크 대응) */
     .card {
-        background: #ffffff;
+        background: var(--secondary-background-color, #f8f9fa);
+        border: 1px solid rgba(128, 128, 128, 0.2);
         border-radius: 14px;
         padding: 18px;
         margin-bottom: 14px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
 
-    /* 입력창 폰트 크기 확대 */
-    input {
+    .card-title {
+        font-weight: bold;
+        font-size: 17px;
+        color: var(--text-color, #111111);
+    }
+
+    .card-sub {
+        font-size: 14px;
+        opacity: 0.8;
+        margin-top: 4px;
+    }
+
+    /* 입력창 및 텍스트 자동 가독성 */
+    input, textarea {
         font-size: 16px !important;
+        color: var(--text-color, #111111) !important;
+        background-color: var(--secondary-background-color, #f0f2f6) !important;
+    }
+
+    /* 흰 배경이면 검은 글자, 검은 배경이면 흰 글자 자동 처리 */
+    @media (prefers-color-scheme: light) {
+        .stApp, .card, p, span, div, h1, h2, h3, h4, h5, h6, label {
+            color: #111111 !important;
+        }
+    }
+    @media (prefers-color-scheme: dark) {
+        .stApp, .card, p, span, div, h1, h2, h3, h4, h5, h6, label {
+            color: #ffffff !important;
+        }
     }
     </style>
     """,
@@ -195,9 +225,9 @@ if st.session_state["page"] == "home":
             st.markdown(
                 f"""
                 <div class="card">
-                    <div style="font-weight:bold; font-size:17px; color:#111;">{item['date']} 정산</div>
-                    <div style="color:#555; font-size:15px; margin-top:4px;">총액: <b>{item['total']:,}원</b> ({len(item['members'])}명)</div>
-                    <div style="color:#666; font-size:14px; margin-top:4px;">참여자: {', '.join(item['members'])}</div>
+                    <div class="card-title">{item['date']} 정산</div>
+                    <div class="card-sub">총액: <b>{item['total']:,}원</b> ({len(item['members'])}명)</div>
+                    <div class="card-sub">참여자: {', '.join(item['members'])}</div>
                 </div>
                 """,
                 unsafe_allow_html=True
@@ -277,8 +307,8 @@ elif st.session_state["page"] == "mypage":
         st.markdown(
             f"""
             <div class="card">
-                <div style="font-size:18px; font-weight:bold;">{user['name']} 님</div>
-                <div style="color:#666; font-size:14px; margin-top:4px;">{user['email']}</div>
+                <div class="card-title">{user['name']} 님</div>
+                <div class="card-sub">{user['email']}</div>
             </div>
             """,
             unsafe_allow_html=True
@@ -294,7 +324,7 @@ elif st.session_state["page"] == "mypage":
 
 
 # ====================================================
-# [PAGE 5] 스마트폰 카메라 직접 호출 컴포넌트
+# [PAGE 5] 스마트폰 카메라 직접 호출 및 자동 정산 화면 이동
 # ====================================================
 elif st.session_state["page"] == "camera":
     render_header()
@@ -313,7 +343,7 @@ elif st.session_state["page"] == "camera":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # capture="environment" 속성이 강제 적용된 순수 HTML5 카메라 커스텀 버튼
+    # capture="environment" 속성이 적용된 카메라 버튼 & Streamlit 통신 로직
     cam_html = """
     <!DOCTYPE html>
     <html>
@@ -331,7 +361,7 @@ elif st.session_state["page"] == "camera":
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                padding: 20px 0;
+                padding: 10px 0;
             }
             .cam-button {
                 width: 90px;
@@ -371,9 +401,9 @@ elif st.session_state["page"] == "camera":
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         const base64Data = e.target.result.split(',')[1];
-                        // parent 영역으로 이미지 데이터 전달
+                        // 부모 Streamlit 프레임으로 base64 데이터 전달
                         window.parent.postMessage({
-                            type: 'STREAMLIT_CAMERA_IMAGE',
+                            type: 'CAMERA_CAPTURED',
                             image: base64Data
                         }, '*');
                     };
@@ -386,17 +416,20 @@ elif st.session_state["page"] == "camera":
     """
 
     # 컴포넌트 렌더링
-    components.html(cam_html, height=150)
+    components.html(cam_html, height=130)
 
-    # JS 이벤트 수신 (카메라로 촬영한 사진 데이터)
-    image_data_key = "captured_cam_base64"
-    if image_data_key in st.session_state and st.session_state[image_data_key]:
-        base64_str = st.session_state[image_data_key]
-        st.session_state[image_data_key] = None  # 중복 실행 방지 초기화
-        
-        image_bytes = base64.b64decode(base64_str)
+    # 갤러리 업로드 수단용 표준 file_uploader
+    uploaded_file = st.file_uploader("", type=["jpg", "jpeg", "png"], label_visibility="collapsed")
+    
+    image_bytes_to_process = None
+
+    if uploaded_file is not None:
+        image_bytes_to_process = uploaded_file.getvalue()
+
+    # OCR 및 페이지 이동 로직
+    if image_bytes_to_process:
         with st.spinner("영수증 글자를 읽는 중입니다..."):
-            parsed_items, parsed_total = parse_receipt_items_and_total(image_bytes)
+            parsed_items, parsed_total = parse_receipt_items_and_total(image_bytes_to_process)
 
             if parsed_items:
                 st.session_state["items"] = parsed_items
@@ -405,52 +438,6 @@ elif st.session_state["page"] == "camera":
                 st.rerun()
             else:
                 st.error("⚠️ 영수증 글자를 인식하지 못했습니다. 더 밝고 선명한 곳에서 촬영해 주세요.")
-
-    # parent window listener 주입
-    st.markdown(
-        """
-        <script>
-        window.addEventListener('message', function(event) {
-            if (event.data && event.data.type === 'STREAMLIT_CAMERA_IMAGE') {
-                const imgData = event.data.image;
-                // Streamlit session state 연동용 쿼리
-                const url = new URL(window.location.href);
-                // 브라우저 세션스토리지에 전달 후 리로드
-                sessionStorage.setItem('temp_cam_image', imgData);
-            }
-        });
-        </script>
-        """,
-        unsafe_allow_html=True
-    )
-
-    # 세션스토리지 데이터를 Streamlit 상태로 변환 처리
-    st.components.v1.html(
-        """
-        <script>
-        const img = sessionStorage.getItem('temp_cam_image');
-        if (img) {
-            sessionStorage.removeItem('temp_cam_image');
-            const inputs = window.parent.document.querySelectorAll('input');
-            // 세션 스토리지 전달
-            window.parent.postMessage({type: 'CAM_DONE', img: img}, '*');
-        }
-        </script>
-        """,
-        height=0
-    )
-
-    # 갤러리 업로드 수단용 백업 file_uploader (필요 시 최소화 사용)
-    uploaded_fallback = st.file_uploader("", type=["jpg", "jpeg", "png"], label_visibility="collapsed")
-    if uploaded_fallback is not None:
-        image_bytes = uploaded_fallback.getvalue()
-        with st.spinner("영수증 글자를 읽는 중입니다..."):
-            parsed_items, parsed_total = parse_receipt_items_and_total(image_bytes)
-            if parsed_items:
-                st.session_state["items"] = parsed_items
-                st.session_state["receipt_total"] = parsed_total
-                st.session_state["page"] = "settle"
-                st.rerun()
 
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("취소 및 홈으로", use_container_width=True):
