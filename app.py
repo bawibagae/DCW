@@ -22,28 +22,38 @@ st.set_page_config(
 )
 
 # ----------------------------------------------------
-# 2. 모바일 앱 UI 및 CSS
+# 2. 모바일 반응형 UI & 글자 크기 개선 CSS
 # ----------------------------------------------------
 st.markdown(
     """
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
+    /* 전체 폰트 및 배경 반응형 처리 */
+    html, body, [class*="css"] {
+        font-size: 16px !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
     .stApp {
         max-width: 500px;
         margin: 0 auto;
         background-color: #f8f9fa;
         padding-bottom: 80px;
     }
+    
+    /* 카드 스타일 및 글자 가독성 높이기 */
     .card {
         background: white;
-        border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        border-radius: 14px;
+        padding: 18px;
+        margin-bottom: 14px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     }
+    
+    /* 모바일 카메라 입력창 모서리 다듬기 */
     div[data-testid="stCameraInput"] {
-        border-radius: 20px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border-radius: 16px;
         overflow: hidden;
+        border: 2px solid #3b82f6;
     }
     
     /* 하단 원형 카메라 FAB 버튼 */
@@ -53,12 +63,12 @@ st.markdown(
     }
     
     button[key="btn_camera_fab"] {
-        width: 70px !important;
-        height: 70px !important;
+        width: 72px !important;
+        height: 72px !important;
         border-radius: 50% !important;
         background-color: #3b82f6 !important;
         border: none !important;
-        box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4) !important;
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4) !important;
         padding: 0 !important;
         display: flex !important;
         justify-content: center !important;
@@ -77,13 +87,18 @@ st.markdown(
 
     button[key="btn_camera_fab"]::before {
         content: "";
-        width: 32px;
-        height: 32px;
+        width: 34px;
+        height: 34px;
         background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>');
         background-repeat: no-repeat;
         background-position: center;
         background-size: contain;
         display: block;
+    }
+    
+    /* Input 입력창 글자 크기 확대 */
+    input {
+        font-size: 16px !important;
     }
     </style>
     """,
@@ -186,7 +201,7 @@ def parse_receipt_items_and_total(image_bytes):
         return items, detected_total
 
     except Exception as e:
-        st.error(f"OCR Error: {e}")
+        st.error(f"OCR 분석 중 오류가 발생했습니다: {e}")
         return [], 0
 
 
@@ -227,9 +242,9 @@ if st.session_state["page"] == "home":
             st.markdown(
                 f"""
                 <div class="card">
-                    <div style="font-weight:bold; font-size:16px;">{item['date']} 정산</div>
-                    <div style="color:#666; font-size:14px;">총액: {item['total']:,}원 ({len(item['members'])}명)</div>
-                    <div style="color:#333; font-size:13px; margin-top:4px;">참여자: {', '.join(item['members'])}</div>
+                    <div style="font-weight:bold; font-size:17px; color:#111;">{item['date']} 정산</div>
+                    <div style="color:#555; font-size:15px; margin-top:4px;">총액: <b>{item['total']:,}원</b> ({len(item['members'])}명)</div>
+                    <div style="color:#666; font-size:14px; margin-top:4px;">참여자: {', '.join(item['members'])}</div>
                 </div>
                 """,
                 unsafe_allow_html=True
@@ -328,14 +343,14 @@ elif st.session_state["page"] == "mypage":
 
 
 # ====================================================
-# [PAGE 5] 영수증 촬영 화면
+# [PAGE 5] 영수증 촬영 화면 (모바일 카메라 지원 강화)
 # ====================================================
 elif st.session_state["page"] == "camera":
     render_header()
-    st.markdown("### 📸 영수증 촬영")
+    st.markdown("### 📸 영수증 스캔")
 
-    # [테스트용] 카메라 인식 과정 없이 즉시 샘플 데이터로 넘어가기
-    if st.button("🧪 [테스트] 샘플 영수증 데이터로 바로 넘어가기", type="primary", use_container_width=True):
+    # [옵션 1] 테스트용 샘플 버튼
+    if st.button("🧪 [테스트] 샘플 영수증으로 바로 테스트", type="primary", use_container_width=True):
         st.session_state["items"] = [
             {"item": "삼겹살 2인분", "price": 36000, "qty": 2},
             {"item": "차돌된장찌개", "price": 8000, "qty": 1},
@@ -348,11 +363,26 @@ elif st.session_state["page"] == "camera":
 
     st.markdown("---")
 
-    camera_image = st.camera_input("영수증을 글자가 잘 보이도록 중앙에 대고 촬영하세요.")
+    # 탭 구성: 실시간 촬영 vs 핸드폰 갤러리/카메라 앱 사용
+    tab_cam, tab_file = st.tabs(["📱 모바일 카메라 촬영", "📁 갤러리에서 사진 올리기"])
 
-    if camera_image is not None:
-        with st.spinner("영수증을 분석 중입니다..."):
+    image_bytes = None
+
+    with tab_cam:
+        st.caption("💡 브라우저 권한 요청 시 '허용'을 누르면 핸드폰 카메라가 열립니다.")
+        camera_image = st.camera_input("영수증 촬영")
+        if camera_image is not None:
             image_bytes = camera_image.getvalue()
+
+    with tab_file:
+        st.caption("💡 핸드폰 기본 카메라 앱으로 촬영한 선명한 영수증 사진을 선택하세요.")
+        uploaded_file = st.file_uploader("영수증 이미지 선택", type=["jpg", "jpeg", "png"])
+        if uploaded_file is not None:
+            image_bytes = uploaded_file.getvalue()
+
+    # 이미지 분석 처리
+    if image_bytes is not None:
+        with st.spinner("영수증 글자를 읽는 중입니다..."):
             parsed_items, parsed_total = parse_receipt_items_and_total(image_bytes)
 
             if parsed_items:
@@ -361,9 +391,10 @@ elif st.session_state["page"] == "camera":
                 st.session_state["page"] = "settle"
                 st.rerun()
             else:
-                st.error("⚠️ 영수증에서 메뉴나 금액을 인식하지 못했습니다.")
+                st.error("⚠️ 영수증 글자를 인식하지 못했습니다. 더 밝은 곳에서 촬영하거나 갤러리 파일 업로드를 이용해 주세요.")
 
-    if st.button("취소", use_container_width=True):
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("취소 및 돌아가기", use_container_width=True):
         st.session_state["page"] = "home"
         st.rerun()
 
@@ -378,7 +409,7 @@ elif st.session_state["page"] == "settle":
     current_items = st.session_state.get("items", [])
 
     if not current_items:
-        st.warning("인식된 영수증 정보가 없습니다. 영수증을 다시 촬영해 주세요.")
+        st.warning("인식된 영수증 정보가 없습니다. 다시 촬영해 주세요.")
         if st.button("📸 영수증 다시 찍기", type="primary", use_container_width=True):
             st.session_state["page"] = "camera"
             st.rerun()
@@ -390,14 +421,14 @@ elif st.session_state["page"] == "settle":
         with col_acc:
             account_number = st.text_input("계좌번호", placeholder="예: 100083353659", key="acc_input")
 
-        kakaopay_url = st.text_input("🟡 카카오페이 송금링크 (선택사항)", placeholder="예: https://qr.kakaopay.com/...", key="kakaopay_input")
+        kakaopay_url = st.text_input("🟡 카카오페이 송금링크 (선택)", placeholder="예: https://qr.kakaopay.com/...", key="kakaopay_input")
 
         st.markdown("#### 👥 참여자 입력")
         member_input_text = st.text_input("참여자 이름 (쉼표 구분)", value="", placeholder="예: 철수, 영희, 민수")
         members = [m.strip() for m in member_input_text.split(",") if m.strip()]
 
         st.markdown("---")
-        st.markdown(f"#### 📋 인식 총액: {st.session_state.get('receipt_total', 0):,}원")
+        st.markdown(f"#### 📋 인식 총액: **{st.session_state.get('receipt_total', 0):,}원**")
         
         if not members:
             st.info("💡 정산에 참여할 사람의 이름을 위에 먼저 입력해 주세요.")
@@ -485,7 +516,6 @@ elif st.session_state["page"] == "settle":
                     if kakaopay_url:
                         share_url += f"&kakaopay={urllib.parse.quote(kakaopay_url.strip())}"
 
-                    # 카카오톡 연동용 공유 텍스트 (자동 [송금] 버튼 호환)
                     message_lines = ["📢 정산이 완료되었습니다!\n"]
                     for m, amt in final_member_totals.items():
                         message_lines.append(f"• {m}: {amt:,}원")
@@ -498,14 +528,12 @@ elif st.session_state["page"] == "settle":
                     
                     full_share_text = "\n".join(message_lines)
 
-                    # 히스토리 저장
                     st.session_state["history"].append({
                         "date": datetime.date.today().strftime("%Y-%m-%d"),
                         "total": st.session_state["receipt_total"],
                         "members": members
                     })
 
-                    # 결과 다이얼로그
                     @st.dialog("최종 정산 결과")
                     def show_result_dialog():
                         result_table = [{"이름": m, "정산 금액": f"{amt:,}원"} for m, amt in final_member_totals.items()]
@@ -513,20 +541,19 @@ elif st.session_state["page"] == "settle":
                         
                         st.markdown(f"**입금 계좌:** `{bank_name} {account_number}`")
                         
-                        # 앱 내 원클릭 송금 실행 컴포넌트 (테스트용)
                         first_amt = list(final_member_totals.values())[0] if final_member_totals else 0
                         pay_html = f"""
                         <div style="font-family: sans-serif; text-align: center; margin-top: 10px;">
                             <button onclick="payToss()" style="
-                                width: 100%; padding: 12px; margin-bottom: 8px;
+                                width: 100%; padding: 14px; margin-bottom: 8px;
                                 background-color: #0064FF; color: white; border: none;
-                                border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer;">
+                                border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer;">
                                 🔹 토스 앱 실행 ({first_amt:,}원 자동 입력)
                             </button>
                             <button onclick="payKakao()" style="
-                                width: 100%; padding: 12px;
+                                width: 100%; padding: 14px;
                                 background-color: #FEE500; color: #191919; border: none;
-                                border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer;">
+                                border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer;">
                                 🟡 계좌 복사 후 카카오톡 실행
                             </button>
                         </div>
@@ -547,7 +574,7 @@ elif st.session_state["page"] == "settle":
                         }}
                         </script>
                         """
-                        components.html(pay_html, height=120)
+                        components.html(pay_html, height=130)
 
                         st.markdown("---")
                         st.markdown("### 💬 카톡방 공유 문구")
