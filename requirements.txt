@@ -1,0 +1,5 @@
+kivy
+plyer
+google-cloud-vision
+requests
+Flask
