@@ -1,55 +1,8 @@
-# =========================
-# Python
-# =========================
 __pycache__/
-*.py[cod]
-*.pyo
-
-# =========================
-# Virtual environment
-# =========================
-venv/
-.venv/
-env/
-
-# =========================
-# Buildozer / Android build
-# =========================
+*.pyc
+*.db*
+.env
+*service-account*.json
+front-project-*.json
 .buildozer/
 bin/
-
-# =========================
-# Local database
-# =========================
-*.db
-*.sqlite
-*.sqlite3
-
-# =========================
-# Environment / secrets
-# =========================
-.env
-.env.*
-!.env.example
-
-# Google Cloud credentials
-*.json
-
-# =========================
-# Logs / temporary files
-# =========================
-*.log
-*.tmp
-*.temp
-
-# =========================
-# IDE
-# =========================
-.vscode/
-.idea/
-
-# =========================
-# OS
-# =========================
-.DS_Store
-Thumbs.db

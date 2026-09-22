@@ -1,4 +1,6 @@
 import os
+import uuid
+import copy
 import re
 import datetime
 import json
@@ -42,18 +44,12 @@ try:
 except Exception:
     platform = "unknown"
 
-try:
-    from google.cloud import vision
-except Exception:
-    vision = None
-
-
 # ============================================================
 # CONFIG
 # ============================================================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # 실제 배포 서버 주소로 환경변수 API_BASE_URL을 지정하세요.
-API_BASE_URL = os.getenv("API_BASE_URL", "http://192.168.1.16:5000").rstrip("/")
+API_BASE_URL = os.getenv("API_BASE_URL", "https://dcw-6vyo.onrender.com").rstrip("/")
 WEB_URL = os.getenv("WEB_URL", "https://bawibagae.github.io/DCW-web/")
 
 LOCAL_REGULAR_FONT = os.path.join(BASE_DIR, "NanumGothic.ttf")
@@ -100,15 +96,12 @@ if FONT_REGULAR == "Roboto":
 # ============================================================
 # GOOGLE VISION
 # ============================================================
-KEY_PATH = os.path.join(BASE_DIR, "front-project-497802-81eb2e26c470.json")
-if os.path.exists(KEY_PATH):
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = KEY_PATH
-
-
 # ============================================================
 # SESSION
 # ============================================================
 SESSION_STATE = {
+    "generation": 0,
+    "draft": {},
     "token": None,
     "current_user": None,
     "history": [],
@@ -118,10 +111,10 @@ SESSION_STATE = {
 }
 
 
-def api_request(method, path, json_data=None, auth=True, timeout=15):
+def api_request(method, path, json_data=None, auth=True, timeout=70, token=None):
     headers = {"Content-Type": "application/json"}
-    if auth and SESSION_STATE.get("token"):
-        headers["Authorization"] = f"Bearer {SESSION_STATE['token']}"
+    if auth and token:
+        headers["Authorization"] = f"Bearer {token}"
 
     url = f"{API_BASE_URL}{path}"
 
@@ -139,7 +132,7 @@ def api_request(method, path, json_data=None, auth=True, timeout=15):
     try:
         data = response.json()
     except Exception:
-        data = {"error": response.text or "서버 응답을 읽을 수 없습니다."}
+        raise RuntimeError("서버가 JSON 대신 다른 응답을 반환했습니다. 배포 상태를 확인하세요.")
 
     if response.status_code >= 400:
         raise RuntimeError(data.get("error", f"서버 오류 ({response.status_code})"))
@@ -147,13 +140,17 @@ def api_request(method, path, json_data=None, auth=True, timeout=15):
 
 
 def async_api(method, path, json_data, on_success, on_error, auth=True):
+    token = SESSION_STATE.get('token')
+    generation = SESSION_STATE['generation']
+    def dispatch(callback, value):
+        if generation == SESSION_STATE['generation']:
+            callback(value)
     def worker():
         try:
-            result = api_request(method, path, json_data, auth=auth)
-            Clock.schedule_once(lambda *_: on_success(result), 0)
-        except Exception as e:
-            Clock.schedule_once(lambda *_: on_error(str(e)), 0)
-
+            result = api_request(method, path, json_data, auth=auth, token=token)
+            Clock.schedule_once(lambda _dt, result=result: dispatch(on_success, result), 0)
+        except Exception as exc:
+            Clock.schedule_once(lambda _dt, msg=str(exc): dispatch(on_error, msg), 0)
     threading.Thread(target=worker, daemon=True).start()
 
 
@@ -331,78 +328,6 @@ def add_page_layout():
 # ============================================================
 # OCR
 # ============================================================
-def parse_receipt_items_and_total(image_bytes):
-    if vision is None:
-        return [], 0
-    try:
-        client = vision.ImageAnnotatorClient()
-        image = vision.Image(content=image_bytes)
-        response = client.text_detection(image=image)
-        texts = response.text_annotations
-        if not texts:
-            return [], 0
-
-        lines = texts[0].description.split("\n")
-        items = []
-        detected_total = 0
-
-        ignore_keywords = [
-            "등록", "POS", "pos", "포스", "일시", "날짜", "시간", "점포",
-            "가맹점", "사업자", "대표", "TEL", "Tel", "tel", "주소",
-            "승인", "카드", "현금", "VAT", "vat", "부가세", "TAX", "tax",
-            "테이블", "주문", "영수증", "BILL", "Bill", "전표", "고객",
-        ]
-        total_keywords = ["합계", "총액", "총결제금액", "결제금액", "받을금액", "TOTAL", "Total"]
-
-        for line in lines:
-            line_str = line.strip()
-            if not line_str:
-                continue
-
-            if any(keyword in line_str for keyword in total_keywords):
-                numbers = re.findall(r"[\d,]+", line_str)
-                if numbers:
-                    value = int(numbers[-1].replace(",", ""))
-                    detected_total = max(detected_total, value)
-                continue
-
-            if any(k in line_str for k in ignore_keywords):
-                continue
-
-            match_three = re.search(r"^(.+?)\s+(\d+)\s+([\d,]+)원?$", line_str)
-            match_two = re.search(r"^(.+?)\s+([\d,]+)원?$", line_str)
-
-            if match_three:
-                item_name = match_three.group(1).strip()
-                qty = int(match_three.group(2))
-                price_str = match_three.group(3).replace(",", "")
-                if price_str.isdigit():
-                    price = int(price_str)
-                    if 500 <= price <= 1_000_000:
-                        items.append({"item": item_name, "price": price, "qty": qty})
-
-            elif match_two:
-                item_name = match_two.group(1).strip()
-                price_str = match_two.group(2).replace(",", "")
-                cleaned = re.sub(r"[\[\]\(\)\{\}\:\-\=\.\,]", "", item_name).strip()
-                if cleaned.isdigit() or not cleaned:
-                    continue
-                if price_str.isdigit():
-                    price = int(price_str)
-                    if 500 <= price <= 1_000_000:
-                        qty_match = re.search(r"(\d+)\s*(인분|개|병|잔|개입|줄)?", item_name)
-                        qty = int(qty_match.group(1)) if qty_match else 1
-                        items.append({"item": item_name, "price": price, "qty": qty})
-
-        if detected_total == 0 and items:
-            detected_total = sum(item["price"] for item in items)
-        return items, detected_total
-
-    except Exception as e:
-        print(f"OCR 분석 중 오류가 발생했습니다: {e}")
-        return [], 0
-
-
 # ============================================================
 # HOME
 # ============================================================
@@ -437,7 +362,7 @@ class HomeScreen(Screen):
                 size_hint_y=None, height=dp(50), halign="center"
             ))
         else:
-            for item in reversed(history):
+            for item in history:
                 card = Card(size_hint_y=None, height=dp(98))
                 card.add_widget(make_label(
                     f"{item['date']} · {item['count']}개 영수증", 17, True,
@@ -480,6 +405,8 @@ class HomeScreen(Screen):
 
     def start_new_settlement(self, *_):
         SESSION_STATE["receipts"] = []
+        SESSION_STATE["draft"] = {}
+        SESSION_STATE["generation"] += 1
         self.manager.current = "camera"
 
 
@@ -547,7 +474,7 @@ class LoginScreen(Screen):
 
     def do_login(self, *_):
         email = self.email_input.text.strip()
-        pw = self.pw_input.text.strip()
+        pw = self.pw_input.text
         if not email or not pw:
             show_message("경고", "이메일과 비밀번호를 입력해 주세요.")
             return
@@ -561,6 +488,7 @@ class LoginScreen(Screen):
         )
 
     def login_success(self, data):
+        SESSION_STATE["generation"] += 1
         SESSION_STATE["token"] = data["token"]
         SESSION_STATE["current_user"] = data["user"]
         self.email_input.text = ""
@@ -609,7 +537,7 @@ class SignupScreen(Screen):
     def do_signup(self, *_):
         name = self.name_input.text.strip()
         email = self.email_input.text.strip()
-        pw = self.pw_input.text.strip()
+        pw = self.pw_input.text
         if not name or not email or not pw:
             show_message("경고", "모든 항목을 입력해 주세요.")
             return
@@ -743,6 +671,14 @@ class MyPageScreen(Screen):
         token = SESSION_STATE.get("token")
         if token:
             async_api("POST", "/api/auth/logout", {}, lambda _data: None, lambda _err: None)
+        SESSION_STATE['generation'] += 1
+        SESSION_STATE['history'] = []
+        SESSION_STATE['receipts'] = []
+        SESSION_STATE['draft'] = {}
+        app = App.get_running_app()
+        if getattr(app, '_notification_event', None):
+            app._notification_event.cancel()
+            app._notification_event = None
         SESSION_STATE["token"] = None
         SESSION_STATE["current_user"] = None
         SESSION_STATE["friends"] = []
@@ -790,6 +726,9 @@ class NotificationsScreen(Screen):
             card.add_widget(make_label(n["created_at"][:16].replace("T", " "),
                                        11, color=COLOR_MUTED, size_hint_y=None, height=dp(20)))
             self.box.add_widget(card)
+            if not n.get('read'):
+                async_api('POST', f"/api/notifications/{n['id']}/read", {},
+                          lambda _data, item=n: item.update(read=1), lambda _err: None)
 
 
 # ============================================================
@@ -934,7 +873,7 @@ class PhoneCamera(BoxLayout):
                         pass
 
             if resultCode == -1:
-                self._camera_completed(self.camera_path)
+                Clock.schedule_once(lambda _dt: self._camera_completed(self.camera_path), 0)
             else:
                 self.info.text = "촬영이 취소되었습니다."
         except Exception as e:
@@ -953,17 +892,8 @@ class PhoneCamera(BoxLayout):
             show_message("카메라 오류", f"촬영한 사진을 처리하지 못했습니다.\n{e}")
 
     def take_picture_pc(self):
-        app = App.get_running_app()
-        filename = f"dutchpay_receipt_{int(time.time())}.jpg"
-        path = os.path.join(app.user_data_dir, filename)
-        self.camera_path = path
-        try:
-            with open(path, "wb") as f:
-                f.write(b"dummy image data")
-            self.closed = True
-            self.on_capture(path)
-        except Exception as e:
-            show_message("오류", f"PC 카메라 테스트 실패: {e}")
+        self.close()
+        App.get_running_app().root.get_screen('camera').open_pc_file_chooser()
 
     def close(self, *_):
         if self.closed:
@@ -973,6 +903,9 @@ class PhoneCamera(BoxLayout):
 
 
 class CameraScreen(Screen):
+    def on_enter(self):
+        self.build_ui()
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.build_ui()
@@ -1001,6 +934,9 @@ class CameraScreen(Screen):
         file_btn = make_button("📁 내 파일 / 갤러리에서 선택", size_hint_y=None, height=dp(50))
         file_btn.bind(on_press=self.open_file)
         main.add_widget(file_btn)
+        manual = make_button('영수증 직접 입력', size_hint_y=None, height=dp(44))
+        manual.bind(on_press=lambda *_: self.review_receipt({'items': [], 'total': 0}))
+        main.add_widget(manual)
 
         settlement_btn = make_primary_button(
             "현재 영수증들로 정산하기",
@@ -1038,11 +974,16 @@ class CameraScreen(Screen):
                                        halign="right", valign="middle"))
             delete = make_button("삭제", size_hint_x=None, width=dp(55))
             delete.bind(on_press=lambda *_x, idx=i-1: self.remove_receipt(idx))
+            edit = make_button('수정', size_hint_x=None, width=dp(55))
+            edit.bind(on_press=lambda *_x, idx=i-1: self.review_receipt(SESSION_STATE['receipts'][idx], idx))
+            line.add_widget(edit)
             line.add_widget(delete)
             card.add_widget(line)
             self.receipt_box.add_widget(card)
 
     def remove_receipt(self, index):
+        if not 0 <= index < len(SESSION_STATE["receipts"]):
+            return
         del SESSION_STATE["receipts"][index]
         self.build_ui()
 
@@ -1127,7 +1068,7 @@ class CameraScreen(Screen):
                 input_stream.close()
 
                 if os.path.isfile(dest_path) and os.path.getsize(dest_path) > 0:
-                    self.process_image_file(dest_path)
+                    Clock.schedule_once(lambda _dt, path=dest_path: self.process_image_file(path), 0)
                     return
 
             except Exception as e:
@@ -1169,33 +1110,72 @@ class CameraScreen(Screen):
         popup.open()
 
     def process_image_file(self, path):
-        if not os.path.exists(path):
-            show_message("오류", "이미지 파일을 찾을 수 없습니다.")
+        if not SESSION_STATE.get('token'):
+            show_message('로그인 필요', 'OCR을 사용하려면 먼저 로그인하세요.')
             return
-
-        self.status.text = "영수증 글자를 읽는 중입니다..."
-        try:
-            with open(path, "rb") as f:
-                image_bytes = f.read()
-
-            items, total = parse_receipt_items_and_total(image_bytes)
-            if not items:
-                self.status.text = "영수증 글자를 인식하지 못했습니다."
-                show_message("OCR 실패", "영수증 글자를 인식하지 못했습니다.\n더 밝고 선명한 곳에서 다시 촬영해 주세요.")
+        if getattr(self, '_ocr_busy', False):
+            return
+        self._ocr_busy = True
+        self.status.text = '서버에서 영수증을 읽는 중입니다...'
+        token, generation = SESSION_STATE['token'], SESSION_STATE['generation']
+        def completed(data=None, error=None):
+            self._ocr_busy = False
+            if generation != SESSION_STATE['generation']:
                 return
-
-            SESSION_STATE["receipts"].append({"items": items, "total": total})
-            self.build_ui()
-
+            if error:
+                show_message('OCR 오류', error)
+                self.status.text = '인식 실패: 다시 시도하거나 직접 입력하세요.'
+            else:
+                self.review_receipt(data)
+        def worker():
             try:
-                if path.startswith(tempfile.gettempdir()):
-                    os.remove(path)
-            except Exception:
-                pass
+                if os.path.getsize(path) > 10 * 1024 * 1024:
+                    raise ValueError('이미지는 10MB 이하로 선택해 주세요.')
+                with open(path, 'rb') as image:
+                    response = requests.post(API_BASE_URL + '/api/ocr',
+                        headers={'Authorization': 'Bearer ' + token},
+                        files={'image': ('receipt.jpg', image)}, timeout=75)
+                data = response.json()
+                if not response.ok:
+                    raise RuntimeError(data.get('error', 'OCR 서버 오류'))
+                Clock.schedule_once(lambda _dt, value=data: completed(data=value), 0)
+            except Exception as exc:
+                Clock.schedule_once(lambda _dt, msg=str(exc): completed(error=msg), 0)
+        threading.Thread(target=worker, daemon=True).start()
 
-        except Exception as e:
-            self.status.text = "처리 중 오류가 발생했습니다."
-            show_message("오류", f"이미지 처리 중 오류가 발생했습니다.\n{e}")
+    def review_receipt(self, data, index=None):
+        layout = BoxLayout(orientation='vertical', padding=dp(10), spacing=dp(8))
+        layout.add_widget(make_label('품목명 | 수량 | 품목 합계 금액 (단가 아님)\n한 줄에 한 품목. 할인은 품목 금액에 반영하세요.', 13,
+                                    size_hint_y=None, height=dp(50)))
+        editor = make_text_input(text='\n'.join(f"{x['item']} | {x['qty']} | {x['price']}" for x in data.get('items', [])), multiline=True)
+        total = make_text_input(text=str(data.get('total', 0)), hint_text='영수증 총액', multiline=False, size_hint_y=None, height=dp(44))
+        layout.add_widget(editor)
+        layout.add_widget(total)
+        actions = BoxLayout(size_hint_y=None, height=dp(44), spacing=dp(8))
+        save, cancel = make_primary_button('확인 후 저장'), make_button('취소')
+        actions.add_widget(save); actions.add_widget(cancel); layout.add_widget(actions)
+        popup = Popup(title='영수증 인식 결과 수정', title_font=FONT_BOLD, content=layout, size_hint=(.96,.9))
+        def commit(*_):
+            try:
+                items=[]
+                for line in editor.text.splitlines():
+                    if not line.strip(): continue
+                    name, qty, price = [x.strip() for x in line.rsplit('|',2)]
+                    qty, price = int(qty), int(price.replace(',',''))
+                    if not name or len(name)>150 or not 1<=qty<=10000 or not 0<=price<=1_000_000_000:
+                        raise ValueError('품목명/수량/금액을 확인하세요.')
+                    items.append(dict(item=name,qty=qty,price=price))
+                amount=int(total.text.replace(',',''))
+                if not items or not 0<amount<=1_000_000_000 or sum(x['price'] for x in items)!=amount:
+                    raise ValueError('품목 합계와 영수증 총액이 같아야 합니다.')
+                receipt={'items':items,'total':amount}
+                if index is None: SESSION_STATE['receipts'].append(receipt)
+                else: SESSION_STATE['receipts'][index]=receipt
+                popup.dismiss(); self.build_ui()
+            except (ValueError, IndexError) as exc:
+                show_message('입력 확인', str(exc))
+        save.bind(on_press=commit); cancel.bind(on_press=lambda *_: popup.dismiss())
+        popup.open()
 
 
 # ============================================================
@@ -1285,14 +1265,47 @@ class MemberRow(BoxLayout):
 
 
 class SettleScreen(Screen):
+    def on_leave(self):
+        if not self.current_receipts or not hasattr(self, 'bank_input'):
+            return
+        SESSION_STATE['draft'] = {
+            'request_id': self._request_id,
+            'bank': self.bank_input.text, 'account': self.acc_input.text,
+            'names': [x.text for x in self.name_inputs],
+            'receipts': copy.deepcopy(self.current_receipts),
+            'applied': getattr(self, '_applied_members', []),
+            'rows': {key: [(r.member, r.selected_qty()) for r in rows] for key,rows in self.member_rows.items()}
+        }
+
     def on_enter(self):
+        self._submitting = False
+        self._request_id = SESSION_STATE.get("draft", {}).get("request_id", uuid.uuid4().hex)
         self.build_ui()
+        draft = SESSION_STATE.get('draft', {})
+        if not draft or not self.current_receipts:
+            return
+        self.bank_input.text = draft['bank']; self.acc_input.text = draft['account']
+        names = draft['names']
+        if names:
+            self.name_inputs[0].text = names[0]
+            for name in names[1:]: self.add_member_field(name)
+        if draft.get('applied') == self.collect_members():
+            self.render_menu_items()
+            for key, saved in draft.get('rows', {}).items():
+                ri, ii = key
+                old = draft.get('receipts', [])
+                if ri >= len(old) or ri >= len(self.current_receipts) or old[ri] != self.current_receipts[ri]:
+                    continue
+                for row, (name, qty) in zip(self.member_rows.get(key, []), saved):
+                    if row.member == name and qty:
+                        row.checkbox.active = True; row.qty.text = str(qty)
+            self.recalculate_limits()
 
     def build_ui(self):
         self.clear_widgets()
         self.name_inputs = []
         self.member_rows = {}
-        self.current_receipts = SESSION_STATE.get("receipts", [])
+        self.current_receipts = copy.deepcopy(SESSION_STATE.get("receipts", []))
 
         main = add_page_layout()
         main.add_widget(add_logo_header(self))
@@ -1315,7 +1328,7 @@ class SettleScreen(Screen):
         account_row = BoxLayout(orientation="horizontal", size_hint_y=None, height=dp(45), spacing=dp(8))
         self.bank_input = Spinner(
             text="토스뱅크",
-            values=("토스뱅크", "카카오페이"),
+            values=("토스뱅크", "카카오뱅크", "국민은행", "신한은행", "우리은행", "하나은행", "농협은행", "기업은행"),
             option_cls=KoreanSpinnerOption,
             font_name=FONT_REGULAR,
             font_size=dp(15),
@@ -1358,7 +1371,11 @@ class SettleScreen(Screen):
         main.add_widget(friends_label)
 
         self.friend_quick_box = BoxLayout(size_hint_y=None, height=dp(40), spacing=dp(6))
-        main.add_widget(self.friend_quick_box)
+        friend_scroll = ScrollView(size_hint_y=None, height=dp(44), do_scroll_y=False)
+        self.friend_quick_box.size_hint_x = None
+        self.friend_quick_box.bind(minimum_width=self.friend_quick_box.setter("width"))
+        friend_scroll.add_widget(self.friend_quick_box)
+        main.add_widget(friend_scroll)
         self.render_friend_quick_add()
 
         total = sum(r["total"] for r in self.current_receipts)
@@ -1465,9 +1482,10 @@ class SettleScreen(Screen):
             self.friend_quick_box.add_widget(make_label("친구 없음", 12, color=COLOR_MUTED))
             return
 
-        for friend in friends[:5]:
-            btn = make_button(friend["name"], size_hint_x=None, width=dp(82))
-            btn.bind(on_press=lambda _btn, name=friend["name"]: self.fill_next_member(name))
+        for friend in friends:
+            label = f"{friend['name']} ({friend['email']})"
+            btn = make_button(label, size_hint_x=None, width=dp(180))
+            btn.bind(on_press=lambda _btn, name=label: self.fill_next_member(name))
             self.friend_quick_box.add_widget(btn)
 
     def fill_next_member(self, name):
@@ -1487,6 +1505,7 @@ class SettleScreen(Screen):
 
     def render_menu_items(self):
         members = self.collect_members()
+        self._applied_members = members[:]
         self.items_container.clear_widgets()
         self.member_rows = {}
 
@@ -1501,7 +1520,7 @@ class SettleScreen(Screen):
             items = receipt["items"]
             receipt_card = Card(
                 size_hint_y=None,
-                height=dp(58 + sum(48 + 44 * len(members) for _ in items))
+                height=dp(70 + sum(78 + 50 * len(members) for _ in items))
             )
             receipt_card.add_widget(make_label(
                 f"영수증 {receipt_index + 1} · {receipt['total']:,}원",
@@ -1510,7 +1529,7 @@ class SettleScreen(Screen):
 
             for item_index, item in enumerate(items):
                 max_qty = max(1, int(item["qty"]))
-                sub = Card(size_hint_y=None, height=dp(50 + 44 * len(members)))
+                sub = Card(size_hint_y=None, height=dp(72 + 50 * len(members)))
                 sub.add_widget(make_label(
                     f"{item['item']}  {item['price']:,}원 · {max_qty}개",
                     14, True, size_hint_y=None, height=dp(26)
@@ -1561,6 +1580,18 @@ class SettleScreen(Screen):
                     row.set_check_disabled(remaining <= 0)
 
     def process_settlement(self):
+        if getattr(self, '_submitting', False): return
+        members = self.collect_members()
+        names = [x.text.strip() for x in self.name_inputs if x.text.strip()]
+        if len(names) != len(set(names)):
+            show_message('동명이인', '표시 이름에 구분자를 붙이거나 이메일이 포함된 친구 버튼으로 추가하세요.')
+            return
+        if members != getattr(self, '_applied_members', []):
+            show_message('참여자 변경', '참여자 적용을 다시 누르고 배분을 확인하세요.')
+            return
+        if any(sum(i['price'] for i in r['items']) != r['total'] for r in self.current_receipts):
+            show_message('총액 불일치', '영수증 수정 화면에서 품목 합계와 총액을 맞춰 주세요.')
+            return
         if not SESSION_STATE["current_user"]:
             show_message("로그인 필요", "정산 링크를 만들려면 먼저 로그인해 주세요.")
             self.manager.current = "login"
@@ -1581,7 +1612,7 @@ class SettleScreen(Screen):
             show_message("참여자 적용", "참여자 이름을 입력한 뒤 '참여자 적용'을 눌러 주세요.")
             return
 
-        member_totals = {m: 0.0 for m in members}
+        member_totals = {m: 0 for m in members}
         allocated = []
 
         for key, rows in self.member_rows.items():
@@ -1602,12 +1633,15 @@ class SettleScreen(Screen):
                 )
                 return
 
-            for member, share in shares.items():
-                member_totals[member] += price * (share / total_selected)
+            # Largest remainder method: deterministic integer KRW allocation.
+            bases = {name: price * qty // total_selected for name,qty in shares.items()}
+            remainder = price - sum(bases.values())
+            order = sorted(shares, key=lambda name: -(price * shares[name] % total_selected))
+            for name in order[:remainder]: bases[name] += 1
+            for name, amount in bases.items(): member_totals[name] += amount
 
-        final_totals = {m: round(v) for m, v in member_totals.items()}
-
-        friend_map = {f["name"]: f["id"] for f in SESSION_STATE.get("friends", [])}
+        final_totals = member_totals
+        friend_map = {f"{f['name']} ({f['email']})": f['id'] for f in SESSION_STATE.get('friends', [])}
         participants = [
             {
                 "name": m,
@@ -1626,24 +1660,36 @@ class SettleScreen(Screen):
             for receipt in self.current_receipts
         ]
 
+        self._submitting = True
         async_api(
             "POST", "/api/settlements",
             {
+                "request_id": self._request_id,
                 "bank": bank,
                 "account": account,
                 "participants": participants,
                 "receipts": receipts_payload,
             },
             self.settlement_created,
-            lambda err: show_message("정산 생성 실패", err),
+            self.settlement_failed,
         )
 
+    def settlement_failed(self, error):
+        self._submitting = False
+        show_message('정산 생성 실패', error)
+
     def settlement_created(self, data):
+        self._submitting = False
         share_url = data["share_url"]
-        Clipboard.copy(share_url)
+        copied = True
+        try:
+            Clipboard.copy(share_url)
+        except Exception:
+            copied = False
+            show_message('복사 실패: 정산은 저장됨', share_url)
 
         total = data["total_amount"]
-        SESSION_STATE["history"].append({
+        SESSION_STATE["history"].insert(0, {
             "date": datetime.date.today().strftime("%Y-%m-%d"),
             "total": total,
             "members": [p["name"] for p in data["participants"]],
@@ -1651,9 +1697,12 @@ class SettleScreen(Screen):
         })
 
         # 결과 팝업 없이 링크를 바로 클립보드에 복사
-        show_toast(f"정산 링크가 복사되었습니다.\n{total:,}원")
+        if copied: show_toast(f"정산 링크가 복사되었습니다.\n{total:,}원")
         SESSION_STATE["receipts"] = []
+        self.current_receipts = []
+        SESSION_STATE["draft"] = {}
         self.manager.current = "home"
+        load_history_from_server()
 
 
 # ============================================================
@@ -1683,11 +1732,11 @@ def load_notifications_from_server():
         SESSION_STATE["notifications"] = data
 
         new_payment = next(
-            (n for n in data if n["id"] not in old_ids and n["kind"] == "payment_received"),
+            (n for n in data if n["id"] not in old_ids and not n.get("read") and n["kind"] == "payment_received"),
             None,
         )
+        app = App.get_running_app()
         if new_payment:
-            app = App.get_running_app()
             app.notify_payment(new_payment)
 
         root = app.root
@@ -1703,6 +1752,8 @@ def load_history_from_server():
 
     def success(data):
         SESSION_STATE["history"] = data
+        root = App.get_running_app().root
+        if root.current == "home": root.get_screen("home").on_enter()
 
     async_api("GET", "/api/settlements?mine=1", None, success, lambda _err: None)
 
@@ -1726,6 +1777,14 @@ class DutchPayApp(App):
 
     def on_start(self):
         self._notification_event = None
+        if platform == 'android':
+            try:
+                from android.permissions import request_permissions
+                from jnius import autoclass
+                if autoclass('android.os.Build$VERSION').SDK_INT >= 33:
+                    request_permissions(['android.permission.POST_NOTIFICATIONS'])
+            except Exception:
+                pass
         if SESSION_STATE["current_user"]:
             self.start_notification_polling()
 

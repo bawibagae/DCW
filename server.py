@@ -1,4 +1,7 @@
 import os
+import json
+import re
+from werkzeug.exceptions import HTTPException
 import sqlite3
 import secrets
 import hashlib
@@ -9,19 +12,167 @@ from functools import wraps
 
 from flask import Flask, request, jsonify, g, send_from_directory
 
+
+# Input validation (integrated)
+"""Strict shared server input validation. All prices are line totals in KRW."""
+def body(request):
+    value = request.get_json(silent=True)
+    if not isinstance(value, dict):
+        raise ValueError('JSON 객체가 필요합니다.')
+    return value
+
+
+def text(value, label, limit=100, strip=True):
+    if not isinstance(value, str):
+        raise ValueError(f'{label}: 문자열이 필요합니다.')
+    value = value.strip() if strip else value
+    if not value or len(value) > limit:
+        raise ValueError(f'{label}: 1~{limit}자여야 합니다.')
+    return value
+
+
+def integer(value, label, minimum=0, maximum=1_000_000_000):
+    if type(value) is not int or not minimum <= value <= maximum:
+        raise ValueError(f'{label}: {minimum}~{maximum} 사이 정수가 필요합니다.')
+    return value
+
+
+def objects(value, label, limit):
+    if not isinstance(value, list) or not 1 <= len(value) <= limit or not all(isinstance(x, dict) for x in value):
+        raise ValueError(f'{label}: 1~{limit}개 객체 배열이 필요합니다.')
+    return value
+
+
+def validate_settlement(data, conn, owner):
+    bank = text(data.get('bank'), '은행', 50)
+    account = text(data.get('account'), '계좌번호', 40)
+    if not account.replace('-', '').replace(' ', '').isdigit():
+        raise ValueError('계좌번호에는 숫자, 공백, 하이픈만 입력하세요.')
+    participants = objects(data.get('participants'), '참여자', 100)
+    receipts = objects(data.get('receipts'), '영수증', 50)
+    seen = set()
+    for p in participants:
+        p['name'] = text(p.get('name'), '참여자 이름', 150)
+        integer(p.get('amount'), '참여자 금액', 1)
+        if p['name'] in seen:
+            raise ValueError('참여자 표시 이름을 구분해 주세요.')
+        seen.add(p['name'])
+        uid = p.get('user_id')
+        if uid is not None:
+            integer(uid, 'user_id', 1)
+            if uid != owner and not conn.execute('SELECT 1 FROM friends WHERE user_id=? AND friend_id=?',(owner,uid)).fetchone():
+                raise ValueError('등록된 친구만 연결할 수 있습니다.')
+    for r in receipts:
+        integer(r.get('total_amount'), '영수증 총액', 1)
+        for item in objects(r.get('items'), '품목', 200):
+            item['item'] = text(item.get('item'), '품목명', 150)
+            integer(item.get('qty'), '수량', 1, 10000)
+            integer(item.get('price'), '품목 합계 금액', 0)
+        if sum(x['price'] for x in r['items']) != r['total_amount']:
+            raise ValueError('품목 금액 합계와 영수증 총액이 다릅니다. 수정 후 제출하세요.')
+    total = sum(r['total_amount'] for r in receipts)
+    integer(total, '정산 총액', 1)
+    if total != sum(p['amount'] for p in participants):
+        raise ValueError('참여자 청구액 합계와 영수증 총액이 다릅니다.')
+    return bank, account, participants, receipts
+
+# Server-only OCR (integrated)
+"""Server-only OCR. Recognition is a draft requiring user confirmation."""
+import io
+import re
+from PIL import Image
+
+
+def parse_text(content):
+    items, totals = [], []
+    for line in content.splitlines():
+        line = line.strip()
+        if any(k in line for k in ('결제금액','총결제','받을금액','합계','총액','TOTAL','Total')):
+            nums = re.findall(r'\d[\d,]*', line)
+            if nums:
+                rank = 2 if any(k in line for k in ('결제금액','총결제','받을금액')) else 1
+                totals.append((rank, int(nums[-1].replace(',',''))))
+            continue
+        if any(k in line.lower() for k in ('사업자','주소','승인','카드','현금','부가세','tel','vat','pos','일시','할인')):
+            continue
+        match = re.fullmatch(r'(.+?)\s+(\d+)\s+([\d,]+)원?', line)
+        if match:
+            name, qty, price = match.groups()
+            qty = int(qty)
+        else:
+            match = re.fullmatch(r'(.+?)\s+([\d,]+)원?', line)
+            if not match:
+                continue
+            name, price = match.groups()
+            qty = 1  # Never infer quantity from digits in the item name.
+        price = int(price.replace(',',''))
+        if 1 <= qty <= 10000 and 0 <= price <= 1_000_000_000 and re.search(r'[가-힣A-Za-z]',name):
+            items.append({'item':name,'qty':qty,'price':price})
+    total = sorted(totals, key=lambda t:t[0])[-1][1] if totals else sum(i['price'] for i in items)
+    return {'items':items, 'total':total, 'review_required':True,
+            'warning':'품목 금액은 단가가 아닌 해당 줄의 합계입니다. 할인·누락·수량을 반드시 수정/확인하세요.'}
+
+
+def recognize(raw):
+    if not raw or len(raw) > 10 * 1024 * 1024:
+        raise ValueError('이미지는 10MB 이하여야 합니다.')
+    try:
+        with Image.open(io.BytesIO(raw)) as im:
+            if im.format not in ('PNG','JPEG','WEBP') or im.width * im.height > 25_000_000:
+                raise ValueError('지원 이미지: JPG/PNG/WEBP, 최대 2500만 화소')
+            im.verify()
+    except Exception as exc:
+        raise ValueError('유효한 JPG/PNG/WEBP 이미지를 선택해 주세요.') from exc
+    from google.cloud import vision
+    response = vision.ImageAnnotatorClient().document_text_detection(image=vision.Image(content=raw), timeout=45)
+    if response.error.message:
+        raise RuntimeError(response.error.message)
+    return parse_text(response.full_text_annotation.text)
+
+
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.getenv("DB_PATH", os.path.join(APP_DIR, "dutchpay.db"))
-API_BASE_URL = os.getenv("API_BASE_URL", "http://192.168.1.16:5000").rstrip("/")
+API_BASE_URL = os.getenv("API_BASE_URL", os.getenv("RENDER_EXTERNAL_URL", "https://dcw-6vyo.onrender.com")).rstrip("/")
 WEB_URL = os.getenv("WEB_URL", API_BASE_URL + "/")
-WEBHOOK_SECRET = os.getenv("DUTCHPAY_WEBHOOK_SECRET", "change-this-secret")
+WEBHOOK_SECRET = os.getenv("DUTCHPAY_WEBHOOK_SECRET", "")
 PORT = int(os.getenv("PORT", "5000"))
 
 app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 12 * 1024 * 1024
+SESSION_DAYS = int(os.getenv('SESSION_DAYS', '7'))
+
+@app.errorhandler(ValueError)
+def invalid_input(error):
+    return jsonify(error=str(error)), 400
+
+@app.errorhandler(HTTPException)
+def http_error(error):
+    return jsonify(error=error.description), error.code
+
+@app.errorhandler(sqlite3.IntegrityError)
+def db_conflict(error):
+    db().rollback()
+    return jsonify(error='데이터 충돌입니다. 입력을 확인해 주세요.'), 409
+
+@app.errorhandler(sqlite3.OperationalError)
+def db_unavailable(error):
+    db().rollback()
+    app.logger.exception('Database operation failed')
+    return jsonify(error='DB를 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.'), 503
+
 
 
 @app.after_request
 def add_cors_headers(response):
-    response.headers["Access-Control-Allow-Origin"] = "*"
+    origin = request.headers.get('Origin', '')
+    allowed = {API_BASE_URL, urllib.parse.urlsplit(WEB_URL).scheme + '://' + urllib.parse.urlsplit(WEB_URL).netloc}
+    allowed.update(x.strip() for x in os.getenv('CORS_ORIGINS', 'https://bawibagae.github.io').split(',') if x.strip())
+    if origin in allowed:
+        response.headers['Access-Control-Allow-Origin'] = origin
+        response.headers['Vary'] = 'Origin'
+    response.headers['Cache-Control'] = 'no-store'
+    response.headers['Referrer-Policy'] = 'no-referrer'
+    response.headers['X-Content-Type-Options'] = 'nosniff' 
     response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-DutchPay-Secret"
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
     return response
@@ -34,7 +185,7 @@ def web_index():
 
 def db():
     if "db" not in g:
-        g.db = sqlite3.connect(DB_PATH)
+        g.db = sqlite3.connect(DB_PATH, timeout=30)
         g.db.row_factory = sqlite3.Row
         g.db.execute("PRAGMA foreign_keys = ON")
     return g.db
@@ -48,7 +199,8 @@ def close_db(_error=None):
 
 
 def init_db():
-    conn = sqlite3.connect(DB_PATH)
+    os.makedirs(os.path.dirname(os.path.abspath(DB_PATH)), exist_ok=True)
+    conn = sqlite3.connect(DB_PATH, timeout=30)
     conn.executescript("""
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -119,6 +271,21 @@ def init_db():
         FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
     );
     """)
+    conn.execute('PRAGMA journal_mode=WAL')
+    conn.executescript("""
+    CREATE TABLE IF NOT EXISTS payment_events (
+      transaction_id TEXT PRIMARY KEY, participant_id INTEGER NOT NULL,
+      settlement_id INTEGER NOT NULL, amount INTEGER NOT NULL, created_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS settlement_requests (
+      owner_id INTEGER NOT NULL, request_id TEXT NOT NULL, settlement_id INTEGER NOT NULL,
+      PRIMARY KEY(owner_id, request_id)
+    );
+    """)
+    # Preserve historical transactions without changing existing participant rows.
+    conn.execute("""INSERT OR IGNORE INTO payment_events
+      SELECT transaction_id,id,settlement_id,amount,COALESCE(paid_at,'')
+      FROM settlement_participants WHERE transaction_id IS NOT NULL AND transaction_id != ''""")
     conn.commit()
     conn.close()
 
@@ -152,8 +319,8 @@ def current_user():
     row = db().execute("""
         SELECT u.* FROM users u
         JOIN sessions s ON s.user_id = u.id
-        WHERE s.token = ?
-    """, (token,)).fetchone()
+        WHERE s.token = ? AND julianday(s.created_at) > julianday(?)
+    """, (token, (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=SESSION_DAYS)).isoformat())).fetchone()
     return row
 
 
@@ -241,10 +408,12 @@ def health():
 
 @app.route("/api/auth/register", methods=["POST"])
 def register():
-    data = request.get_json(silent=True) or {}
-    name = str(data.get("name", "")).strip()
-    email = str(data.get("email", "")).strip().lower()
-    password = str(data.get("password", ""))
+    data = body(request)
+    name = text(data.get('name'), '이름', 80)
+    email = text(data.get('email'), '이메일', 254).lower()
+    password = text(data.get('password'), '비밀번호', 256, strip=False)
+    if not re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+', email):
+        raise ValueError('올바른 이메일을 입력해 주세요.')
 
     if not name or not email or not password:
         return jsonify({"error": "이름, 이메일, 비밀번호를 입력해 주세요."}), 400
@@ -267,9 +436,9 @@ def register():
 
 @app.route("/api/auth/login", methods=["POST"])
 def login():
-    data = request.get_json(silent=True) or {}
-    email = str(data.get("email", "")).strip().lower()
-    password = str(data.get("password", ""))
+    data = body(request)
+    email = text(data.get('email'), '이메일', 254).lower()
+    password = text(data.get('password'), '비밀번호', 256, strip=False)
 
     user = db().execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
     if not user or not verify_password(password, user["password_hash"]):
@@ -317,16 +486,17 @@ def friends_list():
 @app.route("/api/friends/add", methods=["POST"])
 @login_required
 def friends_add():
-    data = request.get_json(silent=True) or {}
+    data = body(request)
     value = str(data.get("email_or_name", "")).strip()
     if not value:
         return jsonify({"error": "친구의 이메일 또는 이름을 입력해 주세요."}), 400
 
-    friend = db().execute("""
-        SELECT * FROM users
-        WHERE email = ? COLLATE NOCASE OR name = ? COLLATE NOCASE
-        LIMIT 1
-    """, (value, value)).fetchone()
+    matches = db().execute("SELECT * FROM users WHERE email = ? COLLATE NOCASE", (value,)).fetchall()
+    if not matches:
+        matches = db().execute("SELECT * FROM users WHERE name = ? COLLATE NOCASE LIMIT 2", (value,)).fetchall()
+    if len(matches) > 1:
+        raise ValueError('동명이인이 있습니다. 이메일로 추가해 주세요.')
+    friend = matches[0] if matches else None
 
     if not friend:
         return jsonify({"error": "가입된 사용자를 찾을 수 없습니다."}), 404
@@ -346,18 +516,17 @@ def friends_add():
 @login_required
 def create_settlement():
     import json
-    data = request.get_json(silent=True) or {}
-    bank = str(data.get("bank", "")).strip()
-    account = str(data.get("account", "")).strip()
-    participants = data.get("participants") or []
-    receipts = data.get("receipts") or []
-
-    if not bank or not account:
-        return jsonify({"error": "입금 계좌 정보가 필요합니다."}), 400
-    if not participants:
-        return jsonify({"error": "참여자가 필요합니다."}), 400
-    if not receipts:
-        return jsonify({"error": "영수증이 필요합니다."}), 400
+    data = body(request)
+    bank, account, participants, receipts = validate_settlement(data, db(), g.current_user['id'])
+    request_id = text(data.get('request_id'), 'request_id', 100)
+    conn = db()
+    conn.execute('BEGIN IMMEDIATE')
+    existing = conn.execute('SELECT settlement_id FROM settlement_requests WHERE owner_id=? AND request_id=?',
+                            (g.current_user['id'], request_id)).fetchone()
+    if existing:
+        payload = settlement_json(existing['settlement_id'], g.current_user['id'])
+        conn.rollback()
+        return jsonify(payload), 200
 
     public_token = secrets.token_urlsafe(18)
     total_amount = sum(int(r.get("total_amount", 0)) for r in receipts)
@@ -401,6 +570,8 @@ def create_settlement():
                     settlement_id, now()
                 ))
 
+    conn.execute('INSERT INTO settlement_requests VALUES(?,?,?)',
+                 (g.current_user['id'], request_id, settlement_id))
     conn.commit()
     payload = settlement_json(settlement_id, g.current_user["id"])
     payload["share_url"] = WEB_URL + "?token=" + public_token + "&api=" + urllib.parse.quote(API_BASE_URL, safe="")
@@ -421,87 +592,49 @@ def public_settlement_view(token):
     row = public_settlement(token)
     if not row:
         return jsonify({"error": "정산 링크가 유효하지 않습니다."}), 404
-    payload = settlement_json(row["id"])
-    return jsonify(payload)
+    payload = settlement_json(row['id'])
+    if payload is None:
+        return jsonify(error='참여자 정보가 없는 이전 정산입니다.'), 404
+    return jsonify({
+        'bank': payload['bank'], 'account': payload['account'],
+        'owner_name': payload['owner_name'], 'total_amount': payload['total_amount'],
+        'participants': [{k: p[k] for k in ('id','name','amount','status','paid_at')} for p in payload['participants']]
+    })
 
 
 @app.route("/api/payments/webhook", methods=["POST"])
 def payment_webhook():
-    signature = request.headers.get("X-DutchPay-Secret", "")
-    if not hmac.compare_digest(signature, WEBHOOK_SECRET):
-        return jsonify({"error": "invalid webhook secret"}), 401
-
-    data = request.get_json(silent=True) or {}
-    settlement_id = data.get("settlement_id")
-    amount = int(data.get("amount", 0) or 0)
-    sender_user_id = data.get("sender_user_id")
-    sender_name = str(data.get("sender_name", "")).strip()
-    transaction_id = str(data.get("transaction_id", "")).strip()
-
-    if not settlement_id or not amount or not transaction_id:
-        return jsonify({"error": "settlement_id, amount, transaction_id가 필요합니다."}), 400
-
+    # This endpoint is for a trusted bank adapter, not for browser clients.
+    if len(WEBHOOK_SECRET) < 32:
+        return jsonify(error='입금 연동 비밀키가 설정되지 않았습니다.'), 503
+    signature = request.headers.get('X-DutchPay-Secret', '')
+    if not hmac.compare_digest(signature.encode(), WEBHOOK_SECRET.encode()):
+        return jsonify(error='invalid webhook secret'), 401
+    data = body(request)
+    sid = integer(data.get('settlement_id'), 'settlement_id', 1)
+    pid = integer(data.get('participant_id'), 'participant_id', 1)
+    amount = integer(data.get('amount'), 'amount', 1)
+    tx = text(data.get('transaction_id'), 'transaction_id', 200)
     conn = db()
-
-    # 중복 거래 방지
-    exists = conn.execute(
-        "SELECT id FROM settlement_participants WHERE transaction_id = ?",
-        (transaction_id,)
-    ).fetchone()
-    if exists:
-        return jsonify({"ok": True, "duplicate": True})
-
-    participant = None
-    if sender_user_id:
-        participant = conn.execute("""
-            SELECT * FROM settlement_participants
-            WHERE settlement_id=? AND user_id=? AND status='pending' AND amount=?
-            LIMIT 1
-        """, (settlement_id, sender_user_id, amount)).fetchone()
-
-    if not participant and sender_name:
-        participant = conn.execute("""
-            SELECT * FROM settlement_participants
-            WHERE settlement_id=? AND name=? AND status='pending' AND amount=?
-            LIMIT 1
-        """, (settlement_id, sender_name, amount)).fetchone()
-
-    if not participant:
-        participant = conn.execute("""
-            SELECT * FROM settlement_participants
-            WHERE settlement_id=? AND status='pending' AND amount=?
-            ORDER BY id LIMIT 1
-        """, (settlement_id, amount)).fetchone()
-
-    if not participant:
-        return jsonify({
-            "ok": False,
-            "matched": False,
-            "message": "금액과 참여자를 매칭하지 못했습니다."
-        }), 200
-
-    paid_time = now()
-    conn.execute("""
-        UPDATE settlement_participants
-        SET status='paid', paid_at=?, transaction_id=?
-        WHERE id=?
-    """, (paid_time, transaction_id, participant["id"]))
-
-    settlement = conn.execute(
-        "SELECT owner_id FROM settlements WHERE id=?", (settlement_id,)
-    ).fetchone()
-
-    conn.execute("""
-        INSERT INTO notifications(user_id,kind,title,message,settlement_id,created_at)
-        VALUES(?,?,?,?,?,?)
-    """, (
-        settlement["owner_id"], "payment_received", "입금이 확인되었습니다",
-        f"{participant['name']}님이 {participant['amount']:,}원을 입금했습니다.",
-        settlement_id, paid_time
-    ))
-
+    conn.execute('BEGIN IMMEDIATE')
+    old = conn.execute('SELECT * FROM payment_events WHERE transaction_id=?', (tx,)).fetchone()
+    if old:
+        conn.rollback()
+        if (old['participant_id'],old['settlement_id'],old['amount']) != (pid,sid,amount):
+            return jsonify(error='거래 ID가 다른 입금 정보에 이미 사용되었습니다.'), 409
+        return jsonify(ok=True, duplicate=True)
+    p = conn.execute('SELECT * FROM settlement_participants WHERE id=? AND settlement_id=?', (pid,sid)).fetchone()
+    if not p or p['amount'] != amount or p['status'] != 'pending':
+        conn.rollback()
+        return jsonify(error='참여자, 금액 또는 상태 불일치: 수동 확인이 필요합니다.', matched=False), 409
+    stamp = now()
+    conn.execute('INSERT INTO payment_events VALUES(?,?,?,?,?)', (tx,pid,sid,amount,stamp))
+    conn.execute("UPDATE settlement_participants SET status='paid',paid_at=?,transaction_id=? WHERE id=? AND status='pending'", (stamp,tx,pid))
+    owner = conn.execute('SELECT owner_id FROM settlements WHERE id=?',(sid,)).fetchone()
+    conn.execute('INSERT INTO notifications(user_id,kind,title,message,settlement_id,created_at) VALUES(?,?,?,?,?,?)',
+      (owner['owner_id'],'payment_received','입금이 확인되었습니다',f"{p['name']}님이 {amount:,}원을 입금했습니다.",sid,stamp))
     conn.commit()
-    return jsonify({"ok": True, "matched": True, "participant_id": participant["id"]})
+    return jsonify(ok=True, matched=True, participant_id=pid)
 
 
 @app.route("/api/settlements", methods=["GET"])
@@ -566,6 +699,22 @@ def notification_read(notification_id):
     return jsonify({"ok": True})
 
 
+@app.route('/api/ocr', methods=['POST'])
+@login_required
+def ocr():
+    uploaded = request.files.get('image')
+    if uploaded is None:
+        raise ValueError('image 파일을 보내 주세요.')
+    try:
+        return jsonify(recognize(uploaded.read()))
+    except ValueError:
+        raise
+    except Exception:
+        app.logger.exception('OCR service failed')
+        return jsonify(error='OCR 서비스 오류: 서버 인증키, Vision API 활성화 및 할당량을 확인해 주세요.'), 503
+
+# Also initialize under gunicorn; CREATE IF NOT EXISTS preserves old records.
+init_db()
+
 if __name__ == "__main__":
-    init_db()
     app.run(host="0.0.0.0", port=PORT, debug=False)

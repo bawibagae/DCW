@@ -1,0 +1,17 @@
+test_bad_user (integration_tests.APITests.test_bad_user) ... ok
+test_cors (integration_tests.APITests.test_cors) ... ok
+test_expired_session (integration_tests.APITests.test_expired_session) ... ok
+test_health_and_index (integration_tests.APITests.test_health_and_index) ... ok
+test_idempotent_create (integration_tests.APITests.test_idempotent_create) ... ok
+test_invalid_inputs (integration_tests.APITests.test_invalid_inputs) ... ok
+test_logout (integration_tests.APITests.test_logout) ... ok
+test_notifications (integration_tests.APITests.test_notifications) ... ok
+test_ocr_auth_and_input (integration_tests.APITests.test_ocr_auth_and_input) ... ok
+test_payment_replay_and_identity (integration_tests.APITests.test_payment_replay_and_identity) ... ok
+test_public_redaction (integration_tests.APITests.test_public_redaction) ... ok
+test_total_mismatch (integration_tests.APITests.test_total_mismatch) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 1.163s
+
+OK
