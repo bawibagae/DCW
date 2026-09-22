@@ -1,3 +1,0 @@
-// Java Lint Project Settings
-// This project is used for linting Java source files in CI
-rootProject.name = 'p4a-java-lint'
