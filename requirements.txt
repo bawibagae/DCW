@@ -3,3 +3,4 @@ plyer
 google-cloud-vision
 requests
 Flask
+gunicorn

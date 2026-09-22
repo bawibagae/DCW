@@ -14,6 +14,8 @@ fullscreen = 0
 android.permissions = INTERNET,CAMERA,POST_NOTIFICATIONS
 android.ndk_version = 28c
 android.enable_androidx = True
+android.gradle_dependencies = androidx.core:core:1.13.1
+android.extra_manifest_application_xml = android_src/extra_manifest_application.xml
 android.archs = arm64-v8a
 p4a.branch = develop
 # Register FileProvider in <application>.

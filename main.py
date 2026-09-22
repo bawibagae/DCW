@@ -118,7 +118,7 @@ SESSION_STATE = {
 }
 
 
-def api_request(method, path, json_data=None, auth=True, timeout=8):
+def api_request(method, path, json_data=None, auth=True, timeout=15):
     headers = {"Content-Type": "application/json"}
     if auth and SESSION_STATE.get("token"):
         headers["Authorization"] = f"Bearer {SESSION_STATE['token']}"
@@ -1389,20 +1389,21 @@ class SettleScreen(Screen):
         self.add_widget(main)
 
     def apply_members(self, *_):
+        for inp in self.name_inputs:
+            inp.focus = False
+
         members = self.collect_members()
 
         if not members:
             show_message("참여자 입력", "참여자 이름을 한 명 이상 입력해 주세요.")
             return
 
-        # 적용 버튼을 누르면 현재 참여자 기준으로 메뉴 배분 영역을 다시 생성합니다.
         self.render_menu_items()
+        Clock.schedule_once(lambda *_: self._focus_items_area(), 0)
 
+    def _focus_items_area(self):
         if hasattr(self, "items_scroll"):
-            Clock.schedule_once(
-                lambda *_: setattr(self.items_scroll, "scroll_y", 1),
-                0,
-            )
+            self.items_scroll.scroll_y = 1
 
     def add_member_field(self, preset=""):
         row = BoxLayout(size_hint_y=None, height=dp(44), spacing=dp(7))
@@ -1413,6 +1414,7 @@ class SettleScreen(Screen):
             text=preset,
             multiline=False,
         )
+        row.member_input = inp
         self.name_inputs.append(inp)
 
         paste_btn = make_button("붙여넣기", size_hint_x=None, width=dp(78))
@@ -1573,6 +1575,10 @@ class SettleScreen(Screen):
         members = self.collect_members()
         if not members:
             show_message("경고", "참여자 이름을 한 명 이상 입력해 주세요.")
+            return
+
+        if not self.member_rows:
+            show_message("참여자 적용", "참여자 이름을 입력한 뒤 '참여자 적용'을 눌러 주세요.")
             return
 
         member_totals = {m: 0.0 for m in members}
