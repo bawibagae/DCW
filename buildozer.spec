@@ -7,7 +7,7 @@ source.dir = .
 source.include_exts = py,kv,png,jpg,jpeg,ttf,xml
 source.exclude_patterns = server.py,validation.py,ocr_service.py,test_*.py,*.json,*.db*,*.log
 version = 1.1.0
-requirements = python3,kivy,plyer,requests,pyjnius
+requirements = python3,kivy,plyer,requests,pyjnius,charset-normalizer==2.0.12
 orientation = portrait
 fullscreen = 0
 android.permissions = INTERNET,CAMERA,POST_NOTIFICATIONS
