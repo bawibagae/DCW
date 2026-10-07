@@ -9,9 +9,15 @@ import urllib.parse
 import urllib.request
 import urllib.error
 import mimetypes
+import ssl
+import certifi
+import uuid
+HTTPS_CONTEXT = ssl.create_default_context(cafile=certifi.where())
+from fractions import Fraction
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.core.clipboard import Clipboard
+from kivy.core.window import Window
 from kivy.core.text import LabelBase
 from kivy.graphics import Color, RoundedRectangle
 from kivy.metrics import dp
@@ -121,7 +127,7 @@ def api_request(method, path, json_data=None, auth=True, timeout=70, token=None)
     body = None if json_data is None else json.dumps(json_data).encode("utf-8")
     req = urllib.request.Request(url=url, data=body, headers=headers, method=method.upper())
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as response:
+        with urllib.request.urlopen(req, timeout=timeout, context=HTTPS_CONTEXT) as response:
             status_code = response.status
             raw = response.read()
     except urllib.error.HTTPError as exc:
@@ -132,9 +138,12 @@ def api_request(method, path, json_data=None, auth=True, timeout=70, token=None)
     try:
         data = json.loads(raw.decode("utf-8"))
     except Exception as exc:
-        raise RuntimeError("서버가 JSON 대신 다른 응답을 반환했습니다. 배포 상태를 확인하세요.") from exc
+        raise RuntimeError(f"서버 응답 오류 (HTTP {status_code})\n요청: {path}\n서버 배포 로그를 확인해 주세요. 서버가 재시작 중일 수도 있습니다.") from exc
     if status_code >= 400:
-        raise RuntimeError(data.get("error", f"서버 오류 ({status_code})"))
+        message = data.get("error", "서버 오류") if isinstance(data, dict) else "서버 오류"
+        trace = data.get("request_id") if isinstance(data, dict) else None
+        suffix = f"\n요청 ID: {trace}" if trace and str(trace) not in str(message) else ""
+        raise RuntimeError(f"HTTP {status_code} · {path}\n{message}{suffix}")
     return data
 
 
@@ -161,7 +170,7 @@ def _multipart_upload_image(path, token, timeout=75):
         headers={"Authorization": f"Bearer {token}", "Content-Type": f"multipart/form-data; boundary={boundary}"},
     )
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as response:
+        with urllib.request.urlopen(req, timeout=timeout, context=HTTPS_CONTEXT) as response:
             status_code, raw = response.status, response.read()
     except urllib.error.HTTPError as exc:
         status_code, raw = exc.code, exc.read()
@@ -176,12 +185,13 @@ def _multipart_upload_image(path, token, timeout=75):
     return data
 
 def async_api(method, path, json_data, on_success, on_error, auth=True):
+    token = SESSION_STATE.get("token") if auth else None
     def worker():
         try:
-            result = api_request(method, path, json_data, auth=auth)
-            Clock.schedule_once(lambda *_: on_success(result), 0)
+            result = api_request(method, path, json_data, auth=auth, token=token)
+            Clock.schedule_once(lambda _dt, value=result: on_success(value), 0)
         except Exception as e:
-            Clock.schedule_once(lambda *_: on_error(str(e)), 0)
+            Clock.schedule_once(lambda _dt, message=str(e): on_error(message), 0)
 
     threading.Thread(target=worker, daemon=True).start()
 
@@ -212,26 +222,27 @@ def make_label(text="", font_size=16, bold=False, **kwargs):
     )
 
 
-def make_button(text="", bold=False, **kwargs):
-    return Button(
-        text=text,
-        font_name=FONT_BOLD if bold else FONT_REGULAR,
-        color=COLOR_TEXT,
-        background_normal="",
-        background_color=COLOR_PRIMARY_LIGHT,
-        **kwargs,
-    )
+class SoftButton(Button):
+    def __init__(self, tone, **kwargs):
+        super().__init__(background_normal="", background_down="", background_color=(0,0,0,0), **kwargs)
+        with self.canvas.before:
+            self._tone = Color(*tone)
+            self._shape = RoundedRectangle(radius=[dp(12)])
+        self.bind(pos=self._draw, size=self._draw, state=self._draw, disabled=self._draw)
+        self._draw()
+    def _draw(self,*_):
+        self._shape.pos=self.pos
+        self._shape.size=self.size
+        self._tone.a=0.45 if self.disabled else (0.8 if self.state=="down" else 1)
 
 
-def make_primary_button(text="", **kwargs):
-    return Button(
-        text=text,
-        font_name=FONT_BOLD,
-        color=(1, 1, 1, 1),
-        background_normal="",
-        background_color=COLOR_PRIMARY,
-        **kwargs,
-    )
+def make_button(text="",bold=False,**kwargs):
+    return SoftButton(COLOR_PRIMARY_LIGHT,text=text,font_name=FONT_BOLD if bold else FONT_REGULAR,
+                      font_size=dp(14),color=COLOR_TEXT,**kwargs)
+
+
+def make_primary_button(text="",**kwargs):
+    return SoftButton(COLOR_PRIMARY,text=text,font_name=FONT_BOLD,font_size=dp(15),color=(1,1,1,1),**kwargs)
 
 
 def make_text_input(**kwargs):
@@ -284,18 +295,17 @@ class KoreanSpinnerOption(SpinnerOption):
 
 
 def show_message(title, message):
-    content = BoxLayout(orientation="vertical", padding=dp(15), spacing=dp(12))
-    content.add_widget(make_label(message, halign="center", valign="middle"))
-    btn = make_primary_button("확인", size_hint_y=None, height=dp(45))
+    content = BoxLayout(orientation="vertical", padding=dp(16), spacing=dp(12))
+    scroll = ScrollView(do_scroll_x=False)
+    label = make_label(str(message), 14, color=(1,1,1,1), halign="left", valign="top", size_hint_y=None)
+    label.bind(width=lambda obj,w: setattr(obj,"text_size",(max(dp(40),w),None)))
+    label.bind(texture_size=lambda obj,v: setattr(obj,"height",v[1]+dp(16)))
+    scroll.add_widget(label)
+    content.add_widget(scroll)
+    btn=make_primary_button("확인",size_hint_y=None,height=dp(48))
     content.add_widget(btn)
-    popup = Popup(
-        title=title,
-        title_font=FONT_BOLD,
-        content=content,
-        size_hint=(0.88, 0.32),
-        auto_dismiss=False,
-    )
-    btn.bind(on_press=lambda *_: popup.dismiss())
+    popup=Popup(title=title,title_font=FONT_BOLD,content=content,size_hint=(0.92,0.55),auto_dismiss=False)
+    btn.bind(on_release=lambda *_: popup.dismiss())
     popup.open()
     return popup
 
@@ -315,41 +325,30 @@ def show_toast(message):
 
 
 def add_logo_header(screen):
-    header = BoxLayout(orientation="horizontal", size_hint_y=None, height=dp(62), spacing=dp(10))
-
-    logo_box = BoxLayout(orientation="vertical", padding=[dp(14), dp(6)])
-    with logo_box.canvas.before:
-        Color(*COLOR_PRIMARY_DARK)
-        bg = RoundedRectangle(radius=[dp(12)])
-    logo_box.bind(pos=lambda obj, *_: setattr(bg, "pos", obj.pos))
-    logo_box.bind(size=lambda obj, *_: setattr(bg, "size", obj.size))
-    logo_box.add_widget(make_label("DUTCH", 10, True, color=(0.78, 0.83, 1, 1),
-                                   size_hint_y=0.4, halign="left", valign="top"))
-    logo_box.add_widget(make_label("더치페이", 20, True, color=(1, 1, 1, 1),
-                                   size_hint_y=0.6, halign="left", valign="top"))
-
-    def logo_home(*_):
-        screen.manager.current = "home"
-
-    logo_button = Button(
-        background_normal="",
-        background_color=(0, 0, 0, 0),
-        text="",
-        size_hint_x=1,
-    )
-    logo_button.add_widget(logo_box)
-    logo_button.bind(on_press=logo_home)
-
-    login_text = "마이페이지" if SESSION_STATE["current_user"] else "로그인"
-    user_button = make_button(login_text, bold=True, size_hint_x=None, width=dp(88))
-    user_button.bind(on_press=lambda *_: setattr(
-        screen.manager,
-        "current",
-        "mypage" if SESSION_STATE["current_user"] else "login",
-    ))
-
-    header.add_widget(logo_button)
-    header.add_widget(user_button)
+    header = BoxLayout(orientation="horizontal", size_hint_y=None,
+                       height=dp(62), spacing=dp(8))
+    logo = SoftButton(COLOR_PRIMARY_DARK, text="DUTCH\n더치페이",
+                      font_name=FONT_BOLD, font_size=dp(17),
+                      color=(1, 1, 1, 1), size_hint_x=None, width=dp(112))
+    def home(*_):
+        if screen.manager:
+            screen.manager.transition.direction = "right"
+            screen.manager.current = "home"
+    logo.bind(on_release=home)
+    header.add_widget(logo)
+    header.add_widget(Widget())
+    if screen.name != "home":
+        button = make_button("홈", size_hint_x=None, width=dp(44))
+        button.bind(on_release=home)
+        header.add_widget(button)
+    user = make_button("로그인", bold=True, size_hint_x=None, width=dp(88))
+    def refresh(*_):
+        user.text = "마이페이지" if SESSION_STATE["current_user"] else "로그인"
+    refresh()
+    screen.bind(on_pre_enter=refresh)
+    user.bind(on_release=lambda *_: setattr(screen.manager, "current",
+              "mypage" if SESSION_STATE["current_user"] else "login"))
+    header.add_widget(user)
     return header
 
 
@@ -515,7 +514,37 @@ class HomeScreen(Screen):
 # ============================================================
 # LOGIN / SIGNUP
 # ============================================================
+def auth_submit(screen, button, path, payload, success):
+    if getattr(screen,"_auth_busy",False):
+        return
+    screen._auth_busy=True
+    caption=button.text
+    button.disabled=True
+    button.text="처리 중..."
+    status=make_label("서버에 연결하고 있습니다.",13,color=COLOR_MUTED,size_hint_y=None,height=dp(38))
+    button.parent.add_widget(status,index=0)
+    def waiting(_dt):
+        status.text="서버 시작을 기다리는 중입니다. 잠시만 기다려 주세요."
+    timer=Clock.schedule_once(waiting,8)
+    def finish():
+        screen._auth_busy=False
+        timer.cancel()
+        button.disabled=False
+        button.text=caption
+        if status.parent: status.parent.remove_widget(status)
+    def ok(data):
+        finish()
+        success(data)
+    def fail(message):
+        finish()
+        show_message("요청 실패",message)
+    async_api("POST",path,payload,ok,fail,auth=False)
+
+
 class LoginScreen(Screen):
+    def on_enter(self):
+        async_api("GET","/api/health",None,lambda data:None,lambda err:None,auth=False)
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.build_ui()
@@ -581,13 +610,8 @@ class LoginScreen(Screen):
             show_message("경고", "이메일과 비밀번호를 입력해 주세요.")
             return
 
-        async_api(
-            "POST", "/api/auth/login",
-            {"email": email, "password": pw},
-            self.login_success,
-            lambda err: show_message("로그인 실패", err),
-            auth=False,
-        )
+        auth_submit(self, _[0], "/api/auth/login",
+                    {"email":email,"password":pw},self.login_success)
 
     def login_success(self, data):
         SESSION_STATE["token"] = data["token"]
@@ -643,13 +667,11 @@ class SignupScreen(Screen):
             show_message("경고", "모든 항목을 입력해 주세요.")
             return
 
-        async_api(
-            "POST", "/api/auth/register",
-            {"name": name, "email": email, "password": pw},
-            lambda _data: self.signup_success(),
-            lambda err: show_message("회원가입 실패", err),
-            auth=False,
-        )
+        if len(pw)<6:
+            show_message("비밀번호 확인","비밀번호는 6자 이상 입력해 주세요.")
+            return
+        auth_submit(self, _[0], "/api/auth/register",
+                    {"name":name,"email":email,"password":pw},lambda data:self.signup_success())
 
     def signup_success(self):
         self.name_input.text = ""
@@ -873,6 +895,10 @@ class PhoneCamera(BoxLayout):
         self.take_picture_pc()
 
     def take_picture_android(self):
+        from android.runnable import run_on_ui_thread
+        run_on_ui_thread(self._launch_camera_android)()
+
+    def _launch_camera_android(self):
         """Open the native Android camera using FileProvider.
 
         Plyer's camera provider can pass a file:// URI to Android on some
@@ -886,24 +912,47 @@ class PhoneCamera(BoxLayout):
             Intent = autoclass("android.content.Intent")
             MediaStore = autoclass("android.provider.MediaStore")
             File = autoclass("java.io.File")
-            FileProvider = autoclass("androidx.core.content.FileProvider")
+
 
             activity = PythonActivity.mActivity
             context = activity.getApplicationContext()
 
             filename = os.path.join(
-                App.get_running_app().user_data_dir,
-                f"dutchpay_receipt_{int(time.time())}.jpg",
+                str(context.getCacheDir().getAbsolutePath()),
+                f"dutchpay_receipt_{time.time_ns()}.jpg",
             )
+            os.makedirs(os.path.dirname(filename),exist_ok=True)
             self.camera_path = filename
 
             # FileProvider is registered in AndroidManifest.xml.
             authority = context.getPackageName() + ".fileprovider"
             file_obj = File(filename)
-            uri = FileProvider.getUriForFile(context, authority, file_obj)
+            self._camera_media_uri = None
+            try:
+                FileProvider = autoclass("androidx.core.content.FileProvider")
+                uri = FileProvider.getUriForFile(context, authority, file_obj)
+            except Exception:
+                # Android 10+: app-owned MediaStore content URI needs no
+                # FileProvider declaration or broad storage permission.
+                BuildVersion = autoclass("android.os.Build$VERSION")
+                if BuildVersion.SDK_INT < 29:
+                    raise RuntimeError("Android 9 이하에서는 FileProvider XML과 buildozer 설정을 적용하고 APK를 재빌드해야 합니다.")
+                ContentValues = autoclass("android.content.ContentValues")
+                values = ContentValues()
+                values.put("_display_name", os.path.basename(filename))
+                values.put("mime_type", "image/jpeg")
+                values.put("relative_path", "Pictures/DutchPay")
+                uri = context.getContentResolver().insert(
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+                if uri is None:
+                    raise RuntimeError("카메라 저장 위치를 생성하지 못했습니다.")
+                self._camera_media_uri = uri
 
             intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
+            from jnius import cast
+            ClipData=autoclass("android.content.ClipData")
+            intent.putExtra(MediaStore.EXTRA_OUTPUT,cast("android.os.Parcelable",uri))
+            intent.setClipData(ClipData.newRawUri("receipt",uri))
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
 
@@ -931,7 +980,22 @@ class PhoneCamera(BoxLayout):
             activity.startActivityForResult(intent, self._camera_request_code)
 
         except Exception as e:
-            show_message("카메라 오류", f"카메라를 실행하지 못했습니다.\n{e}")
+            media_uri = getattr(self, "_camera_media_uri", None)
+            if media_uri is not None:
+                try:
+                    context.getContentResolver().delete(media_uri, None, None)
+                except Exception:
+                    pass
+                self._camera_media_uri = None
+            message=str(e)
+            if "meta-data" in message or "provider" in message.lower():
+                message="APK에 카메라 FileProvider 설정이 없습니다. 동봉된 Android XML과 buildozer 설정을 적용한 뒤 APK를 다시 빌드해 설치해 주세요."
+            try:
+                from android import activity as android_activity
+                android_activity.unbind(on_activity_result=self._camera_activity_result)
+            except Exception:
+                pass
+            Clock.schedule_once(lambda _dt,msg=message:show_message("카메라 오류",msg),0)
 
     def _camera_activity_result(self, requestCode, resultCode, intent):
         if requestCode != getattr(self, "_camera_request_code", -1):
@@ -962,10 +1026,28 @@ class PhoneCamera(BoxLayout):
                     except Exception:
                         pass
 
+            media_uri = getattr(self, "_camera_media_uri", None)
+            if media_uri is not None:
+                resolver = autoclass("org.kivy.android.PythonActivity").mActivity.getContentResolver()
+                try:
+                    if resultCode == -1:
+                        import shutil
+                        descriptor = resolver.openFileDescriptor(media_uri, "r")
+                        if descriptor is None:
+                            raise RuntimeError("촬영한 사진을 읽을 수 없습니다.")
+                        try:
+                            fd = descriptor.detachFd()
+                        finally:
+                            descriptor.close()
+                        with os.fdopen(fd, "rb") as source, open(self.camera_path, "wb") as target:
+                            shutil.copyfileobj(source, target)
+                finally:
+                    resolver.delete(media_uri, None, None)
+                    self._camera_media_uri = None
             if resultCode == -1:
-                self._camera_completed(self.camera_path)
+                Clock.schedule_once(lambda _dt:self._camera_completed(self.camera_path),0)
             else:
-                self.info.text = "촬영이 취소되었습니다."
+                Clock.schedule_once(lambda _dt:setattr(self.info,"text","촬영이 취소되었습니다."),0)
         except Exception as e:
             show_message("카메라 오류", f"촬영 결과를 처리하지 못했습니다.\n{e}")
 
@@ -982,17 +1064,7 @@ class PhoneCamera(BoxLayout):
             show_message("카메라 오류", f"촬영한 사진을 처리하지 못했습니다.\n{e}")
 
     def take_picture_pc(self):
-        app = App.get_running_app()
-        filename = f"dutchpay_receipt_{int(time.time())}.jpg"
-        path = os.path.join(app.user_data_dir, filename)
-        self.camera_path = path
-        try:
-            with open(path, "wb") as f:
-                f.write(b"dummy image data")
-            self.closed = True
-            self.on_capture(path)
-        except Exception as e:
-            show_message("오류", f"PC 카메라 테스트 실패: {e}")
+        show_message("사진 선택","PC에서는 내 파일에서 영수증 이미지를 선택해 주세요.")
 
     def close(self, *_):
         if self.closed:
@@ -1324,63 +1396,56 @@ class QtyInput(TextInput):
 
 
 class MemberRow(BoxLayout):
-    def __init__(self, member, max_qty, on_changed, **kwargs):
-        super().__init__(orientation="horizontal", size_hint_y=None,
-                         height=dp(44), spacing=dp(7), **kwargs)
-        self.member = member
-        self.max_qty = int(max_qty)
-        self.on_changed = on_changed
-        self._updating = False
-
-        self.checkbox = CheckBox(size_hint_x=None, width=dp(30))
-        self.checkbox.bind(active=self._check_changed)
-        self.add_widget(self.checkbox)
-
-        self.name_label = make_label(member, size_hint_x=0.58, halign="left", valign="middle")
-        self.name_label.bind(size=self.name_label.setter("text_size"))
-        self.add_widget(self.name_label)
-
-        self.qty = make_text_input(
-            text="1", multiline=False, input_filter="int",
-            size_hint_x=0.25, size_hint_y=None, height=dp(38)
-        )
-        self.qty.disabled = True
-        self.qty.bind(text=self._qty_changed)
+    def __init__(self,member,max_qty,on_changed,**kwargs):
+        super().__init__(orientation="horizontal",size_hint_y=None,height=dp(54),spacing=dp(6),**kwargs)
+        self.member=member
+        self.max_qty=int(max_qty)
+        self.on_changed=on_changed
+        self._updating=False
+        self.checkbox=CheckBox()  # state only; no tiny checkbox touch target
+        self.name_button=make_button(member)
+        self.name_button.bind(on_release=self._toggle)
+        self.add_widget(self.name_button)
+        self.minus=make_button("-",bold=True,size_hint_x=None,width=dp(46))
+        self.minus.bind(on_release=lambda *_:self._step(-1))
+        self.add_widget(self.minus)
+        self.qty=make_label("0",17,True,size_hint_x=None,width=dp(32))
         self.add_widget(self.qty)
-
-    def _check_changed(self, *_):
-        self.qty.disabled = not self.checkbox.active
-        if self.checkbox.active and not self.qty.text:
-            self.qty.text = "1"
+        self.plus=make_button("+",bold=True,size_hint_x=None,width=dp(46))
+        self.plus.bind(on_release=lambda *_:self._step(1))
+        self.add_widget(self.plus)
+        self._paint()
+    def _paint(self):
+        active=self.checkbox.active
+        self.name_button.text=("선택 · " if active else "")+self.member
+        self.name_button._tone.rgba=COLOR_PRIMARY if active else COLOR_PRIMARY_LIGHT
+        self.name_button.color=(1,1,1,1) if active else COLOR_TEXT
+        self.minus.disabled=not active
+    def _toggle(self,*_):
+        self._step(-self.selected_qty() if self.checkbox.active else 1)
+    def _step(self,delta):
+        old=self.selected_qty()
+        screen=getattr(self,"settle_screen",None)
+        peers=screen.member_rows.get(self.item_key,[]) if screen else []
+        remaining=self.max_qty-sum(r.selected_qty() for r in peers if r is not self)
+        value=max(0,min(old+delta,remaining,self.max_qty))
+        if delta>0 and value==old:
+            show_toast("남은 수량이 없습니다. 다른 참여자 수량을 먼저 줄여 주세요.")
+            return
+        self.set_value(value)
         self.on_changed()
-
-    def _qty_changed(self, *_):
-        if not self._updating:
-            self.on_changed()
-
+    def set_value(self,value):
+        value=max(0,min(int(value),self.max_qty))
+        self.checkbox.active=value>0
+        self.qty.text=str(value)
+        self._paint()
     def selected_qty(self):
-        if not self.checkbox.active:
-            return 0
-        try:
-            q = int(self.qty.text)
-        except Exception:
-            q = 1
-        return max(1, min(q, self.max_qty))
+        return int(self.qty.text) if self.checkbox.active else 0
+    def set_max_allowed(self,allowed):
+        if self.selected_qty()>allowed:self.set_value(allowed)
+    def set_check_disabled(self,disabled):
+        self.name_button.disabled=bool(disabled and not self.checkbox.active)
 
-    def set_max_allowed(self, allowed):
-        allowed = max(1, int(allowed))
-        if self.checkbox.active:
-            try:
-                current = int(self.qty.text)
-            except Exception:
-                current = 1
-            if current > allowed:
-                self._updating = True
-                self.qty.text = str(allowed)
-                self._updating = False
-
-    def set_check_disabled(self, disabled):
-        self.checkbox.disabled = bool(disabled and not self.checkbox.active)
 
 
 class SettleScreen(Screen):
@@ -1393,7 +1458,12 @@ class SettleScreen(Screen):
         self.member_rows = {}
         self.current_receipts = SESSION_STATE.get("receipts", [])
 
-        main = add_page_layout()
+        outer=add_page_layout()
+        body_scroll=ScrollView(do_scroll_x=False)
+        main=BoxLayout(orientation="vertical",size_hint_y=None,spacing=dp(10))
+        main.bind(minimum_height=main.setter("height"))
+        body_scroll.add_widget(main)
+        outer.add_widget(body_scroll)
         main.add_widget(add_logo_header(self))
         main.add_widget(make_label("영수증 정산", 22, True, size_hint_y=None, height=dp(44)))
 
@@ -1406,7 +1476,7 @@ class SettleScreen(Screen):
             go.bind(on_press=lambda *_: setattr(self.manager, "current", "camera"))
             main.add_widget(go)
             main.add_widget(Widget())
-            self.add_widget(main)
+            self.add_widget(outer)
             return
 
         main.add_widget(make_label("입금받을 계좌 정보", 17, True, size_hint_y=None, height=dp(34)))
@@ -1467,7 +1537,7 @@ class SettleScreen(Screen):
         total_card.add_widget(make_label(f"총 {total:,}원", 20, True, size_hint_y=None, height=dp(30)))
         main.add_widget(total_card)
 
-        self.items_scroll = ScrollView()
+        self.items_scroll = ScrollView(size_hint_y=None,height=dp(460),do_scroll_x=False)
         self.items_container = BoxLayout(
             orientation="vertical", size_hint_y=None,
             spacing=dp(12), padding=[0, dp(3), 0, dp(3)]
@@ -1480,17 +1550,22 @@ class SettleScreen(Screen):
         add_receipt = make_button("+ 영수증 추가", size_hint_x=0.38)
         add_receipt.bind(on_press=lambda *_: setattr(self.manager, "current", "camera"))
         settle_btn = make_primary_button("정산 링크 복사", size_hint_x=0.62)
+        self.settle_button=settle_btn
         settle_btn.bind(on_press=lambda *_: self.process_settlement())
         action_row.add_widget(add_receipt)
         action_row.add_widget(settle_btn)
-        main.add_widget(action_row)
+        outer.add_widget(action_row)
 
-        self.add_widget(main)
+        self.add_widget(outer)
 
     def apply_members(self, *_):
         for inp in self.name_inputs:
             inp.focus = False
 
+        entered=[inp.text.strip() for inp in self.name_inputs if inp.text.strip()]
+        if len(entered)!=len(set(entered)):
+            show_message("중복 이름","동명이인은 이름 뒤에 숫자를 붙여 구분해 주세요.")
+            return
         members = self.collect_members()
 
         if not members:
@@ -1519,7 +1594,7 @@ class SettleScreen(Screen):
         paste_btn = make_button("붙여넣기", size_hint_x=None, width=dp(78))
         paste_btn.bind(on_press=lambda *_: self.paste_into_input(inp))
 
-        minus = make_button("−", bold=True, size_hint_x=None, width=dp(42))
+        minus = make_button("삭제", bold=True, size_hint_x=None, width=dp(52))
         minus.bind(on_press=lambda *_: self.remove_member_field(inp))
 
         if len(self.name_inputs) == 1:
@@ -1586,8 +1661,10 @@ class SettleScreen(Screen):
 
     def render_menu_items(self):
         members = self.collect_members()
+        saved={(key,row.member):row.selected_qty() for key,rows in self.member_rows.items() for row in rows}
         self.items_container.clear_widgets()
         self.member_rows = {}
+        self.item_status = {}
 
         if not members:
             self.items_container.add_widget(make_label(
@@ -1602,6 +1679,7 @@ class SettleScreen(Screen):
                 size_hint_y=None,
                 height=dp(58 + sum(48 + 44 * len(members) for _ in items))
             )
+            receipt_card.bind(minimum_height=receipt_card.setter("height"))
             receipt_card.add_widget(make_label(
                 f"영수증 {receipt_index + 1} · {receipt['total']:,}원",
                 16, True, size_hint_y=None, height=dp(28)
@@ -1610,6 +1688,7 @@ class SettleScreen(Screen):
             for item_index, item in enumerate(items):
                 max_qty = max(1, int(item["qty"]))
                 sub = Card(size_hint_y=None, height=dp(50 + 44 * len(members)))
+                sub.bind(minimum_height=sub.setter("height"))
                 sub.add_widget(make_label(
                     f"{item['item']}  {item['price']:,}원 · {max_qty}개",
                     14, True, size_hint_y=None, height=dp(26)
@@ -1618,14 +1697,34 @@ class SettleScreen(Screen):
                 rows = []
                 for member in members:
                     row = MemberRow(member, max_qty, self.recalculate_limits)
+                    row.settle_screen=self
+                    row.item_key=(receipt_index,item_index)
+                    row.set_value(saved.get((row.item_key,member),0))
                     rows.append(row)
                     sub.add_widget(row)
 
                 key = (receipt_index, item_index)
                 self.member_rows[key] = rows
+                controls=BoxLayout(size_hint_y=None,height=dp(44),spacing=dp(8))
+                status=make_label("",13,color=COLOR_MUTED)
+                self.item_status[key]=status
+                controls.add_widget(status)
+                equal=make_button("균등 배분",size_hint_x=None,width=dp(100))
+                equal.bind(on_release=lambda _btn,k=key:self.equal_allocate(k))
+                controls.add_widget(equal)
+                sub.add_widget(controls)
                 receipt_card.add_widget(sub)
 
             self.items_container.add_widget(receipt_card)
+
+        self.recalculate_limits()
+
+    def equal_allocate(self,key):
+        rows=self.member_rows[key]
+        qty=rows[0].max_qty
+        q,r=divmod(qty,len(rows))
+        for i,row in enumerate(rows):row.set_value(q+(i<r))
+        self.recalculate_limits()
 
     def recalculate_limits(self):
         for key, rows in self.member_rows.items():
@@ -1649,7 +1748,11 @@ class SettleScreen(Screen):
 
                 selected = sum(r.selected_qty() for r in rows)
 
+            if key in getattr(self,"item_status",{}):
+                self.item_status[key].text=f"배분 {selected}/{max_qty} · 남음 {max(0,max_qty-selected)}"
+                self.item_status[key].color=COLOR_SUCCESS if selected==max_qty else COLOR_MUTED
             for row in rows:
+                row.plus.disabled=selected>=max_qty
                 own = row.selected_qty()
                 other = selected - own
                 remaining = max_qty - other
@@ -1660,6 +1763,7 @@ class SettleScreen(Screen):
                     row.set_check_disabled(remaining <= 0)
 
     def process_settlement(self):
+        if getattr(self,"_settle_busy",False):return
         if not SESSION_STATE["current_user"]:
             show_message("로그인 필요", "정산 링크를 만들려면 먼저 로그인해 주세요.")
             self.manager.current = "login"
@@ -1680,7 +1784,15 @@ class SettleScreen(Screen):
             show_message("참여자 적용", "참여자 이름을 입력한 뒤 '참여자 적용'을 눌러 주세요.")
             return
 
-        member_totals = {m: 0.0 for m in members}
+        member_totals = {m: Fraction(0) for m in members}
+        expected_total = sum(int(r["total"]) for r in self.current_receipts)
+        item_total = sum(int(i["price"]) for r in self.current_receipts for i in r["items"])
+        if item_total != expected_total:
+            show_message("총액 확인", "품목 금액 합계와 영수증 총액을 일치시켜 주세요.")
+            return
+        if any(row.member not in members for rows in self.member_rows.values() for row in rows):
+            show_message("참여자 적용", "참여자가 변경되었습니다. 참여자 적용을 다시 눌러 주세요.")
+            return
         allocated = []
 
         for key, rows in self.member_rows.items():
@@ -1702,9 +1814,13 @@ class SettleScreen(Screen):
                 return
 
             for member, share in shares.items():
-                member_totals[member] += price * (share / total_selected)
+                member_totals[member] += Fraction(price * share, total_selected)
 
-        final_totals = {m: round(v) for m, v in member_totals.items()}
+        final_totals = {m: int(v) for m, v in member_totals.items()}
+        remainder = expected_total - sum(final_totals.values())
+        ranked = sorted(members, key=lambda name: member_totals[name] - final_totals[name], reverse=True)
+        for name in ranked[:remainder]:
+            final_totals[name] += 1
 
         friend_map = {f["name"]: f["id"] for f in SESSION_STATE.get("friends", [])}
         participants = [
@@ -1725,19 +1841,36 @@ class SettleScreen(Screen):
             for receipt in self.current_receipts
         ]
 
+        payload_identity=json.dumps([bank,account,participants,receipts_payload],ensure_ascii=False,sort_keys=True)
+        if getattr(self,"_request_identity",None)!=payload_identity:
+            self._request_identity=payload_identity
+            self._request_id=uuid.uuid4().hex
+        self._settle_busy=True
+        self.settle_button.disabled=True
+        self.settle_button.text="링크 만드는 중..."
         async_api(
             "POST", "/api/settlements",
             {
+                "request_id":self._request_id,
                 "bank": bank,
                 "account": account,
                 "participants": participants,
                 "receipts": receipts_payload,
             },
             self.settlement_created,
-            lambda err: show_message("정산 생성 실패", err),
+            self.settlement_failed,
         )
 
+    def settlement_failed(self,error):
+        self._settle_busy=False
+        self.settle_button.disabled=False
+        self.settle_button.text="정산 링크 복사"
+        show_message("정산 생성 실패",error)
+
     def settlement_created(self, data):
+        self._settle_busy=False
+        self.settle_button.disabled=False
+        self.settle_button.text="정산 링크 복사"
         share_url = data["share_url"]
         Clipboard.copy(share_url)
 
@@ -1785,8 +1918,8 @@ def load_notifications_from_server():
             (n for n in data if n["id"] not in old_ids and n["kind"] == "payment_received"),
             None,
         )
+        app = App.get_running_app()
         if new_payment:
-            app = App.get_running_app()
             app.notify_payment(new_payment)
 
         root = app.root
@@ -1824,7 +1957,28 @@ class DutchPayApp(App):
         sm.add_widget(NotificationsScreen(name="notifications"))
         sm.add_widget(CameraScreen(name="camera"))
         sm.add_widget(SettleScreen(name="settle"))
+        Window.bind(on_keyboard=self.handle_back_key)
         return sm
+
+    def handle_back_key(self, window, key, *args):
+        if key == 27 and self.root and self.root.current != "home":
+            # Let an open popup handle Back before navigating the page.
+            from kivy.uix.modalview import ModalView
+            for child in Window.children:
+                if isinstance(child, ModalView):
+                    if child.auto_dismiss:
+                        child.dismiss()
+                    return True
+            self.root.transition.direction = "right"
+            self.root.current = "home"
+            return True
+        return False
+
+    def on_stop(self):
+        Window.unbind(on_keyboard=self.handle_back_key)
+        event = getattr(self, "_notification_event", None)
+        if event is not None:
+            event.cancel()
 
     def on_start(self):
         self._notification_event = None

@@ -1,4 +1,5 @@
 import os
+import re
 import sqlite3
 import secrets
 import hashlib
@@ -9,6 +10,7 @@ import json
 from functools import wraps
 
 from flask import Flask, request, jsonify, g
+from werkzeug.exceptions import HTTPException
 try:
     from google.cloud import vision
 except Exception:
@@ -29,8 +31,25 @@ app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
 
 
+@app.before_request
+def identify_request():
+    g.trace_id=secrets.token_hex(6)
+
+@app.errorhandler(Exception)
+def json_error(exc):
+    trace_id=getattr(g,"trace_id","unknown")
+    if isinstance(exc,HTTPException):
+        return jsonify(error=exc.description,request_id=trace_id),exc.code
+    app.logger.exception("Request failed: %s",trace_id)
+    conn=g.get("db")
+    if conn:
+        try:conn.rollback()
+        except Exception:pass
+    return jsonify(error="서버 처리 오류입니다. 관리자에게 요청 ID를 전달해 주세요: "+trace_id,request_id=trace_id),500
+
 @app.after_request
 def add_cors_headers(response):
+    response.headers["X-Request-ID"] = getattr(g, "trace_id", "unknown")
     response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-DutchPay-Secret"
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
@@ -44,7 +63,7 @@ def web_index():
 
 def db():
     if "db" not in g:
-        g.db = sqlite3.connect(DB_PATH)
+        g.db = sqlite3.connect(DB_PATH, timeout=15)
         g.db.row_factory = sqlite3.Row
         g.db.execute("PRAGMA foreign_keys = ON")
     return g.db
@@ -58,7 +77,7 @@ def close_db(_error=None):
 
 
 def init_db():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=15)
     conn.executescript("""
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -139,6 +158,12 @@ def init_db():
         FOREIGN KEY(settlement_id) REFERENCES settlements(id) ON DELETE CASCADE
     );
     """)
+    # Old databases may lack columns added after first deployment.
+    columns={r[1] for r in conn.execute("PRAGMA table_info(settlement_participants)")}
+    for name,kind in [("paid_at","TEXT"),("transaction_id","TEXT"),("status","TEXT NOT NULL DEFAULT 'pending'")]:
+        if name not in columns:conn.execute(f"ALTER TABLE settlement_participants ADD COLUMN {name} {kind}")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_participants_settlement ON settlement_participants(settlement_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_receipts_settlement ON receipts(settlement_id)")
     conn.commit()
     conn.close()
 
@@ -259,7 +284,8 @@ def settlement_json(settlement_id, owner_id=None):
 
 @app.route("/api/health", methods=["GET"])
 def health():
-    return jsonify({"ok": True})
+    db().execute("SELECT 1").fetchone()
+    return jsonify({"ok": True, "revision": "navigation-camera-settlement-v3"})
 
 
 @app.route("/api/auth/register", methods=["POST"])
@@ -369,7 +395,9 @@ def friends_add():
 @login_required
 def create_settlement():
     import json
-    data = request.get_json(silent=True) or {}
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify(error="JSON 객체 형식으로 정산 정보를 보내 주세요."), 400
     request_id = str(data.get("request_id", "")).strip()
     bank = str(data.get("bank", "")).strip()
     account = str(data.get("account", "")).strip()
@@ -383,7 +411,12 @@ def create_settlement():
     if not receipts:
         return jsonify({"error": "영수증이 필요합니다."}), 400
 
+    if len(request_id) > 128:
+        return jsonify(error="요청 ID가 너무 깁니다."), 400
     owner_id = g.current_user["id"]
+    conn = db()
+    # Serialize duplicate requests before checking the idempotency key.
+    conn.execute("BEGIN IMMEDIATE")
     if request_id:
         existing = db().execute("SELECT settlement_id FROM settlement_requests WHERE owner_id=? AND request_id=?", (owner_id, request_id)).fetchone()
         if existing:
@@ -391,12 +424,34 @@ def create_settlement():
             if payload:
                 return jsonify(payload)
 
-    participant_sum = sum(int(p.get("amount", 0) or 0) for p in participants)
+    if not isinstance(participants, list) or not isinstance(receipts, list):
+        return jsonify({"error": "참여자와 영수증은 배열이어야 합니다."}), 400
+    try:
+        if any(not isinstance(p, dict) or not str(p.get("name", "")).strip()
+               or isinstance(p.get("amount"), bool) or not isinstance(p.get("amount"), int)
+               or p["amount"] <= 0 for p in participants):
+            raise ValueError("참여자 이름과 양의 정수 금액이 필요합니다.")
+        if any(not isinstance(r, dict) or isinstance(r.get("total_amount"), bool)
+               or not isinstance(r.get("total_amount"), int) or r["total_amount"] <= 0
+               for r in receipts):
+            raise ValueError("영수증 총액은 양의 정수여야 합니다.")
+        for p in participants:
+            uid = p.get("user_id")
+            if uid is not None and (isinstance(uid, bool) or not isinstance(uid, int)
+                    or not db().execute("SELECT id FROM users WHERE id=?", (uid,)).fetchone()):
+                raise ValueError("유효하지 않은 참여자 사용자 ID입니다.")
+        if any(not isinstance(r.get("items", []), list) for r in receipts):
+            raise ValueError("영수증 항목은 배열이어야 합니다.")
+        total_amount = sum(r["total_amount"] for r in receipts)
+        if total_amount > 9_000_000_000_000_000:
+            raise ValueError("정산 금액이 허용 범위를 초과했습니다.")
+        participant_sum = sum(p["amount"] for p in participants)
+    except (ValueError, TypeError, AttributeError) as exc:
+        return jsonify({"error": str(exc)}), 400
     if participant_sum != total_amount:
         return jsonify({"error": f"참여자 금액 합계({participant_sum:,}원)가 영수증 총액({total_amount:,}원)과 일치하지 않습니다."}), 400
 
     public_token = secrets.token_urlsafe(18)
-    total_amount = sum(int(r.get("total_amount", 0)) for r in receipts)
 
     conn = db()
     cur = conn.execute("""
@@ -439,8 +494,10 @@ def create_settlement():
 
     if request_id:
         conn.execute("INSERT INTO settlement_requests(owner_id,request_id,settlement_id) VALUES(?,?,?)", (owner_id, request_id, settlement_id))
-    conn.commit()
     payload = settlement_json(settlement_id, owner_id)
+    if payload is None:
+        raise RuntimeError("정산 결과를 생성하지 못했습니다.")
+    conn.commit()
     payload["share_url"] = WEB_URL + "?token=" + public_token + "&api=" + urllib.parse.quote(API_BASE_URL, safe="")
     return jsonify(payload), 201
 
