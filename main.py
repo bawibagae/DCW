@@ -855,7 +855,7 @@ class PhoneCamera(BoxLayout):
         self.camera_path = None
 
         self.info = make_label(
-            "휴대폰 카메라로 영수증을 촬영합니다. [CAMERA-V4]",
+            "휴대폰 카메라로 영수증을 촬영합니다. [CAMERA-V5]",
             15, halign="center", valign="middle", size_hint_y=None, height=dp(70)
         )
         self.add_widget(self.info)
@@ -924,7 +924,7 @@ class PhoneCamera(BoxLayout):
             os.makedirs(os.path.dirname(filename),exist_ok=True)
             self.camera_path = filename
 
-            # CAMERA-V4: MediaStore first on Android 10+, no custom provider.
+            # CAMERA-V5: MediaStore first on Android 10+, no custom provider.
             self._camera_media_uri = None
             BuildVersion = autoclass("android.os.Build$VERSION")
             if BuildVersion.SDK_INT >= 29:
@@ -935,7 +935,8 @@ class PhoneCamera(BoxLayout):
                 values.put("relative_path", "Pictures/DutchPay")
                 # Do not mark this pending: an external camera must write it.
                 uri = context.getContentResolver().insert(
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+                    autoclass("android.provider.MediaStore$Images$Media").EXTERNAL_CONTENT_URI,
+                    values)
                 if uri is None:
                     raise RuntimeError("MediaStore에 촬영 저장 위치를 생성하지 못했습니다.")
                 self._camera_media_uri = uri
@@ -985,7 +986,7 @@ class PhoneCamera(BoxLayout):
                 self._camera_media_uri = None
             import traceback
             traceback.print_exc()
-            message = "CAMERA-V4 실행 오류\n" + type(e).__name__ + ": " + str(e)
+            message = "CAMERA-V5 실행 오류\n" + type(e).__name__ + ": " + str(e)
             try:
                 from android import activity as android_activity
                 android_activity.unbind(on_activity_result=self._camera_activity_result)
@@ -1045,7 +1046,7 @@ class PhoneCamera(BoxLayout):
             else:
                 Clock.schedule_once(lambda _dt:setattr(self.info,"text","촬영이 취소되었습니다."),0)
         except Exception as e:
-            Clock.schedule_once(lambda _dt, msg=str(e): show_message("카메라 오류", "CAMERA-V4 결과 처리 오류\n" + msg), 0)
+            Clock.schedule_once(lambda _dt, msg=str(e): show_message("카메라 오류", "CAMERA-V5 결과 처리 오류\n" + msg), 0)
 
     def _camera_completed(self, filepath):
         try:
