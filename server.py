@@ -618,42 +618,93 @@ def _vision_client():
     return vision.ImageAnnotatorClient()
 
 
+def _receipt_lines(response):
+    """Recover printed rows from word bounding boxes instead of column text order."""
+    words = []
+    annotation = response.full_text_annotation
+    for page in annotation.pages:
+        page_words = []
+        for block in page.blocks:
+            for paragraph in block.paragraphs:
+                for word in paragraph.words:
+                    text = "".join(symbol.text for symbol in word.symbols)
+                    vertices = word.bounding_box.vertices
+                    if text and vertices:
+                        xs = [v.x for v in vertices]; ys = [v.y for v in vertices]
+                        page_words.append((sum(ys)/len(ys), min(xs), max(ys)-min(ys), text))
+        rows = []
+        for y, x, height, text in sorted(page_words):
+            candidates = [r for r in rows if abs(r[0]-y) <= max(3, min(r[1], height)*0.45)]
+            row = min(candidates, key=lambda r: abs(r[0]-y)) if candidates else None
+            if row is None:
+                rows.append([y, height, [(x, text)]])
+            else:
+                count = len(row[2]); row[0] = (row[0]*count+y)/(count+1)
+                row[2].append((x, text))
+        words.extend(" ".join(t for x,t in sorted(row[2])) for row in sorted(rows))
+    return "\n".join(words) or annotation.text or ""
+
+
 def _parse_receipt_text(description):
-    lines = [line.strip() for line in description.split("\n") if line.strip()]
-    items = []
-    detected_total = 0
-    ignore_keywords = ["등록", "POS", "pos", "포스", "일시", "날짜", "시간", "점포", "가맹점", "사업자", "대표", "TEL", "Tel", "tel", "주소", "승인", "카드", "현금", "VAT", "vat", "부가세", "TAX", "tax", "테이블", "주문", "영수증", "BILL", "Bill", "전표", "고객"]
-    total_keywords = ["합계", "총액", "총결제금액", "결제금액", "받을금액", "TOTAL", "Total"]
+    import unicodedata
+    lines = [unicodedata.normalize("NFKC", x).strip() for x in description.splitlines() if x.strip()]
+    items = []; totals = []; pending_total = False; columns = []
+    number = r"(?<![\w])(?:[0-9]{1,3}(?:,[0-9]{3})+|[0-9]+)(?![0-9,])"
+    skip = re.compile(r"사업자|등록번호|승인|카드번호|전화|TEL|주소|거스름|거슬러|받은금액|받은돈|부가세|과세|면세|공급가|할인|포인트|적립|주문번호|거래번호|테이블|봉사료|SERVICE|VAT|TAX|SUBTOTAL|소계", re.I)
+    total_label = re.compile(r"총결제금액|실결제금액|결제금액|받을금액|청구금액|총금액|총액|합계|합계금액|TOTAL|AMOUNTDUE", re.I)
     for line in lines:
-        if any(keyword in line for keyword in total_keywords):
-            numbers = re.findall(r"[\d,]+", line)
-            if numbers:
-                detected_total = max(detected_total, int(numbers[-1].replace(",", "")))
+        compact = re.sub(r"\s+", "", line)
+        matches = list(re.finditer(number, line))
+        values = [int(m.group().replace(",", "")) for m in matches]
+        if skip.search(compact) or re.search(r"\d{2,4}[-/.]\d{1,2}[-/.]\d{1,2}|\d{1,2}:\d{2}", line):
+            pending_total = False; continue
+        if total_label.search(compact):
+            rank = 3 if re.search(r"실결제|총결제|결제금액|받을금액|청구",compact) else 2
+            if values and 0 < values[-1] <= 1_000_000_000:
+                totals.append((rank,values[-1]))
+            pending_total = not values
             continue
-        if any(keyword in line for keyword in ignore_keywords):
-            continue
-        match_three = re.search(r"^(.+?)\s+(\d+)\s+([\d,]+)원?$", line)
-        match_two = re.search(r"^(.+?)\s+([\d,]+)원?$", line)
-        if match_three:
-            item_name = match_three.group(1).strip()
-            qty = int(match_three.group(2))
-            price = int(match_three.group(3).replace(",", ""))
-            if item_name and 1 <= qty <= 10000 and 0 <= price <= 1_000_000_000:
-                items.append({"item": item_name, "price": price, "qty": qty})
-            continue
-        if match_two:
-            item_name = match_two.group(1).strip()
-            price = int(match_two.group(2).replace(",", ""))
-            cleaned = re.sub(r"[\[\]\(\)\{\}\:\-\=\.\,]", "", item_name).strip()
-            if not item_name or cleaned.isdigit() or not price:
+        if pending_total:
+            pending_total = False
+            if len(values)==1 and not re.search(r"[가-힣A-Za-z]",line):
+                if 0 < values[0] <= 1_000_000_000: totals.append((2,values[0]))
                 continue
-            qty_match = re.search(r"(\d+)\s*(인분|개|병|잔|개입|줄)?", item_name)
-            qty = int(qty_match.group(1)) if qty_match else 1
-            if 1 <= qty <= 10000 and 0 <= price <= 1_000_000_000:
-                items.append({"item": item_name, "price": price, "qty": qty})
-    if detected_total <= 0 and items:
-        detected_total = sum(item["price"] for item in items)
-    return items, detected_total
+        labels = re.findall(r"단가|수량|금액|수량|가격|QTY|QUANTITY|AMOUNT|PRICE",line,re.I)
+        if len(labels)>=2 and ('수량' in labels or any(x.upper() in ('QTY','QUANTITY') for x in labels)):
+            columns = labels; continue
+        if not matches: continue
+        # Only numeric columns at the end of an item row; product-name digits are not quantities.
+        tail = re.search(r"((?:[0-9][0-9,]*\s*(?:원|개|병|잔|인분)?\s+)*[0-9][0-9,]*\s*(?:원|개|병|잔|인분)?)$",line)
+        if not tail: continue
+        name = line[:tail.start()].strip(' .:-₩')
+        if not name or not re.search(r"[가-힣A-Za-z]",name): continue
+        nums = re.findall(r"[0-9][0-9,]*",tail.group())
+        if any(not re.fullmatch(r"[0-9]+|[0-9]{1,3}(?:,[0-9]{3})+",v) for v in nums): continue
+        nums = [int(v.replace(',','')) for v in nums]
+        if not nums: continue
+        qty=1; amount=nums[-1]
+        if columns and len(nums)==len(columns):
+            mapped={k.upper():v for k,v in zip(columns,nums)}
+            qty=mapped.get('수량',mapped.get('QTY',mapped.get('QUANTITY',1)))
+            amount=mapped.get('금액',mapped.get('AMOUNT'))
+            if amount is None:
+                unit=mapped.get('단가',mapped.get('PRICE',mapped.get('가격')))
+                if unit is None: continue
+                amount=unit*qty
+        elif len(nums)==3:
+            unit,qty,amount=nums
+            if unit*qty != amount: continue
+        elif len(nums)==2:
+            if 1<=nums[0]<=1000 and nums[1]>nums[0]: qty,amount=nums
+            elif 1<=nums[1]<=1000 and nums[0]>nums[1]:
+                # Without column labels, price/quantity is ambiguous: do not guess.
+                continue
+            else: continue
+        elif len(nums)>3: continue
+        if 1<=qty<=1000 and 0<amount<=1_000_000_000:
+            items.append({'item':name,'qty':qty,'price':amount})
+    total = max(totals,key=lambda t:t[0])[1] if totals else sum(x['price'] for x in items)
+    return items,total
 
 
 @app.route("/api/ocr", methods=["POST"])
@@ -673,15 +724,27 @@ def ocr_receipt():
         return jsonify({"error": "이미지는 10MB 이하로 선택해 주세요."}), 413
     try:
         client = _vision_client()
-        response = client.text_detection(image=vision.Image(content=image_bytes))
+        response = client.document_text_detection(
+            image=vision.Image(content=image_bytes),
+            image_context=vision.ImageContext(language_hints=["ko", "en"]),
+            timeout=45)
         if response.error.message:
             raise RuntimeError(response.error.message)
         texts = response.text_annotations
         if not texts:
             return jsonify({"items": [], "total": 0, "raw_text": ""})
-        raw_text = texts[0].description or ""
+        raw_text = _receipt_lines(response) or texts[0].description or ""
         items, total = _parse_receipt_text(raw_text)
-        return jsonify({"items": items, "total": total, "raw_text": raw_text})
+        warnings = []
+        if not items:
+            warnings.append("상품 행을 인식하지 못했습니다. 수량과 금액을 직접 확인해 주세요.")
+        if items and sum(x["price"] for x in items) != total:
+            warnings.append("상품 금액 합계와 총액이 다릅니다. 누락 상품 또는 할인 여부를 확인해 주세요.")
+        if not re.search(r"합계|총액|결제|TOTAL", re.sub(r"\s+", "", raw_text), re.I):
+            warnings.append("총액 표시를 찾지 못해 인식한 상품 금액 합계를 사용했습니다.")
+        return jsonify({"items": items, "total": total, "raw_text": raw_text,
+                        "warnings": warnings, "needs_review": bool(warnings),
+                        "ocr_revision": "receipt-v2"})
     except Exception as exc:
         return jsonify({"error": f"영수증 OCR 처리에 실패했습니다: {exc}"}), 500
 
