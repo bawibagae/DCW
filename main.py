@@ -855,7 +855,7 @@ class PhoneCamera(BoxLayout):
         self.camera_path = None
 
         self.info = make_label(
-            "휴대폰 카메라로 영수증을 촬영합니다.",
+            "휴대폰 카메라로 영수증을 촬영합니다. [CAMERA-V4]",
             15, halign="center", valign="middle", size_hint_y=None, height=dp(70)
         )
         self.add_widget(self.info)
@@ -924,29 +924,25 @@ class PhoneCamera(BoxLayout):
             os.makedirs(os.path.dirname(filename),exist_ok=True)
             self.camera_path = filename
 
-            # FileProvider is registered in AndroidManifest.xml.
-            authority = context.getPackageName() + ".fileprovider"
-            file_obj = File(filename)
+            # CAMERA-V4: MediaStore first on Android 10+, no custom provider.
             self._camera_media_uri = None
-            try:
-                FileProvider = autoclass("androidx.core.content.FileProvider")
-                uri = FileProvider.getUriForFile(context, authority, file_obj)
-            except Exception:
-                # Android 10+: app-owned MediaStore content URI needs no
-                # FileProvider declaration or broad storage permission.
-                BuildVersion = autoclass("android.os.Build$VERSION")
-                if BuildVersion.SDK_INT < 29:
-                    raise RuntimeError("Android 9 이하에서는 FileProvider XML과 buildozer 설정을 적용하고 APK를 재빌드해야 합니다.")
+            BuildVersion = autoclass("android.os.Build$VERSION")
+            if BuildVersion.SDK_INT >= 29:
                 ContentValues = autoclass("android.content.ContentValues")
                 values = ContentValues()
                 values.put("_display_name", os.path.basename(filename))
                 values.put("mime_type", "image/jpeg")
                 values.put("relative_path", "Pictures/DutchPay")
+                # Do not mark this pending: an external camera must write it.
                 uri = context.getContentResolver().insert(
                     MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
                 if uri is None:
-                    raise RuntimeError("카메라 저장 위치를 생성하지 못했습니다.")
+                    raise RuntimeError("MediaStore에 촬영 저장 위치를 생성하지 못했습니다.")
                 self._camera_media_uri = uri
+            else:
+                FileProvider = autoclass("androidx.core.content.FileProvider")
+                uri = FileProvider.getUriForFile(
+                    context, str(context.getPackageName()) + ".fileprovider", File(filename))
 
             intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             from jnius import cast
@@ -987,9 +983,9 @@ class PhoneCamera(BoxLayout):
                 except Exception:
                     pass
                 self._camera_media_uri = None
-            message=str(e)
-            if "meta-data" in message or "provider" in message.lower():
-                message="APK에 카메라 FileProvider 설정이 없습니다. 동봉된 Android XML과 buildozer 설정을 적용한 뒤 APK를 다시 빌드해 설치해 주세요."
+            import traceback
+            traceback.print_exc()
+            message = "CAMERA-V4 실행 오류\n" + type(e).__name__ + ": " + str(e)
             try:
                 from android import activity as android_activity
                 android_activity.unbind(on_activity_result=self._camera_activity_result)
@@ -1049,7 +1045,7 @@ class PhoneCamera(BoxLayout):
             else:
                 Clock.schedule_once(lambda _dt:setattr(self.info,"text","촬영이 취소되었습니다."),0)
         except Exception as e:
-            show_message("카메라 오류", f"촬영 결과를 처리하지 못했습니다.\n{e}")
+            Clock.schedule_once(lambda _dt, msg=str(e): show_message("카메라 오류", "CAMERA-V4 결과 처리 오류\n" + msg), 0)
 
     def _camera_completed(self, filepath):
         try:
