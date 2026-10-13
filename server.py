@@ -631,29 +631,47 @@ def _receipt_lines(response):
                     vertices = word.bounding_box.vertices
                     if text and vertices:
                         xs = [v.x for v in vertices]; ys = [v.y for v in vertices]
-                        page_words.append((sum(ys)/len(ys), min(xs), max(ys)-min(ys), text))
+                        page_words.append((sum(ys)/len(ys), min(xs), max(ys)-min(ys), text, max(xs)))
         rows = []
-        for y, x, height, text in sorted(page_words):
+        for y, x, height, text, right in sorted(page_words):
             candidates = [r for r in rows if abs(r[0]-y) <= max(3, min(r[1], height)*0.45)]
             row = min(candidates, key=lambda r: abs(r[0]-y)) if candidates else None
             if row is None:
-                rows.append([y, height, [(x, text)]])
+                rows.append([y, height, [(x, text, right)]])
             else:
                 count = len(row[2]); row[0] = (row[0]*count+y)/(count+1)
-                row[2].append((x, text))
-        words.extend(" ".join(t for x,t in sorted(row[2])) for row in sorted(rows))
+                row[2].append((x, text, right))
+        for row in sorted(rows):
+            cells = sorted(row[2])
+            # Separate far-right diagram captions from the printed receipt.
+            if cells and page.width:
+                cutoff = None
+                for i in range(1, len(cells)):
+                    if (cells[i][0] > page.width * 0.70 and
+                            cells[i][0] - cells[i-1][2] > max(25, row[1] * 2)):
+                        cutoff = i
+                        break
+                if cutoff is not None:
+                    cells = cells[:cutoff]
+            words.append(" ".join(t for x, t, right in cells))
     return "\n".join(words) or annotation.text or ""
 
 
 def _parse_receipt_text(description):
     import unicodedata
     lines = [unicodedata.normalize("NFKC", x).strip() for x in description.splitlines() if x.strip()]
-    items = []; totals = []; pending_total = False; columns = []
+    items = []; totals = []; pending_total = False; columns = []; section = "unknown"
     number = r"(?<![\w])(?:[0-9]{1,3}(?:,[0-9]{3})+|[0-9]+)(?![0-9,])"
-    skip = re.compile(r"사업자|등록번호|승인|카드번호|전화|TEL|주소|거스름|거슬러|받은금액|받은돈|부가세|과세|면세|공급가|할인|포인트|적립|주문번호|거래번호|테이블|봉사료|SERVICE|VAT|TAX|SUBTOTAL|소계", re.I)
+    skip = re.compile(r"사업자|등록번호|승인|카드번호|전화|TEL|주소|거스름|거슬러|받은금액|받은돈|부가세|과세|면세|공급가|할인|포인트|적립|주문번호|거래번호|가맹점번호|할부|매입사|카드종류|비밀번호|와이파이|테이블|봉사료|SERVICE|VAT|TAX|SUBTOTAL|소계", re.I)
     total_label = re.compile(r"총결제금액|실결제금액|결제금액|받을금액|청구금액|총금액|총액|합계|합계금액|TOTAL|AMOUNTDUE", re.I)
     for line in lines:
         compact = re.sub(r"\s+", "", line)
+        line = re.sub(r"(?<=\d)\s*,\s*(?=\d{3}(?:\D|$))", ",", line)
+        # Section boundaries prevent footer and approval data becoming products.
+        if re.search(r"승인정보|결제내역|결제정보|하단문구|바코드", compact):
+            section = "payment"
+        if re.search(r"상품명|품목명|상품내역", compact):
+            section = "items"
         matches = list(re.finditer(number, line))
         values = [int(m.group().replace(",", "")) for m in matches]
         if skip.search(compact) or re.search(r"\d{2,4}[-/.]\d{1,2}[-/.]\d{1,2}|\d{1,2}:\d{2}", line):
@@ -672,7 +690,7 @@ def _parse_receipt_text(description):
         labels = re.findall(r"단가|수량|금액|수량|가격|QTY|QUANTITY|AMOUNT|PRICE",line,re.I)
         if len(labels)>=2 and ('수량' in labels or any(x.upper() in ('QTY','QUANTITY') for x in labels)):
             columns = labels; continue
-        if not matches: continue
+        if section == "payment" or not matches: continue
         # Only numeric columns at the end of an item row; product-name digits are not quantities.
         tail = re.search(r"((?:[0-9][0-9,]*\s*(?:원|개|병|잔|인분)?\s+)*[0-9][0-9,]*\s*(?:원|개|병|잔|인분)?)$",line)
         if not tail: continue
@@ -744,7 +762,7 @@ def ocr_receipt():
             warnings.append("총액 표시를 찾지 못해 인식한 상품 금액 합계를 사용했습니다.")
         return jsonify({"items": items, "total": total, "raw_text": raw_text,
                         "warnings": warnings, "needs_review": bool(warnings),
-                        "ocr_revision": "receipt-v2"})
+                        "ocr_revision": "receipt-v3"})
     except Exception as exc:
         return jsonify({"error": f"영수증 OCR 처리에 실패했습니다: {exc}"}), 500
 
