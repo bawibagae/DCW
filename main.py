@@ -1305,6 +1305,14 @@ class CameraScreen(Screen):
 
     def review_receipt(self, data, index=None):
         layout = BoxLayout(orientation="vertical", padding=dp(10), spacing=dp(8))
+        warnings = (data or {}).get("warnings", [])
+        confidence = (data or {}).get("confidence")
+        if warnings or confidence is not None:
+            notice = "\n".join(warnings) if warnings else f"인식 신뢰도 {round(float(confidence) * 100)}%"
+            layout.add_widget(make_label(
+                "검토가 필요해요\n" + notice,
+                12, color=(0.78, 0.35, 0.12, 1), size_hint_y=None, height=dp(58)
+            ))
         layout.add_widget(make_label(
             "품목명 | 수량 | 품목 합계 금액\n한 줄에 한 품목. 할인은 품목 금액에 반영하세요.",
             13, size_hint_y=None, height=dp(48)

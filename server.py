@@ -7,10 +7,16 @@ import hmac
 import datetime
 import urllib.parse
 import json
+import io
 from functools import wraps
 
-from flask import Flask, request, jsonify, g
+from flask import Flask, request, jsonify, g, send_from_directory
 from werkzeug.exceptions import HTTPException
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+except ImportError:
+    pass
 try:
     from google.cloud import vision
 except Exception:
@@ -22,13 +28,56 @@ except Exception:
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.getenv("DB_PATH", os.path.join(APP_DIR, "dutchpay.db"))
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+DB_ENGINE = os.getenv("DB_ENGINE", "mysql" if DATABASE_URL.startswith("mysql") else "sqlite").lower()
 API_BASE_URL = os.getenv("API_BASE_URL", "https://dcw-6vyo.onrender.com").rstrip("/")
 WEB_URL = os.getenv("WEB_URL", "https://bawibagae.github.io/DCW-web/").rstrip("/") + "/"
-WEBHOOK_SECRET = os.getenv("DUTCHPAY_WEBHOOK_SECRET", "change-this-secret")
+WEBHOOK_SECRET = os.getenv("DUTCHPAY_WEBHOOK_SECRET", "")
 PORT = int(os.getenv("PORT", "5000"))
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
+
+
+class DatabaseConnection:
+    """Small adapter that keeps the application query layer portable."""
+    def __init__(self, raw, engine):
+        self.raw, self.engine = raw, engine
+
+    def execute(self, sql, params=()):
+        if self.engine == "mysql":
+            sql = sql.replace("INSERT OR IGNORE", "INSERT IGNORE").replace("BEGIN IMMEDIATE", "START TRANSACTION")
+            sql = sql.replace("?", "%s")
+            cursor = self.raw.cursor()
+            cursor.execute(sql, params)
+            return cursor
+        return self.raw.execute(sql, params)
+
+    def commit(self): self.raw.commit()
+    def rollback(self): self.raw.rollback()
+    def close(self): self.raw.close()
+
+
+def _mysql_connection():
+    try:
+        import pymysql
+        from pymysql.cursors import DictCursor
+    except ImportError as exc:
+        raise RuntimeError("MySQL 사용에는 PyMySQL 설치가 필요합니다.") from exc
+    options = {"charset": "utf8mb4", "autocommit": False, "cursorclass": DictCursor}
+    if DATABASE_URL:
+        parsed = urllib.parse.urlparse(DATABASE_URL)
+        if parsed.scheme not in ("mysql", "mysql+pymysql"):
+            raise RuntimeError("DATABASE_URL은 mysql:// 형식이어야 합니다.")
+        options.update(host=parsed.hostname, port=parsed.port or 3306,
+                       user=urllib.parse.unquote(parsed.username or ""),
+                       password=urllib.parse.unquote(parsed.password or ""),
+                       database=(parsed.path or "/").lstrip("/"))
+    else:
+        options.update(host=os.getenv("MYSQL_HOST", "127.0.0.1"), port=int(os.getenv("MYSQL_PORT", "3306")),
+                       user=os.getenv("MYSQL_USER", ""), password=os.getenv("MYSQL_PASSWORD", ""),
+                       database=os.getenv("MYSQL_DATABASE", "dutchpay"))
+    return DatabaseConnection(pymysql.connect(**options), "mysql")
 
 
 @app.before_request
@@ -58,14 +107,26 @@ def add_cors_headers(response):
 
 @app.route("/", methods=["GET"])
 def web_index():
-    return jsonify({"ok": True, "service": "DutchPay API"})
+    return send_from_directory(os.path.join(APP_DIR, "web"), "landing.html")
+
+@app.route("/landing", methods=["GET"])
+def landing_page():
+    return send_from_directory(os.path.join(APP_DIR, "web"), "landing.html")
+
+@app.route("/settlement", methods=["GET"])
+def settlement_page():
+    return send_from_directory(os.path.join(APP_DIR, "web"), "index.html")
 
 
 def db():
     if "db" not in g:
-        g.db = sqlite3.connect(DB_PATH, timeout=15)
-        g.db.row_factory = sqlite3.Row
-        g.db.execute("PRAGMA foreign_keys = ON")
+        if DB_ENGINE == "mysql":
+            g.db = _mysql_connection()
+        else:
+            raw = sqlite3.connect(DB_PATH, timeout=15)
+            raw.row_factory = sqlite3.Row
+            raw.execute("PRAGMA foreign_keys = ON")
+            g.db = DatabaseConnection(raw, "sqlite")
     return g.db
 
 
@@ -77,6 +138,18 @@ def close_db(_error=None):
 
 
 def init_db():
+    if DB_ENGINE == "mysql":
+        migration_path = os.path.join(APP_DIR, "migrations", "001_mysql_schema.sql")
+        with open(migration_path, encoding="utf-8") as migration:
+            statements = [s.strip() for s in migration.read().split(";") if s.strip()]
+        conn = _mysql_connection()
+        try:
+            for statement in statements:
+                conn.execute(statement)
+            conn.commit()
+        finally:
+            conn.close()
+        return
     conn = sqlite3.connect(DB_PATH, timeout=15)
     conn.executescript("""
     CREATE TABLE IF NOT EXISTS users (
@@ -308,8 +381,11 @@ def register():
         )
         conn.commit()
         user_id = cur.lastrowid
-    except sqlite3.IntegrityError:
-        return jsonify({"error": "이미 가입된 이메일입니다."}), 409
+    except Exception as exc:
+        # SQLite and PyMySQL expose different IntegrityError classes.
+        if "integrity" in exc.__class__.__name__.lower() or "duplicate" in str(exc).lower():
+            return jsonify({"error": "이미 가입된 이메일입니다."}), 409
+        raise
 
     return jsonify({"id": user_id, "name": name, "email": email}), 201
 
@@ -522,6 +598,8 @@ def public_settlement_view(token):
 
 @app.route("/api/payments/webhook", methods=["POST"])
 def payment_webhook():
+    if not WEBHOOK_SECRET:
+        return jsonify({"error": "webhook is not configured"}), 503
     signature = request.headers.get("X-DutchPay-Secret", "")
     if not hmac.compare_digest(signature, WEBHOOK_SECRET):
         return jsonify({"error": "invalid webhook secret"}), 401
@@ -618,6 +696,35 @@ def _vision_client():
     return vision.ImageAnnotatorClient()
 
 
+def _prepare_receipt_image(image_bytes):
+    """Normalize common phone captures before OCR without retaining uploads."""
+    try:
+        from PIL import Image, ImageEnhance, ImageFilter, ImageOps
+        image = Image.open(io.BytesIO(image_bytes))
+        image = ImageOps.exif_transpose(image).convert("L")
+        # Small camera frames lose Korean glyph detail; upscale only when useful.
+        longest = max(image.size)
+        if longest < 1800:
+            scale = min(2.5, 2200 / max(1, longest))
+            image = image.resize((round(image.width * scale), round(image.height * scale)), Image.Resampling.LANCZOS)
+        image = ImageOps.autocontrast(image, cutoff=1)
+        image = ImageEnhance.Contrast(image).enhance(1.35)
+        image = image.filter(ImageFilter.UnsharpMask(radius=1.4, percent=130, threshold=3))
+        output = io.BytesIO()
+        image.save(output, format="JPEG", quality=92, optimize=True)
+        return output.getvalue(), {"preprocessed": True, "width": image.width, "height": image.height}
+    except Exception:
+        # OCR must remain usable if Pillow cannot decode a camera-specific format.
+        return image_bytes, {"preprocessed": False}
+
+
+def _ocr_quality(items, total, raw_text):
+    total_label = bool(re.search(r"합계|총액|결제|TOTAL", re.sub(r"\s+", "", raw_text), re.I))
+    item_total = sum(int(item.get("price", 0)) for item in items)
+    score = min(0.55, len(items) * 0.14) + (0.3 if total_label else 0) + (0.15 if items and item_total == total else 0)
+    return round(min(1, score), 2)
+
+
 def _receipt_lines(response):
     """Recover printed rows from word bounding boxes instead of column text order."""
     words = []
@@ -701,7 +808,9 @@ def _parse_receipt_text(description):
         nums = [int(v.replace(',','')) for v in nums]
         if not nums: continue
         qty=1; amount=nums[-1]
-        if columns and len(nums)==len(columns):
+        # Three numeric columns are ambiguous even when a header was found:
+        # stores swap unit-price and quantity order. Handle them by arithmetic below.
+        if columns and len(nums)==len(columns) and len(nums) != 3:
             mapped={k.upper():v for k,v in zip(columns,nums)}
             qty=mapped.get('수량',mapped.get('QTY',mapped.get('QUANTITY',1)))
             amount=mapped.get('금액',mapped.get('AMOUNT'))
@@ -710,8 +819,13 @@ def _parse_receipt_text(description):
                 if unit is None: continue
                 amount=unit*qty
         elif len(nums)==3:
-            unit,qty,amount=nums
-            if unit*qty != amount: continue
+            # Korean receipts commonly print either qty/unit/amount or unit/qty/amount.
+            if 1 <= nums[0] <= 1000 and nums[0] * nums[1] == nums[2]:
+                qty, unit, amount = nums
+            elif 1 <= nums[1] <= 1000 and nums[0] * nums[1] == nums[2]:
+                unit, qty, amount = nums
+            else:
+                continue
         elif len(nums)==2:
             if 1<=nums[0]<=1000 and nums[1]>nums[0]: qty,amount=nums
             elif 1<=nums[1]<=1000 and nums[0]>nums[1]:
@@ -741,9 +855,10 @@ def ocr_receipt():
     if len(image_bytes) > 10 * 1024 * 1024:
         return jsonify({"error": "이미지는 10MB 이하로 선택해 주세요."}), 413
     try:
+        prepared_image, image_meta = _prepare_receipt_image(image_bytes)
         client = _vision_client()
         response = client.document_text_detection(
-            image=vision.Image(content=image_bytes),
+            image=vision.Image(content=prepared_image),
             image_context=vision.ImageContext(language_hints=["ko", "en"]),
             timeout=45)
         if response.error.message:
@@ -753,6 +868,20 @@ def ocr_receipt():
             return jsonify({"items": [], "total": 0, "raw_text": ""})
         raw_text = _receipt_lines(response) or texts[0].description or ""
         items, total = _parse_receipt_text(raw_text)
+        confidence = _ocr_quality(items, total, raw_text)
+        # A clean original can occasionally beat aggressive enhancement. Retry only
+        # when the structured result is weak, keeping normal OCR to one API call.
+        if confidence < 0.45 and prepared_image != image_bytes:
+            original = client.document_text_detection(
+                image=vision.Image(content=image_bytes),
+                image_context=vision.ImageContext(language_hints=["ko", "en"]), timeout=45)
+            if not original.error.message and original.text_annotations:
+                candidate_text = _receipt_lines(original) or original.text_annotations[0].description or ""
+                candidate_items, candidate_total = _parse_receipt_text(candidate_text)
+                candidate_confidence = _ocr_quality(candidate_items, candidate_total, candidate_text)
+                if candidate_confidence > confidence:
+                    raw_text, items, total, confidence = candidate_text, candidate_items, candidate_total, candidate_confidence
+                    image_meta["fallback_original"] = True
         warnings = []
         if not items:
             warnings.append("상품 행을 인식하지 못했습니다. 수량과 금액을 직접 확인해 주세요.")
@@ -760,9 +889,12 @@ def ocr_receipt():
             warnings.append("상품 금액 합계와 총액이 다릅니다. 누락 상품 또는 할인 여부를 확인해 주세요.")
         if not re.search(r"합계|총액|결제|TOTAL", re.sub(r"\s+", "", raw_text), re.I):
             warnings.append("총액 표시를 찾지 못해 인식한 상품 금액 합계를 사용했습니다.")
+        if confidence < 0.7:
+            warnings.append(f"인식 신뢰도 {round(confidence * 100)}%입니다. 저장 전 품목과 총액을 확인해 주세요.")
         return jsonify({"items": items, "total": total, "raw_text": raw_text,
                         "warnings": warnings, "needs_review": bool(warnings),
-                        "ocr_revision": "receipt-v3"})
+                        "confidence": confidence, "image_processing": image_meta,
+                        "ocr_revision": "receipt-v4"})
     except Exception as exc:
         return jsonify({"error": f"영수증 OCR 처리에 실패했습니다: {exc}"}), 500
 
