@@ -432,6 +432,62 @@ def parse_receipt_items_and_total(image_bytes):
 
 
 # ============================================================
+# APP LANDING
+# ============================================================
+class LandingPanel(BoxLayout):
+    def __init__(self, color, **kwargs):
+        super().__init__(**kwargs)
+        with self.canvas.before:
+            self._bg_color = Color(*color); self._bg = RoundedRectangle(radius=[dp(22)])
+        self.bind(pos=self._paint, size=self._paint)
+    def _paint(self, *_): self._bg.pos, self._bg.size = self.pos, self.size
+
+class LandingScreen(Screen):
+    SLIDES = (
+        ("01 — CAPTURE", "영수증 한 장.\n정산은 순식간.", "카메라로 찍으면 품목과 금액을 읽어와요.\n애매한 결과는 바로 확인하고 고칠 수 있어요.", "SCAN", "품목 · 수량 · 금액\n파스타 × 2     28,000원\n스테이크 × 1   32,000원\n\nTOTAL          60,000원"),
+        ("02 — SPLIT", "복잡한 계산은\n우리에게 맡겨요.", "누가 무엇을 먹었는지 선택하세요.\n사람별 금액을 공정하게 정리합니다.", "SPLIT", "민지                    20,000원\n준호                    20,000원\n서연                    20,000원\n\n합계                    60,000원"),
+        ("03 — SETTLE", "부담 없이 보내고,\n깔끔하게 끝내요.", "개인별 정산 링크로 정보를 안전하게 전달하고\n입금 현황까지 한눈에 확인하세요.", "DONE", "민지                    ✓ 입금 완료\n준호                    ✓ 입금 완료\n서연                    입금 대기\n\n3명 중 2명 완료"),
+    )
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs); self.slide_index=0; self._slide_event=None; self._paused=False; self.build_ui()
+    def build_ui(self):
+        root=LandingPanel((.035,.043,.09,1), orientation="vertical", padding=dp(22), spacing=dp(14))
+        brand=BoxLayout(size_hint_y=None,height=dp(46)); brand.add_widget(make_label("dutch[color=c6ff52]pay[/color]",25,True,markup=True,color=(.96,.97,1,1))); brand.add_widget(Widget())
+        login=SoftButton((.18,.2,.31,1),text="로그인",font_name=FONT_BOLD,font_size=dp(14),color=(1,1,1,1),size_hint_x=None,width=dp(82)); login.bind(on_release=self.open_account); brand.add_widget(login); root.add_widget(brand)
+        self.eyebrow=make_label("",12,True,color=(.78,1,.32,1),size_hint_y=None,height=dp(28)); root.add_widget(self.eyebrow)
+        self.title=make_label("",34,True,color=(.98,.98,1,1),size_hint_y=None,height=dp(94),halign="left",valign="middle"); self.title.bind(size=lambda obj,value:setattr(obj,"text_size",value)); root.add_widget(self.title)
+        self.description=make_label("",15,color=(.69,.72,.82,1),size_hint_y=None,height=dp(58),halign="left",valign="middle"); self.description.bind(size=lambda obj,value:setattr(obj,"text_size",value)); root.add_widget(self.description)
+        self.preview=LandingPanel((.11,.12,.21,1),orientation="vertical",padding=dp(22)); self.preview_label=make_label("",14,color=(.94,.95,1,1),halign="left",valign="middle"); self.preview_label.bind(size=lambda obj,value:setattr(obj,"text_size",value)); self.preview.add_widget(self.preview_label); root.add_widget(self.preview)
+        self.primary=SoftButton((.78,1,.32,1),text="영수증 스캔 시작",font_name=FONT_BOLD,font_size=dp(16),color=(.05,.08,.02,1),size_hint_y=None,height=dp(52)); self.primary.bind(on_release=self.start); root.add_widget(self.primary)
+        controls=BoxLayout(size_hint_y=None,height=dp(44),spacing=dp(8)); self.dots=[]
+        for idx in range(len(self.SLIDES)):
+            dot=SoftButton((.28,.3,.42,1),text="●",font_size=dp(12),color=(1,1,1,1),size_hint_x=None,width=dp(42)); dot.bind(on_release=lambda _button,target=idx:self.show_slide(target,True)); self.dots.append(dot); controls.add_widget(dot)
+        controls.add_widget(Widget())
+        previous=SoftButton((.18,.2,.31,1),text="‹",font_size=dp(25),color=(1,1,1,1),size_hint_x=None,width=dp(44)); previous.bind(on_release=lambda *_:self.show_slide(self.slide_index-1,True))
+        self.pause=SoftButton((.18,.2,.31,1),text="Ⅱ",font_size=dp(17),color=(1,1,1,1),size_hint_x=None,width=dp(44)); self.pause.bind(on_release=self.toggle_pause)
+        following=SoftButton((.18,.2,.31,1),text="›",font_size=dp(25),color=(1,1,1,1),size_hint_x=None,width=dp(44)); following.bind(on_release=lambda *_:self.show_slide(self.slide_index+1,True))
+        controls.add_widget(previous);controls.add_widget(self.pause);controls.add_widget(following);root.add_widget(controls);self.add_widget(root);self.show_slide(0)
+    def show_slide(self,index,restart=False):
+        self.slide_index=index%len(self.SLIDES); eyebrow,title,description,badge,preview=self.SLIDES[self.slide_index]; self.eyebrow.text=eyebrow;self.title.text=title;self.description.text=description;self.preview_label.text=f"[color=c6ff52]{badge}[/color]\n\n{preview}";self.preview_label.markup=True
+        for pos,dot in enumerate(self.dots): dot.color=(.78,1,.32,1) if pos==self.slide_index else (.55,.58,.68,1)
+        if restart and not self._paused:self._start_autoplay()
+    def _start_autoplay(self):
+        if self._slide_event is not None:self._slide_event.cancel()
+        self._slide_event=Clock.schedule_interval(lambda _dt:self.show_slide(self.slide_index+1),3)
+    def toggle_pause(self,*_):
+        self._paused=not self._paused;self.pause.text="▶" if self._paused else "Ⅱ"
+        if self._paused and self._slide_event is not None:self._slide_event.cancel();self._slide_event=None
+        elif not self._paused:self._start_autoplay()
+    def on_pre_enter(self,*_):
+        if not self._paused:self._start_autoplay()
+    def on_leave(self,*_):
+        if self._slide_event is not None:self._slide_event.cancel();self._slide_event=None
+    def open_account(self,*_):self.manager.current="mypage" if SESSION_STATE.get("current_user") else "login"
+    def start(self,*_):
+        if SESSION_STATE.get("current_user"):SESSION_STATE["receipts"]=[];self.manager.current="camera"
+        else:self.manager.current="login"
+
+# ============================================================
 # HOME
 # ============================================================
 class HomeScreen(Screen):
@@ -1954,6 +2010,7 @@ class DutchPayApp(App):
     def build(self):
         self.title = "영수증 더치페이"
         sm = ScreenManager()
+        sm.add_widget(LandingScreen(name="landing"))
         sm.add_widget(HomeScreen(name="home"))
         sm.add_widget(LoginScreen(name="login"))
         sm.add_widget(SignupScreen(name="signup"))
@@ -1966,7 +2023,7 @@ class DutchPayApp(App):
         return sm
 
     def handle_back_key(self, window, key, *args):
-        if key == 27 and self.root and self.root.current != "home":
+        if key == 27 and self.root and self.root.current != "landing":
             # Let an open popup handle Back before navigating the page.
             from kivy.uix.modalview import ModalView
             for child in Window.children:
@@ -1975,7 +2032,7 @@ class DutchPayApp(App):
                         child.dismiss()
                     return True
             self.root.transition.direction = "right"
-            self.root.current = "home"
+            self.root.current = "landing"
             return True
         return False
 
