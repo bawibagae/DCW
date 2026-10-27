@@ -15,11 +15,12 @@ import uuid
 HTTPS_CONTEXT = ssl.create_default_context(cafile=certifi.where())
 from fractions import Fraction
 from kivy.app import App
+from kivy.animation import Animation
 from kivy.clock import Clock
 from kivy.core.clipboard import Clipboard
 from kivy.core.window import Window
 from kivy.core.text import LabelBase
-from kivy.graphics import Color, RoundedRectangle
+from kivy.graphics import Color, RoundedRectangle, Line
 from kivy.metrics import dp
 from kivy.properties import NumericProperty
 from kivy.uix.boxlayout import BoxLayout
@@ -33,6 +34,7 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.spinner import Spinner, SpinnerOption
 from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
+from kivy.utils import get_color_from_hex
 
 try:
     from plyer import camera as plyer_camera
@@ -199,16 +201,16 @@ def async_api(method, path, json_data, on_success, on_error, auth=True):
 # ============================================================
 # INDEX.HTML 기반 색상/컴포넌트
 # ============================================================
-COLOR_BG = (0.956, 0.965, 0.973, 1)          # #f4f6f8
+COLOR_BG = (0.972, 0.969, 0.955, 1)           # warm porcelain
 COLOR_SURFACE = (1, 1, 1, 1)
-COLOR_SURFACE_BLUE = (0.933, 0.949, 1, 1)    # #eef2ff
-COLOR_PRIMARY = (0.231, 0.510, 0.965, 1)     # #3b82f6
-COLOR_PRIMARY_DARK = (0.118, 0.106, 0.294, 1)
-COLOR_PRIMARY_LIGHT = (0.878, 0.906, 0.996, 1)
-COLOR_TEXT = (0.102, 0.114, 0.125, 1)
-COLOR_MUTED = (0.39, 0.42, 0.45, 1)
-COLOR_BORDER = (0.86, 0.89, 0.93, 1)
-COLOR_SUCCESS = (0.12, 0.56, 0.31, 1)
+COLOR_SURFACE_BLUE = (0.92, 0.95, 1, 1)       # calm blue wash
+COLOR_PRIMARY = (0.26, 0.38, 0.93, 1)         # Modern Blue (#4361EE)
+COLOR_PRIMARY_DARK = (0.15, 0.25, 0.75, 1)
+COLOR_PRIMARY_LIGHT = (0.94, 0.95, 0.98, 1)
+COLOR_TEXT = (0.13, 0.14, 0.16, 1)            # #212529
+COLOR_MUTED = (0.52, 0.55, 0.59, 1)           # #868E96
+COLOR_BORDER = (0.91, 0.92, 0.94, 1)          # #E9ECEF
+COLOR_SUCCESS = (0.08, 0.52, 0.36, 1)
 
 
 def make_label(text="", font_size=16, bold=False, **kwargs):
@@ -233,28 +235,52 @@ class SoftButton(Button):
     def _draw(self,*_):
         self._shape.pos=self.pos
         self._shape.size=self.size
-        self._tone.a=0.45 if self.disabled else (0.8 if self.state=="down" else 1)
+        self._tone.a=0.45 if self.disabled else (0.7 if self.state=="down" else 1)
 
 
 def make_button(text="",bold=False,**kwargs):
     return SoftButton(COLOR_PRIMARY_LIGHT,text=text,font_name=FONT_BOLD if bold else FONT_REGULAR,
-                      font_size=dp(14),color=COLOR_TEXT,**kwargs)
+                      font_size=dp(15),color=COLOR_PRIMARY,**kwargs)
 
 
 def make_primary_button(text="",**kwargs):
-    return SoftButton(COLOR_PRIMARY,text=text,font_name=FONT_BOLD,font_size=dp(15),color=(1,1,1,1),**kwargs)
+    return SoftButton(COLOR_PRIMARY,text=text,font_name=FONT_BOLD,font_size=dp(16),color=(1,1,1,1),**kwargs)
 
+
+class ModernTextInput(TextInput):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.font_name = FONT_REGULAR
+        self.foreground_color = COLOR_TEXT
+        self.background_color = (0, 0, 0, 0)
+        self.background_normal = ""
+        self.background_active = ""
+        self.cursor_color = COLOR_PRIMARY
+        self.hint_text_color = COLOR_MUTED
+        self.padding = [dp(15), dp(15), dp(15), dp(15)]
+        self.use_handles = True
+        self.write_tab = False
+        
+        with self.canvas.before:
+            Color(rgba=COLOR_SURFACE)
+            self.bg_rect = RoundedRectangle(radius=[dp(10)])
+            Color(rgba=COLOR_BORDER)
+            self.border_line = Line(rounded_rectangle=(0,0,0,0,dp(10)), width=1.1)
+            
+        self.bind(pos=self.update_canvas, size=self.update_canvas, focus=self.update_canvas)
+
+    def update_canvas(self, *args):
+        self.bg_rect.pos = self.pos
+        self.bg_rect.size = self.size
+        self.border_line.rounded_rectangle = (self.x, self.y, self.width, self.height, dp(10))
+        # 포커스 시 테두리 색상 변경
+        if self.focus:
+            self.canvas.before.children[-2].rgba = COLOR_PRIMARY
+        else:
+            self.canvas.before.children[-2].rgba = COLOR_BORDER
 
 def make_text_input(**kwargs):
-    return TextInput(
-        font_name=FONT_REGULAR,
-        foreground_color=COLOR_TEXT,
-        background_color=COLOR_SURFACE,
-        cursor_color=COLOR_PRIMARY,
-        hint_text_color=COLOR_MUTED,
-        padding=[dp(12), dp(10), dp(12), dp(10)],
-        **kwargs,
-    )
+    return ModernTextInput(**kwargs)
 
 
 class BaseLayout(BoxLayout):
@@ -273,15 +299,22 @@ class BaseLayout(BoxLayout):
 class Card(BoxLayout):
     def __init__(self, **kwargs):
         orientation = kwargs.pop("orientation", "vertical")
-        super().__init__(orientation=orientation, padding=dp(14), spacing=dp(6), **kwargs)
+        padding = kwargs.pop("padding", dp(16))
+        spacing = kwargs.pop("spacing", dp(8))
+        super().__init__(orientation=orientation, padding=padding, spacing=spacing, **kwargs)
         with self.canvas.before:
             Color(*COLOR_SURFACE)
-            self._bg = RoundedRectangle(radius=[dp(14)])
+            self._bg = RoundedRectangle(radius=[dp(16)])
+            # 그림자 효과 (간단히 구현)
+            Color(rgba=(0,0,0,0.03))
+            self._shadow = RoundedRectangle(radius=[dp(16)])
         self.bind(pos=self._update_bg, size=self._update_bg)
 
     def _update_bg(self, *_):
         self._bg.pos = self.pos
         self._bg.size = self.size
+        self._shadow.pos = (self.x, self.y - dp(2))
+        self._shadow.size = self.size
 
 
 class KoreanSpinnerOption(SpinnerOption):
@@ -295,31 +328,74 @@ class KoreanSpinnerOption(SpinnerOption):
 
 
 def show_message(title, message):
-    content = BoxLayout(orientation="vertical", padding=dp(16), spacing=dp(12))
+    content = BoxLayout(orientation="vertical", padding=dp(24), spacing=dp(20))
     scroll = ScrollView(do_scroll_x=False)
-    label = make_label(str(message), 14, color=(1,1,1,1), halign="left", valign="top", size_hint_y=None)
+    
+    label = Label(
+        text=str(message),
+        font_name=FONT_REGULAR,
+        font_size=dp(15),
+        color=COLOR_TEXT,
+        halign="center",
+        valign="middle",
+        size_hint_y=None
+    )
     label.bind(width=lambda obj,w: setattr(obj,"text_size",(max(dp(40),w),None)))
-    label.bind(texture_size=lambda obj,v: setattr(obj,"height",v[1]+dp(16)))
+    label.bind(texture_size=lambda obj,v: setattr(obj,"height",v[1]))
     scroll.add_widget(label)
+    
     content.add_widget(scroll)
-    btn=make_primary_button("확인",size_hint_y=None,height=dp(48))
+    btn = make_primary_button("확인", size_hint_y=None, height=dp(50))
     content.add_widget(btn)
-    popup=Popup(title=title,title_font=FONT_BOLD,content=content,size_hint=(0.92,0.55),auto_dismiss=False)
+    
+    popup = Popup(
+        title=title,
+        title_font=FONT_BOLD,
+        title_size=dp(18),
+        title_color=COLOR_TEXT,
+        title_align='center',
+        background="",
+        background_color=(0,0,0,0.4),
+        separator_color=(0,0,0,0),
+        content=content,
+        size_hint=(0.85, None),
+        height=dp(220),
+        auto_dismiss=False
+    )
+    
+    # 팝업 배경 하얗게
+    with popup.canvas.before:
+        Color(rgba=COLOR_SURFACE)
+        popup.bg_rect = RoundedRectangle(radius=[dp(16)])
+    popup.bind(pos=lambda obj,v: setattr(popup.bg_rect, 'pos', v))
+    popup.bind(size=lambda obj,v: setattr(popup.bg_rect, 'size', v))
+
     btn.bind(on_release=lambda *_: popup.dismiss())
     popup.open()
     return popup
 
 
 def show_toast(message):
-    content = make_label(message, 14, True, halign="center", valign="middle")
+    content = BoxLayout(padding=dp(16))
+    label = make_label(message, 14, True, color=(1,1,1,1), halign="center", valign="middle")
+    content.add_widget(label)
+    
     popup = Popup(
         content=content,
         size_hint=(None, None),
-        size=(dp(280), dp(56)),
+        size=(dp(300), dp(60)),
         separator_height=0,
         background="",
+        background_color=(0,0,0,0),
         auto_dismiss=True,
     )
+    
+    with popup.canvas.before:
+        Color(rgba=(0.1, 0.1, 0.1, 0.85))
+        popup.bg_rect = RoundedRectangle(radius=[dp(30)])
+    popup.bind(pos=lambda obj,v: setattr(popup.bg_rect, 'pos', v))
+    popup.bind(size=lambda obj,v: setattr(popup.bg_rect, 'size', v))
+
     popup.open()
     Clock.schedule_once(lambda *_: popup.dismiss(), 1.6)
 
@@ -353,7 +429,7 @@ def add_logo_header(screen):
 
 
 def add_page_layout():
-    return BaseLayout(orientation="vertical", padding=dp(14), spacing=dp(11))
+    return BaseLayout(orientation="vertical", padding=dp(24), spacing=dp(16))
 
 
 # ============================================================
@@ -438,7 +514,7 @@ class LandingPanel(BoxLayout):
     def __init__(self, color, **kwargs):
         super().__init__(**kwargs)
         with self.canvas.before:
-            self._bg_color = Color(*color); self._bg = RoundedRectangle(radius=[dp(22)])
+            self._bg_color = Color(*color); self._bg = RoundedRectangle(radius=[dp(24)])
         self.bind(pos=self._paint, size=self._paint)
     def _paint(self, *_): self._bg.pos, self._bg.size = self.pos, self.size
 
@@ -451,33 +527,36 @@ class LandingScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs); self.slide_index=0; self._slide_event=None; self._paused=False; self.build_ui()
     def build_ui(self):
-        root=LandingPanel((.035,.043,.09,1), orientation="vertical", padding=dp(22), spacing=dp(14))
-        brand=BoxLayout(size_hint_y=None,height=dp(46)); brand.add_widget(make_label("dutch[color=c6ff52]pay[/color]",25,True,markup=True,color=(.96,.97,1,1))); brand.add_widget(Widget())
-        login=SoftButton((.18,.2,.31,1),text="로그인",font_name=FONT_BOLD,font_size=dp(14),color=(1,1,1,1),size_hint_x=None,width=dp(82)); login.bind(on_release=self.open_account); brand.add_widget(login); root.add_widget(brand)
-        self.eyebrow=make_label("",12,True,color=(.78,1,.32,1),size_hint_y=None,height=dp(28)); root.add_widget(self.eyebrow)
-        self.title=make_label("",34,True,color=(.98,.98,1,1),size_hint_y=None,height=dp(94),halign="left",valign="middle"); self.title.bind(size=lambda obj,value:setattr(obj,"text_size",value)); root.add_widget(self.title)
-        self.description=make_label("",15,color=(.69,.72,.82,1),size_hint_y=None,height=dp(58),halign="left",valign="middle"); self.description.bind(size=lambda obj,value:setattr(obj,"text_size",value)); root.add_widget(self.description)
-        self.preview=LandingPanel((.11,.12,.21,1),orientation="vertical",padding=dp(22)); self.preview_label=make_label("",14,color=(.94,.95,1,1),halign="left",valign="middle"); self.preview_label.bind(size=lambda obj,value:setattr(obj,"text_size",value)); self.preview.add_widget(self.preview_label); root.add_widget(self.preview)
-        self.primary=SoftButton((.78,1,.32,1),text="영수증 스캔 시작",font_name=FONT_BOLD,font_size=dp(16),color=(.05,.08,.02,1),size_hint_y=None,height=dp(52)); self.primary.bind(on_release=self.start); root.add_widget(self.primary)
-        controls=BoxLayout(size_hint_y=None,height=dp(44),spacing=dp(8)); self.dots=[]
-        for idx in range(len(self.SLIDES)):
-            dot=SoftButton((.28,.3,.42,1),text="●",font_size=dp(12),color=(1,1,1,1),size_hint_x=None,width=dp(42)); dot.bind(on_release=lambda _button,target=idx:self.show_slide(target,True)); self.dots.append(dot); controls.add_widget(dot)
-        controls.add_widget(Widget())
-        previous=SoftButton((.18,.2,.31,1),text="‹",font_size=dp(25),color=(1,1,1,1),size_hint_x=None,width=dp(44)); previous.bind(on_release=lambda *_:self.show_slide(self.slide_index-1,True))
-        self.pause=SoftButton((.18,.2,.31,1),text="Ⅱ",font_size=dp(17),color=(1,1,1,1),size_hint_x=None,width=dp(44)); self.pause.bind(on_release=self.toggle_pause)
-        following=SoftButton((.18,.2,.31,1),text="›",font_size=dp(25),color=(1,1,1,1),size_hint_x=None,width=dp(44)); following.bind(on_release=lambda *_:self.show_slide(self.slide_index+1,True))
-        controls.add_widget(previous);controls.add_widget(self.pause);controls.add_widget(following);root.add_widget(controls);self.add_widget(root);self.show_slide(0)
-    def show_slide(self,index,restart=False):
-        self.slide_index=index%len(self.SLIDES); eyebrow,title,description,badge,preview=self.SLIDES[self.slide_index]; self.eyebrow.text=eyebrow;self.title.text=title;self.description.text=description;self.preview_label.text=f"[color=c6ff52]{badge}[/color]\n\n{preview}";self.preview_label.markup=True
-        for pos,dot in enumerate(self.dots): dot.color=(.78,1,.32,1) if pos==self.slide_index else (.55,.58,.68,1)
-        if restart and not self._paused:self._start_autoplay()
+        root=LandingPanel(COLOR_BG, orientation="vertical", padding=dp(24), spacing=dp(16))
+        brand=BoxLayout(size_hint_y=None,height=dp(48)); brand.add_widget(make_label("dutch[color=4361EE]pay[/color]",25,True,markup=True,color=COLOR_TEXT)); brand.add_widget(Widget())
+        login=SoftButton(COLOR_PRIMARY_LIGHT,text="로그인",font_name=FONT_BOLD,font_size=dp(14),color=COLOR_PRIMARY,size_hint_x=None,width=dp(86)); login.bind(on_release=self.open_account); brand.add_widget(login); root.add_widget(brand)
+        self.eyebrow=make_label("",13,True,color=COLOR_PRIMARY,size_hint_y=None,height=dp(28)); root.add_widget(self.eyebrow)
+        self.title=make_label("",34,True,color=COLOR_TEXT,size_hint_y=None,height=dp(94),halign="left",valign="middle"); self.title.bind(size=lambda obj,value:setattr(obj,"text_size",value)); root.add_widget(self.title)
+        self.description=make_label("",15,color=COLOR_MUTED,size_hint_y=None,height=dp(58),halign="left",valign="middle"); self.description.bind(size=lambda obj,value:setattr(obj,"text_size",value)); root.add_widget(self.description)
+        self.preview=LandingPanel(COLOR_SURFACE_BLUE,orientation="vertical",padding=dp(22)); self.preview_label=make_label("",14,color=COLOR_TEXT,halign="left",valign="middle"); self.preview_label.bind(size=lambda obj,value:setattr(obj,"text_size",value)); self.preview.add_widget(self.preview_label); root.add_widget(self.preview)
+        self.primary=SoftButton(COLOR_PRIMARY,text="영수증 스캔 시작",font_name=FONT_BOLD,font_size=dp(16),color=(1,1,1,1),size_hint_y=None,height=dp(56)); self.primary.bind(on_release=self.start); root.add_widget(self.primary)
+        self.indicator=make_label("",12,True,color=COLOR_MUTED,size_hint_y=None,height=dp(30),halign="center")
+        root.add_widget(self.indicator);self.add_widget(root);self.show_slide(0, animate=False)
+    def show_slide(self,index,animate=True):
+        def apply_slide(*_):
+            self.slide_index=index%len(self.SLIDES); eyebrow,title,description,badge,preview=self.SLIDES[self.slide_index]
+            self.eyebrow.text=eyebrow;self.title.text=title;self.description.text=description
+            self.preview_label.text=f"[color=4361EE]{badge}[/color]\n\n{preview}";self.preview_label.markup=True
+            self.indicator.text=f"{self.slide_index+1:02d}  /  {len(self.SLIDES):02d} · 자동 소개"
+            if animate:
+                for widget in (self.eyebrow,self.title,self.description,self.preview,self.indicator): Animation(opacity=1,duration=.42,t='out_quad').start(widget)
+        if not animate:
+            apply_slide(); return
+        fading=(self.eyebrow,self.title,self.description,self.preview,self.indicator)
+        for widget in fading: Animation.cancel_all(widget)
+        completed=[0]
+        def after_fade(*_):
+            completed[0]+=1
+            if completed[0]==len(fading): apply_slide()
+        for widget in fading: Animation(opacity=0,duration=.30,t='in_quad').bind(on_complete=after_fade).start(widget)
     def _start_autoplay(self):
         if self._slide_event is not None:self._slide_event.cancel()
         self._slide_event=Clock.schedule_interval(lambda _dt:self.show_slide(self.slide_index+1),3)
-    def toggle_pause(self,*_):
-        self._paused=not self._paused;self.pause.text="▶" if self._paused else "Ⅱ"
-        if self._paused and self._slide_event is not None:self._slide_event.cancel();self._slide_event=None
-        elif not self._paused:self._start_autoplay()
     def on_pre_enter(self,*_):
         if not self._paused:self._start_autoplay()
     def on_leave(self,*_):
@@ -494,65 +573,55 @@ class HomeScreen(Screen):
     def on_enter(self):
         self.clear_widgets()
         main = add_page_layout()
-        main.add_widget(add_logo_header(self))
+        user = SESSION_STATE.get("current_user") or {}
+        greeting = BoxLayout(size_hint_y=None, height=dp(64))
+        avatar = SoftButton(COLOR_SURFACE_BLUE, text="◯", font_size=dp(28), color=COLOR_PRIMARY, size_hint_x=None, width=dp(54))
+        avatar.bind(on_release=lambda *_: setattr(self.manager, "current", "mypage" if user else "login"))
+        greeting.add_widget(avatar)
+        greeting.add_widget(make_label(f"안녕하세요, {user.get('name', '더치페이')}님", 23, True, color=COLOR_TEXT, padding=[dp(14),0]))
+        main.add_widget(greeting)
 
-        title_row = BoxLayout(size_hint_y=None, height=dp(42))
-        title_row.add_widget(make_label("정산 내역", 21, True))
-        refresh = make_button("새로고침", size_hint_x=None, width=dp(82))
-        refresh.bind(on_press=lambda *_: self.refresh())
-        title_row.add_widget(refresh)
-        main.add_widget(title_row)
-
-        if SESSION_STATE["current_user"]:
-            info = make_label(
-                f"{SESSION_STATE['current_user']['name']}님 환영합니다.",
-                14, False, color=COLOR_MUTED, size_hint_y=None, height=dp(26)
-            )
-            main.add_widget(info)
-
-        scroll = ScrollView()
-        history_box = BoxLayout(orientation="vertical", size_hint_y=None, spacing=dp(10))
-        history_box.bind(minimum_height=history_box.setter("height"))
+        tabs = BoxLayout(size_hint_y=None, height=dp(43), spacing=dp(8))
+        tabs.add_widget(SoftButton(COLOR_SURFACE_BLUE, text="정산", font_name=FONT_BOLD, font_size=dp(16), color=COLOR_PRIMARY))
+        friends_tab = SoftButton(COLOR_BG, text="친구", font_name=FONT_BOLD, font_size=dp(16), color=COLOR_MUTED)
+        friends_tab.bind(on_release=lambda *_: setattr(self.manager, "current", "friends"))
+        tabs.add_widget(friends_tab); main.add_widget(tabs)
 
         history = SESSION_STATE["history"]
-        if not history:
-            history_box.add_widget(make_label(
-                "아직 더치페이 내역이 없습니다.",
-                size_hint_y=None, height=dp(50), halign="center"
-            ))
+        total = sum(int(item.get("total", 0)) for item in history)
+        summary = LandingPanel(COLOR_PRIMARY, orientation="vertical", padding=dp(22), spacing=dp(7), size_hint_y=None, height=dp(166))
+        summary.add_widget(make_label("이번 달 함께 쓴 금액", 14, color=(1,1,1,0.8), size_hint_y=None, height=dp(25)))
+        summary.add_widget(make_label(f"{total:,}원", 32, True, color=(1,1,1,1), size_hint_y=None, height=dp(48)))
+        summary_row = BoxLayout(size_hint_y=None, height=dp(38))
+        summary_row.add_widget(make_label(f"정산 {len(history)}건", 14, color=(1,1,1,0.8)))
+        scan = SoftButton((1,1,1,1), text="영수증 스캔  +", font_name=FONT_BOLD, font_size=dp(14), color=COLOR_PRIMARY, size_hint_x=None, width=dp(128))
+        scan.bind(on_release=self.start_new_settlement); summary_row.add_widget(scan); summary.add_widget(summary_row); main.add_widget(summary)
+
+        recent = Card(size_hint_y=None, height=dp(126))
+        recent_head = BoxLayout(size_hint_y=None, height=dp(28))
+        recent_head.add_widget(make_label("최근 정산", 18, True)); refresh = make_label("새로고침", 13, True, color=COLOR_PRIMARY, halign="right")
+        refresh.bind(on_touch_down=lambda obj,touch: self.refresh() if obj.collide_point(*touch.pos) else None)
+        recent_head.add_widget(refresh); recent.add_widget(recent_head)
+        if history:
+            item = history[-1]
+            recent.add_widget(make_label(f"{item['date']} · {', '.join(item['members'][:3])}", 14, color=COLOR_MUTED, size_hint_y=None, height=dp(22)))
+            recent.add_widget(make_label(f"{item['total']:,}원 · {item['count']}개 영수증", 17, True, size_hint_y=None, height=dp(27)))
         else:
-            for item in reversed(history):
-                card = Card(size_hint_y=None, height=dp(98))
-                card.add_widget(make_label(
-                    f"{item['date']} · {item['count']}개 영수증", 17, True,
-                    size_hint_y=None, height=dp(25)
-                ))
-                card.add_widget(make_label(
-                    f"총액: {item['total']:,}원 ({len(item['members'])}명)",
-                    size_hint_y=None, height=dp(25)
-                ))
-                card.add_widget(make_label(
-                    f"참여자: {', '.join(item['members'])}",
-                    13, False, color=COLOR_MUTED,
-                    size_hint_y=None, height=dp(25)
-                ))
-                history_box.add_widget(card)
+            recent.add_widget(make_label("첫 영수증을 스캔해 정산을 시작해 보세요.", 14, color=COLOR_MUTED, size_hint_y=None, height=dp(46)))
+        main.add_widget(recent)
 
-        scroll.add_widget(history_box)
-        main.add_widget(scroll)
+        help_card = Card(size_hint_y=None, height=dp(108))
+        help_card.add_widget(make_label("처음이신가요?", 17, True, size_hint_y=None, height=dp(27)))
+        help_card.add_widget(make_label("영수증을 촬영하고, 함께한 사람을 선택하면 끝이에요.", 14, color=COLOR_MUTED))
+        main.add_widget(help_card)
 
-        action_row = BoxLayout(size_hint_y=None, height=dp(52), spacing=dp(8))
-        scan = make_primary_button("영수증 스캔", size_hint_x=0.72)
-        scan.bind(on_press=self.start_new_settlement)
-        friends = make_button("친구", size_hint_x=0.28)
-        friends.bind(on_press=lambda *_: setattr(self.manager, "current", "friends"))
-        action_row.add_widget(scan)
-        action_row.add_widget(friends)
-        main.add_widget(action_row)
-
-        notice = make_button("알림 확인", size_hint_y=None, height=dp(45))
-        notice.bind(on_press=lambda *_: setattr(self.manager, "current", "notifications"))
-        main.add_widget(notice)
+        nav = BoxLayout(size_hint_y=None, height=dp(64), spacing=dp(12))
+        home_nav = SoftButton(COLOR_SURFACE_BLUE, text="⌂\n홈", font_name=FONT_BOLD, font_size=dp(13), color=COLOR_PRIMARY)
+        pay_nav = SoftButton(COLOR_SURFACE, text="⇄\n새 정산", font_name=FONT_BOLD, font_size=dp(13), color=COLOR_MUTED)
+        pay_nav.bind(on_release=self.start_new_settlement)
+        more_nav = SoftButton(COLOR_SURFACE, text="◌\n내 정보", font_name=FONT_BOLD, font_size=dp(13), color=COLOR_MUTED)
+        more_nav.bind(on_release=lambda *_: setattr(self.manager, "current", "mypage" if user else "login"))
+        nav.add_widget(home_nav); nav.add_widget(pay_nav); nav.add_widget(more_nav); main.add_widget(nav)
 
         self.add_widget(main)
 
@@ -606,64 +675,79 @@ class LoginScreen(Screen):
         self.build_ui()
 
     def build_ui(self):
-        main = add_page_layout()
-        main.add_widget(add_logo_header(self))
-        main.add_widget(make_label("로그인", 22, True, size_hint_y=None, height=dp(44)))
+        main = BoxLayout(orientation='vertical', padding=dp(30), spacing=dp(16))
+        with main.canvas.before:
+            Color(*COLOR_BG)
+            self._bg = RoundedRectangle(radius=[0])
+        main.bind(pos=lambda obj,v: setattr(self._bg, 'pos', v))
+        main.bind(size=lambda obj,v: setattr(self._bg, 'size', v))
+        
+        main.add_widget(Widget(size_hint_y=0.15))
+
+        title = Label(
+            text="DutchPay에\n오신 것을 환영합니다",
+            color=COLOR_TEXT,
+            font_size=dp(26),
+            font_name=FONT_BOLD,
+            halign='left',
+            valign='bottom',
+            size_hint_y=None,
+            height=dp(90)
+        )
+        title.bind(size=lambda obj,v: setattr(obj, 'text_size', v))
+        main.add_widget(title)
+        
+        main.add_widget(Widget(size_hint_y=None, height=dp(20)))
 
         self.email_input = make_text_input(
             hint_text="이메일",
+            input_type='mail', # 모바일 키보드 이메일 모드 (자동완성)
             multiline=False,
             size_hint_y=None,
-            height=dp(46),
+            height=dp(55),
         )
         self.pw_input = make_text_input(
             hint_text="비밀번호",
             password=True,
             multiline=False,
             size_hint_y=None,
-            height=dp(46),
+            height=dp(55),
         )
-        login_clip = BoxLayout(size_hint_y=None, height=dp(42), spacing=dp(7))
-        email_paste = make_button("이메일 붙여넣기", size_hint_x=0.5)
-        email_paste.bind(on_press=lambda *_: self._paste_login(self.email_input))
-        pw_paste = make_button("비밀번호 붙여넣기", size_hint_x=0.5)
-        pw_paste.bind(on_press=lambda *_: self._paste_login(self.pw_input))
-        login_clip.add_widget(email_paste)
-        login_clip.add_widget(pw_paste)
 
         main.add_widget(self.email_input)
         main.add_widget(self.pw_input)
-        main.add_widget(login_clip)
+        
+        main.add_widget(Widget(size_hint_y=None, height=dp(10)))
 
         login = make_primary_button(
             "로그인",
-            size_hint=(None, None),
-            width=dp(150),
-            height=dp(42),
-            pos_hint={"center_x": 0.5},
+            size_hint_y=None,
+            height=dp(55),
         )
         login.bind(on_press=self.do_login)
         main.add_widget(login)
 
-        signup = make_button("회원가입 하러가기", size_hint_y=None, height=dp(42))
+        signup = Button(
+            text="계정이 없으신가요? 회원가입",
+            background_normal='',
+            background_color=(0,0,0,0),
+            color=COLOR_MUTED,
+            font_name=FONT_REGULAR,
+            font_size=dp(14),
+            size_hint_y=None,
+            height=dp(40)
+        )
         signup.bind(on_press=lambda *_: setattr(self.manager, "current", "signup"))
         main.add_widget(signup)
-        main.add_widget(Widget())
+        
+        main.add_widget(Widget(size_hint_y=0.3))
         self.add_widget(main)
-
-    def _paste_login(self, target):
-        try:
-            text = Clipboard.paste() or ""
-        except Exception as e:
-            show_message("붙여넣기 실패", str(e))
-            return
-        target.text = text.strip()
 
     def do_login(self, *_):
         email = self.email_input.text.strip()
         pw = self.pw_input.text.strip()
         if not email or not pw:
-            show_message("경고", "이메일과 비밀번호를 입력해 주세요.")
+            show_message("안내", "이메일과 비밀번호를\n모두 입력해 주세요.")
             return
 
         auth_submit(self, _[0], "/api/auth/login",
@@ -687,32 +771,61 @@ class SignupScreen(Screen):
         self.build_ui()
 
     def build_ui(self):
-        main = add_page_layout()
-        main.add_widget(add_logo_header(self))
-        main.add_widget(make_label("회원가입", 22, True, size_hint_y=None, height=dp(44)))
+        main = BoxLayout(orientation='vertical', padding=dp(30), spacing=dp(16))
+        with main.canvas.before:
+            Color(*COLOR_BG)
+            self._bg = RoundedRectangle(radius=[0])
+        main.bind(pos=lambda obj,v: setattr(self._bg, 'pos', v))
+        main.bind(size=lambda obj,v: setattr(self._bg, 'size', v))
+        
+        main.add_widget(Widget(size_hint_y=0.1))
 
-        self.name_input = make_text_input(hint_text="이름", multiline=False, size_hint_y=None, height=dp(46))
-        self.email_input = make_text_input(hint_text="이메일", multiline=False, size_hint_y=None, height=dp(46))
-        self.pw_input = make_text_input(hint_text="비밀번호 (6자 이상)", password=True, multiline=False,
-                                        size_hint_y=None, height=dp(46))
+        title = Label(
+            text="회원가입",
+            color=COLOR_TEXT,
+            font_size=dp(26),
+            font_name=FONT_BOLD,
+            halign='left',
+            valign='bottom',
+            size_hint_y=None,
+            height=dp(60)
+        )
+        title.bind(size=lambda obj,v: setattr(obj, 'text_size', v))
+        main.add_widget(title)
+        
+        main.add_widget(Widget(size_hint_y=None, height=dp(20)))
+
+        self.name_input = make_text_input(hint_text="이름", multiline=False, size_hint_y=None, height=dp(55))
+        self.email_input = make_text_input(hint_text="이메일", input_type='mail', multiline=False, size_hint_y=None, height=dp(55))
+        self.pw_input = make_text_input(hint_text="비밀번호 (6자 이상)", password=True, multiline=False, size_hint_y=None, height=dp(55))
+        
         main.add_widget(self.name_input)
         main.add_widget(self.email_input)
         main.add_widget(self.pw_input)
+        
+        main.add_widget(Widget(size_hint_y=None, height=dp(10)))
 
         submit = make_primary_button(
             "가입완료",
-            size_hint=(None, None),
-            width=dp(150),
-            height=dp(42),
-            pos_hint={"center_x": 0.5},
+            size_hint_y=None,
+            height=dp(55),
         )
         submit.bind(on_press=self.do_signup)
         main.add_widget(submit)
 
-        cancel = make_button("취소", size_hint_y=None, height=dp(42))
+        cancel = Button(
+            text="로그인으로 돌아가기",
+            background_normal='',
+            background_color=(0,0,0,0),
+            color=COLOR_MUTED,
+            font_name=FONT_REGULAR,
+            font_size=dp(14),
+            size_hint_y=None,
+            height=dp(40)
+        )
         cancel.bind(on_press=lambda *_: setattr(self.manager, "current", "login"))
         main.add_widget(cancel)
-        main.add_widget(Widget())
+        main.add_widget(Widget(size_hint_y=0.25))
         self.add_widget(main)
 
     def do_signup(self, *_):
@@ -720,11 +833,11 @@ class SignupScreen(Screen):
         email = self.email_input.text.strip()
         pw = self.pw_input.text.strip()
         if not name or not email or not pw:
-            show_message("경고", "모든 항목을 입력해 주세요.")
+            show_message("안내", "모든 항목을 입력해 주세요.")
             return
 
         if len(pw)<6:
-            show_message("비밀번호 확인","비밀번호는 6자 이상 입력해 주세요.")
+            show_message("안내","비밀번호는 6자 이상 입력해 주세요.")
             return
         auth_submit(self, _[0], "/api/auth/register",
                     {"name":name,"email":email,"password":pw},lambda data:self.signup_success())
@@ -750,28 +863,25 @@ class FriendsScreen(Screen):
         self.clear_widgets()
         main = add_page_layout()
         main.add_widget(add_logo_header(self))
-        main.add_widget(make_label("친구", 22, True, size_hint_y=None, height=dp(44)))
+        main.add_widget(make_label("친구 관리", 24, True, size_hint_y=None, height=dp(48)))
 
-        add_row = BoxLayout(size_hint_y=None, height=dp(46), spacing=dp(8))
-        self.friend_input = make_text_input(hint_text="친구 이메일 또는 이름", multiline=False)
-        add_btn = make_primary_button("친구 추가", size_hint_x=None, width=dp(95))
+        add_row = BoxLayout(size_hint_y=None, height=dp(55), spacing=dp(10))
+        self.friend_input = make_text_input(hint_text="친구 이메일 또는 이름", input_type='mail', multiline=False)
+        add_btn = make_primary_button("추가", size_hint_x=None, width=dp(85))
         add_btn.bind(on_press=self.add_friend)
         add_row.add_widget(self.friend_input)
         add_row.add_widget(add_btn)
         main.add_widget(add_row)
 
-        self.status = make_label("", 13, color=COLOR_MUTED, size_hint_y=None, height=dp(24))
+        self.status = make_label("", 14, color=COLOR_PRIMARY, size_hint_y=None, height=dp(30))
         main.add_widget(self.status)
 
         scroll = ScrollView()
-        self.friend_box = BoxLayout(orientation="vertical", size_hint_y=None, spacing=dp(8))
+        self.friend_box = BoxLayout(orientation="vertical", size_hint_y=None, spacing=dp(12))
         self.friend_box.bind(minimum_height=self.friend_box.setter("height"))
         scroll.add_widget(self.friend_box)
         main.add_widget(scroll)
 
-        back = make_button("뒤로", size_hint_y=None, height=dp(44))
-        back.bind(on_press=lambda *_: setattr(self.manager, "current", "home"))
-        main.add_widget(back)
         self.add_widget(main)
         self.render_friends()
 
@@ -781,20 +891,21 @@ class FriendsScreen(Screen):
         if not friends:
             self.friend_box.add_widget(make_label(
                 "아직 친구가 없습니다.",
-                size_hint_y=None, height=dp(50), halign="center"
+                color=COLOR_MUTED,
+                size_hint_y=None, height=dp(60), halign="center"
             ))
             return
         for friend in friends:
-            card = Card(orientation="horizontal", size_hint_y=None, height=dp(64))
-            card.add_widget(make_label(friend["name"], 16, True, size_hint_x=0.45))
-            card.add_widget(make_label(friend["email"], 13, color=COLOR_MUTED, size_hint_x=0.55,
+            card = Card(orientation="horizontal", size_hint_y=None, height=dp(70))
+            card.add_widget(make_label(friend["name"], 17, True, size_hint_x=0.4))
+            card.add_widget(make_label(friend["email"], 14, color=COLOR_MUTED, size_hint_x=0.6,
                                        halign="right", valign="middle"))
             self.friend_box.add_widget(card)
 
     def add_friend(self, *_):
         value = self.friend_input.text.strip()
         if not value:
-            show_message("경고", "친구의 이메일 또는 이름을 입력해 주세요.")
+            show_message("안내", "친구의 이메일 또는 이름을\n입력해 주세요.")
             return
 
         async_api(
@@ -825,22 +936,26 @@ class MyPageScreen(Screen):
             self.manager.current = "login"
             return
 
-        main.add_widget(make_label("마이페이지", 22, True, size_hint_y=None, height=dp(44)))
+        main.add_widget(make_label("내 정보", 24, True, size_hint_y=None, height=dp(48)))
 
-        card = Card(size_hint_y=None, height=dp(100))
-        card.add_widget(make_label(f"이름: {user['name']}", 17, True, size_hint_y=None, height=dp(34)))
-        card.add_widget(make_label(f"이메일: {user['email']}", color=COLOR_MUTED, size_hint_y=None, height=dp(28)))
+        card = Card(size_hint_y=None, height=dp(110))
+        card.add_widget(make_label(f"이름: {user['name']}", 18, True, size_hint_y=None, height=dp(38)))
+        card.add_widget(make_label(f"이메일: {user['email']}", 15, color=COLOR_MUTED, size_hint_y=None, height=dp(30)))
         main.add_widget(card)
+        
+        main.add_widget(Widget(size_hint_y=None, height=dp(20)))
 
-        friends = make_button("친구 관리", size_hint_y=None, height=dp(46))
+        friends = make_button("친구 관리", size_hint_y=None, height=dp(55))
         friends.bind(on_press=lambda *_: setattr(self.manager, "current", "friends"))
         main.add_widget(friends)
 
-        notifications = make_button("알림 보기", size_hint_y=None, height=dp(46))
+        notifications = make_button("알림 보기", size_hint_y=None, height=dp(55))
         notifications.bind(on_press=lambda *_: setattr(self.manager, "current", "notifications"))
         main.add_widget(notifications)
+        
+        main.add_widget(Widget(size_hint_y=None, height=dp(10)))
 
-        logout = make_button("로그아웃", size_hint_y=None, height=dp(46))
+        logout = SoftButton(COLOR_BORDER, text="로그아웃", font_name=FONT_BOLD, font_size=dp(15), color=COLOR_TEXT, size_hint_y=None, height=dp(55))
         logout.bind(on_press=self.do_logout)
         main.add_widget(logout)
         main.add_widget(Widget())
@@ -865,17 +980,14 @@ class NotificationsScreen(Screen):
         self.clear_widgets()
         main = add_page_layout()
         main.add_widget(add_logo_header(self))
-        main.add_widget(make_label("알림", 22, True, size_hint_y=None, height=dp(44)))
+        main.add_widget(make_label("알림", 24, True, size_hint_y=None, height=dp(48)))
 
         scroll = ScrollView()
-        self.box = BoxLayout(orientation="vertical", size_hint_y=None, spacing=dp(8))
+        self.box = BoxLayout(orientation="vertical", size_hint_y=None, spacing=dp(12))
         self.box.bind(minimum_height=self.box.setter("height"))
         scroll.add_widget(self.box)
         main.add_widget(scroll)
 
-        back = make_button("뒤로", size_hint_y=None, height=dp(44))
-        back.bind(on_press=lambda *_: setattr(self.manager, "current", "home"))
-        main.add_widget(back)
         self.add_widget(main)
         self.render()
 
@@ -886,16 +998,16 @@ class NotificationsScreen(Screen):
         self.box.clear_widgets()
         notifications = SESSION_STATE.get("notifications", [])
         if not notifications:
-            self.box.add_widget(make_label("새 알림이 없습니다.", size_hint_y=None, height=dp(50), halign="center"))
+            self.box.add_widget(make_label("새 알림이 없습니다.", color=COLOR_MUTED, size_hint_y=None, height=dp(60), halign="center"))
             return
 
         for n in notifications:
             title = f"● {n['title']}" if not n.get("read") else n["title"]
-            card = Card(size_hint_y=None, height=dp(88))
-            card.add_widget(make_label(title, 16, True, size_hint_y=None, height=dp(28)))
-            card.add_widget(make_label(n["message"], 13, color=COLOR_MUTED, size_hint_y=None, height=dp(30)))
+            card = Card(size_hint_y=None, height=dp(100))
+            card.add_widget(make_label(title, 17, True, size_hint_y=None, height=dp(30)))
+            card.add_widget(make_label(n["message"], 14, color=COLOR_MUTED, size_hint_y=None, height=dp(34)))
             card.add_widget(make_label(n["created_at"][:16].replace("T", " "),
-                                       11, color=COLOR_MUTED, size_hint_y=None, height=dp(20)))
+                                       12, color=COLOR_BORDER, size_hint_y=None, height=dp(20)))
             self.box.add_widget(card)
 
 
@@ -904,29 +1016,29 @@ class NotificationsScreen(Screen):
 # ============================================================
 class PhoneCamera(BoxLayout):
     def __init__(self, on_capture, on_close, **kwargs):
-        super().__init__(orientation="vertical", spacing=dp(10), padding=dp(12), **kwargs)
+        super().__init__(orientation="vertical", spacing=dp(16), padding=dp(24), **kwargs)
         self.on_capture = on_capture
         self.on_close = on_close
         self.closed = False
         self.camera_path = None
 
         self.info = make_label(
-            "휴대폰 카메라로 영수증을 촬영합니다. [CAMERA-V5]",
-            15, halign="center", valign="middle", size_hint_y=None, height=dp(70)
+            "휴대폰 카메라로\n영수증을 촬영합니다.",
+            16, halign="center", valign="middle", size_hint_y=None, height=dp(80)
         )
         self.add_widget(self.info)
 
-        open_button = make_primary_button("📷 휴대폰 카메라 열기", size_hint_y=None, height=dp(56))
+        open_button = make_primary_button("📷 휴대폰 카메라 열기", size_hint_y=None, height=dp(60))
         open_button.bind(on_press=self.open_camera)
         self.add_widget(open_button)
 
-        close_button = make_button("닫기", size_hint_y=None, height=dp(50))
+        close_button = make_button("닫기", size_hint_y=None, height=dp(55))
         close_button.bind(on_press=self.close)
         self.add_widget(close_button)
         self.add_widget(Widget())
 
         if platform != "android":
-            self.info.text = "PC에서는 테스트 모드입니다.\nAndroid APK에서는 휴대폰 기본 카메라가 실행됩니다."
+            self.info.text = "PC에서는 테스트 모드입니다.\nAndroid에서만 카메라가 실행됩니다."
 
     def open_camera(self, *_):
         if platform == "android":
@@ -938,7 +1050,7 @@ class PhoneCamera(BoxLayout):
                         Clock.schedule_once(lambda *_: self.take_picture_android(), 0)
                     else:
                         Clock.schedule_once(
-                            lambda *_: show_message("카메라 권한", "영수증 촬영을 위해 카메라 권한을 허용해 주세요."),
+                            lambda *_: show_message("권한 안내", "영수증 촬영을 위해 카메라 권한을 허용해 주세요."),
                             0,
                         )
 
@@ -955,12 +1067,6 @@ class PhoneCamera(BoxLayout):
         run_on_ui_thread(self._launch_camera_android)()
 
     def _launch_camera_android(self):
-        """Open the native Android camera using FileProvider.
-
-        Plyer's camera provider can pass a file:// URI to Android on some
-        devices, which raises FileUriExposedException on Android 7+.
-        We create a content:// URI ourselves through FileProvider instead.
-        """
         try:
             from jnius import autoclass
 
@@ -980,7 +1086,6 @@ class PhoneCamera(BoxLayout):
             os.makedirs(os.path.dirname(filename),exist_ok=True)
             self.camera_path = filename
 
-            # CAMERA-V5: MediaStore first on Android 10+, no custom provider.
             self._camera_media_uri = None
             BuildVersion = autoclass("android.os.Build$VERSION")
             if BuildVersion.SDK_INT >= 29:
@@ -989,7 +1094,6 @@ class PhoneCamera(BoxLayout):
                 values.put("_display_name", os.path.basename(filename))
                 values.put("mime_type", "image/jpeg")
                 values.put("relative_path", "Pictures/DutchPay")
-                # Do not mark this pending: an external camera must write it.
                 uri = context.getContentResolver().insert(
                     autoclass("android.provider.MediaStore$Images$Media").EXTERNAL_CONTENT_URI,
                     values)
@@ -1009,7 +1113,6 @@ class PhoneCamera(BoxLayout):
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
 
-            # Some camera apps need the URI permission explicitly granted.
             resolve_info = activity.getPackageManager().queryIntentActivities(intent, 0)
             for i in range(resolve_info.size()):
                 info = resolve_info.get(i)
@@ -1020,7 +1123,6 @@ class PhoneCamera(BoxLayout):
                     Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
                 )
 
-            # Keep the result callback on the Android activity.
             from android import activity as android_activity
             android_activity.bind(on_activity_result=self._camera_activity_result)
             self._camera_request_code = 0xCAFE
@@ -1042,13 +1144,13 @@ class PhoneCamera(BoxLayout):
                 self._camera_media_uri = None
             import traceback
             traceback.print_exc()
-            message = "CAMERA-V5 실행 오류\n" + type(e).__name__ + ": " + str(e)
+            message = "카메라 실행 오류\n" + type(e).__name__ + ": " + str(e)
             try:
                 from android import activity as android_activity
                 android_activity.unbind(on_activity_result=self._camera_activity_result)
             except Exception:
                 pass
-            Clock.schedule_once(lambda _dt,msg=message:show_message("카메라 오류",msg),0)
+            Clock.schedule_once(lambda _dt,msg=message:show_message("오류",msg),0)
 
     def _camera_activity_result(self, requestCode, resultCode, intent):
         if requestCode != getattr(self, "_camera_request_code", -1):
@@ -1065,7 +1167,6 @@ class PhoneCamera(BoxLayout):
             Intent = autoclass("android.content.Intent")
             uri = getattr(self, "_camera_uri", None)
 
-            # Release temporary URI permissions after the camera returns.
             if uri is not None:
                 for package_name in getattr(self, "_camera_granted_packages", []):
                     try:
@@ -1102,7 +1203,7 @@ class PhoneCamera(BoxLayout):
             else:
                 Clock.schedule_once(lambda _dt:setattr(self.info,"text","촬영이 취소되었습니다."),0)
         except Exception as e:
-            Clock.schedule_once(lambda _dt, msg=str(e): show_message("카메라 오류", "CAMERA-V5 결과 처리 오류\n" + msg), 0)
+            Clock.schedule_once(lambda _dt, msg=str(e): show_message("오류", "결과 처리 중 오류가 발생했습니다.\n" + msg), 0)
 
     def _camera_completed(self, filepath):
         try:
@@ -1112,12 +1213,12 @@ class PhoneCamera(BoxLayout):
                 self.closed = True
                 self.on_capture(path)
                 return
-            self.info.text = "촬영이 취소되었거나 사진이 저장되지 않았습니다."
+            self.info.text = "촬영이 취소되었거나\n사진이 저장되지 않았습니다."
         except Exception as e:
-            show_message("카메라 오류", f"촬영한 사진을 처리하지 못했습니다.\n{e}")
+            show_message("오류", f"촬영한 사진을 처리하지 못했습니다.\n{e}")
 
     def take_picture_pc(self):
-        show_message("사진 선택","PC에서는 내 파일에서 영수증 이미지를 선택해 주세요.")
+        show_message("안내","PC에서는 [갤러리에서 선택] 기능을 이용해 주세요.")
 
     def close(self, *_):
         if self.closed:
@@ -1135,43 +1236,42 @@ class CameraScreen(Screen):
         self.clear_widgets()
         main = add_page_layout()
         main.add_widget(add_logo_header(self))
-        main.add_widget(make_label("영수증 스캔", 22, True, size_hint_y=None, height=dp(44)))
+        main.add_widget(make_label("영수증 추가", 24, True, size_hint_y=None, height=dp(48)))
 
         count = len(SESSION_STATE.get("receipts", []))
         self.status = make_label(
-            f"현재 영수증 {count}개",
-            14, color=COLOR_MUTED, size_hint_y=None, height=dp(28)
+            f"현재 영수증 {count}장 준비됨",
+            15, color=COLOR_PRIMARY, size_hint_y=None, height=dp(32)
         )
         main.add_widget(self.status)
 
-        sample = make_primary_button("[테스트] 샘플 영수증 추가", size_hint_y=None, height=dp(50))
+        action_row = BoxLayout(size_hint_y=None, height=dp(60), spacing=dp(10))
+        camera_btn = make_button("📷 카메라", size_hint_x=0.5)
+        camera_btn.bind(on_press=self.open_camera)
+        
+        file_btn = make_button("📁 갤러리", size_hint_x=0.5)
+        file_btn.bind(on_press=self.open_file)
+        
+        action_row.add_widget(camera_btn)
+        action_row.add_widget(file_btn)
+        main.add_widget(action_row)
+
+        sample = SoftButton(COLOR_SURFACE_BLUE, text="테스트용 샘플 추가", font_size=dp(14), color=COLOR_PRIMARY, size_hint_y=None, height=dp(45))
         sample.bind(on_press=self.load_sample)
         main.add_widget(sample)
 
-        camera_btn = make_button("카메라 열기", size_hint_y=None, height=dp(50))
-        camera_btn.bind(on_press=self.open_camera)
-        main.add_widget(camera_btn)
-
-        file_btn = make_button("📁 내 파일 / 갤러리에서 선택", size_hint_y=None, height=dp(50))
-        file_btn.bind(on_press=self.open_file)
-        main.add_widget(file_btn)
-
-        settlement_btn = make_primary_button(
-            "현재 영수증들로 정산하기",
-            size_hint_y=None, height=dp(52)
-        )
-        settlement_btn.bind(on_press=lambda *_: setattr(self.manager, "current", "settle"))
-        main.add_widget(settlement_btn)
-
-        self.receipt_box = BoxLayout(orientation="vertical", size_hint_y=None, spacing=dp(8))
+        self.receipt_box = BoxLayout(orientation="vertical", size_hint_y=None, spacing=dp(12))
         self.receipt_box.bind(minimum_height=self.receipt_box.setter("height"))
-        receipt_scroll = ScrollView(size_hint_y=None, height=dp(180))
+        receipt_scroll = ScrollView(size_hint_y=None, height=dp(200))
         receipt_scroll.add_widget(self.receipt_box)
         main.add_widget(receipt_scroll)
 
-        cancel = make_button("취소 및 홈으로", size_hint_y=None, height=dp(46))
-        cancel.bind(on_press=lambda *_: setattr(self.manager, "current", "home"))
-        main.add_widget(cancel)
+        settlement_btn = make_primary_button(
+            "이 영수증들로 정산 시작하기",
+            size_hint_y=None, height=dp(60)
+        )
+        settlement_btn.bind(on_press=lambda *_: setattr(self.manager, "current", "settle"))
+        main.add_widget(settlement_btn)
 
         main.add_widget(Widget())
         self.add_widget(main)
@@ -1181,16 +1281,16 @@ class CameraScreen(Screen):
         self.receipt_box.clear_widgets()
         receipts = SESSION_STATE.get("receipts", [])
         if not receipts:
-            self.receipt_box.add_widget(make_label("아직 추가한 영수증이 없습니다.", size_hint_y=None, height=dp(40),
+            self.receipt_box.add_widget(make_label("아직 추가한 영수증이 없습니다.", color=COLOR_MUTED, size_hint_y=None, height=dp(60),
                                                    halign="center"))
             return
         for i, receipt in enumerate(receipts, 1):
-            card = Card(size_hint_y=None, height=dp(62))
+            card = Card(size_hint_y=None, height=dp(70))
             line = BoxLayout()
-            line.add_widget(make_label(f"영수증 {i}", 15, True, size_hint_x=0.35))
-            line.add_widget(make_label(f"{receipt['total']:,}원", 15, True, size_hint_x=0.45,
+            line.add_widget(make_label(f"영수증 {i}", 16, True, size_hint_x=0.35))
+            line.add_widget(make_label(f"{receipt['total']:,}원", 16, True, color=COLOR_PRIMARY, size_hint_x=0.45,
                                        halign="right", valign="middle"))
-            delete = make_button("삭제", size_hint_x=None, width=dp(55))
+            delete = SoftButton(COLOR_BORDER, text="삭제", color=COLOR_MUTED, font_size=dp(13), size_hint_x=None, width=dp(60))
             delete.bind(on_press=lambda *_x, idx=i-1: self.remove_receipt(idx))
             line.add_widget(delete)
             card.add_widget(line)
@@ -1214,7 +1314,12 @@ class CameraScreen(Screen):
 
     def open_camera(self, *_):
         content_holder = BoxLayout(orientation="vertical")
-        popup = Popup(title="카메라", title_font=FONT_BOLD, content=content_holder, size_hint=(0.95, 0.88))
+        popup = Popup(title="카메라 촬영", title_font=FONT_BOLD, title_color=COLOR_TEXT, title_align='center', background="", background_color=(0,0,0,0.5), separator_color=(0,0,0,0), content=content_holder, size_hint=(0.95, 0.7))
+        with popup.canvas.before:
+            Color(rgba=COLOR_SURFACE)
+            popup.bg_rect = RoundedRectangle(radius=[dp(16)])
+        popup.bind(pos=lambda obj,v: setattr(popup.bg_rect, 'pos', v))
+        popup.bind(size=lambda obj,v: setattr(popup.bg_rect, 'size', v))
 
         def captured(path):
             popup.dismiss()
@@ -1243,7 +1348,7 @@ class CameraScreen(Screen):
                 PythonActivity.mActivity.startActivityForResult(intent, 0x9999)
                 return
             except Exception as e:
-                show_message("오류", f"파일 선택기를 열지 못했습니다.\n{e}")
+                show_message("오류", f"갤러리를 열지 못했습니다.\n{e}")
                 return
 
         self.open_pc_file_chooser()
@@ -1294,8 +1399,8 @@ class CameraScreen(Screen):
             path=os.getcwd(),
             filters=["*.jpg", "*.jpeg", "*.png", "*.JPG", "*.JPEG", "*.PNG"],
         )
-        content = BoxLayout(orientation="vertical", padding=dp(8), spacing=dp(8))
-        buttons = BoxLayout(size_hint_y=None, height=dp(48), spacing=dp(8))
+        content = BoxLayout(orientation="vertical", padding=dp(16), spacing=dp(16))
+        buttons = BoxLayout(size_hint_y=None, height=dp(55), spacing=dp(12))
         select = make_primary_button("선택")
         cancel = make_button("취소")
         buttons.add_widget(select)
@@ -1306,13 +1411,23 @@ class CameraScreen(Screen):
         popup = Popup(
             title="영수증 이미지 선택",
             title_font=FONT_BOLD,
+            title_color=COLOR_TEXT,
+            title_align='center',
+            background="",
+            background_color=(0,0,0,0.5),
+            separator_color=(0,0,0,0),
             content=content,
             size_hint=(0.95, 0.85),
         )
+        with popup.canvas.before:
+            Color(rgba=COLOR_SURFACE)
+            popup.bg_rect = RoundedRectangle(radius=[dp(16)])
+        popup.bind(pos=lambda obj,v: setattr(popup.bg_rect, 'pos', v))
+        popup.bind(size=lambda obj,v: setattr(popup.bg_rect, 'size', v))
 
         def do_select(*_):
             if not chooser.selection:
-                show_message("경고", "이미지 파일을 선택해 주세요.")
+                show_message("안내", "이미지 파일을 선택해 주세요.")
                 return
             path = chooser.selection[0]
             popup.dismiss()
@@ -1327,12 +1442,12 @@ class CameraScreen(Screen):
             show_message("오류", "이미지 파일을 찾을 수 없습니다.")
             return
         if not SESSION_STATE.get("token"):
-            show_message("로그인 필요", "OCR을 사용하려면 먼저 로그인하세요.")
+            show_message("안내", "영수증 자동 스캔을 위해 로그인해 주세요.")
             return
         if getattr(self, "_ocr_busy", False):
             return
         self._ocr_busy = True
-        self.status.text = "서버에서 영수증을 읽는 중입니다..."
+        self.status.text = "영수증을 분석 중입니다..."
         token = SESSION_STATE["token"]
         generation = SESSION_STATE.get("generation", 0)
         def completed(data=None, error=None):
@@ -1340,12 +1455,12 @@ class CameraScreen(Screen):
             if generation != SESSION_STATE.get("generation", 0):
                 return
             if error:
-                self.status.text = "인식 실패: 다시 시도하거나 직접 입력하세요."
-                show_message("OCR 오류", error)
+                self.status.text = "분석 실패: 직접 입력해주세요."
+                show_message("안내", error)
                 return
             if not data or not data.get("items"):
-                self.status.text = "인식 실패: 다시 시도하거나 직접 입력하세요."
-                show_message("OCR 실패", "영수증 품목을 인식하지 못했습니다. 직접 입력할 수 있습니다.")
+                self.status.text = "분석 실패: 직접 입력해주세요."
+                show_message("안내", "영수증 품목을 명확하게 인식하지 못했습니다.\n직접 입력할 수 있습니다.")
                 self.review_receipt(data or {"items": [], "total": 0})
                 return
             self.review_receipt(data)
@@ -1360,18 +1475,18 @@ class CameraScreen(Screen):
 
 
     def review_receipt(self, data, index=None):
-        layout = BoxLayout(orientation="vertical", padding=dp(10), spacing=dp(8))
+        layout = BoxLayout(orientation="vertical", padding=dp(16), spacing=dp(16))
         warnings = (data or {}).get("warnings", [])
         confidence = (data or {}).get("confidence")
         if warnings or confidence is not None:
             notice = "\n".join(warnings) if warnings else f"인식 신뢰도 {round(float(confidence) * 100)}%"
             layout.add_widget(make_label(
                 "검토가 필요해요\n" + notice,
-                12, color=(0.78, 0.35, 0.12, 1), size_hint_y=None, height=dp(58)
+                14, color=(0.85, 0.3, 0.2, 1), size_hint_y=None, height=dp(60)
             ))
         layout.add_widget(make_label(
-            "품목명 | 수량 | 품목 합계 금액\n한 줄에 한 품목. 할인은 품목 금액에 반영하세요.",
-            13, size_hint_y=None, height=dp(48)
+            "품목명 | 수량 | 금액\n(한 줄에 한 품목씩 입력, 할인은 금액에 직접 반영)",
+            14, color=COLOR_MUTED, size_hint_y=None, height=dp(50)
         ))
         editor = make_text_input(
             text="\n".join(
@@ -1385,17 +1500,33 @@ class CameraScreen(Screen):
             hint_text="영수증 총액",
             multiline=False,
             size_hint_y=None,
-            height=dp(44),
+            height=dp(55),
         )
         layout.add_widget(editor)
         layout.add_widget(total)
-        actions = BoxLayout(size_hint_y=None, height=dp(44), spacing=dp(8))
-        save = make_primary_button("확인 후 저장")
-        cancel = make_button("취소")
-        actions.add_widget(save)
+        actions = BoxLayout(size_hint_y=None, height=dp(55), spacing=dp(12))
+        save = make_primary_button("확인 후 저장", size_hint_x=0.6)
+        cancel = make_button("취소", size_hint_x=0.4)
         actions.add_widget(cancel)
+        actions.add_widget(save)
         layout.add_widget(actions)
-        popup = Popup(title="영수증 인식 결과 수정", title_font=FONT_BOLD, content=layout, size_hint=(.96, .9))
+        
+        popup = Popup(
+            title="영수증 인식 결과 수정",
+            title_font=FONT_BOLD,
+            title_color=COLOR_TEXT,
+            title_align='center',
+            background="",
+            background_color=(0,0,0,0.5),
+            separator_color=(0,0,0,0),
+            content=layout,
+            size_hint=(.95, .85)
+        )
+        with popup.canvas.before:
+            Color(rgba=COLOR_SURFACE)
+            popup.bg_rect = RoundedRectangle(radius=[dp(16)])
+        popup.bind(pos=lambda obj,v: setattr(popup.bg_rect, 'pos', v))
+        popup.bind(size=lambda obj,v: setattr(popup.bg_rect, 'size', v))
 
         def commit(*_):
             try:
@@ -1405,17 +1536,17 @@ class CameraScreen(Screen):
                         continue
                     parts = [x.strip() for x in line.rsplit("|", 2)]
                     if len(parts) != 3:
-                        raise ValueError("각 줄은 품목명 | 수량 | 금액 형식이어야 합니다.")
+                        raise ValueError("각 줄은 '품목명 | 수량 | 금액' 형식이어야 합니다.")
                     name, qty, price = parts
                     qty, price = int(qty), int(price.replace(",", ""))
                     if not name or not 1 <= qty <= 10000 or not 0 <= price <= 1_000_000_000:
-                        raise ValueError("품목명/수량/금액을 확인해 주세요.")
+                        raise ValueError("품목명, 수량, 금액을 정확히 입력해 주세요.")
                     items.append({"item": name, "qty": qty, "price": price})
                 amount = int(total.text.replace(",", ""))
                 if not items or not 0 < amount <= 1_000_000_000:
                     raise ValueError("영수증 총액을 확인해 주세요.")
                 if sum(x["price"] for x in items) != amount:
-                    raise ValueError("품목 합계와 영수증 총액이 같아야 합니다.")
+                    raise ValueError("품목 합계 금액과 영수증 총액이 일치하지 않습니다.")
                 receipt = {"items": items, "total": amount}
                 if index is None:
                     SESSION_STATE["receipts"].append(receipt)
@@ -1458,32 +1589,39 @@ class QtyInput(TextInput):
 
 class MemberRow(BoxLayout):
     def __init__(self,member,max_qty,on_changed,**kwargs):
-        super().__init__(orientation="horizontal",size_hint_y=None,height=dp(54),spacing=dp(6),**kwargs)
+        super().__init__(orientation="horizontal",size_hint_y=None,height=dp(55),spacing=dp(10),**kwargs)
         self.member=member
         self.max_qty=int(max_qty)
         self.on_changed=on_changed
         self._updating=False
-        self.checkbox=CheckBox()  # state only; no tiny checkbox touch target
+        self.checkbox=CheckBox()
         self.name_button=make_button(member)
         self.name_button.bind(on_release=self._toggle)
         self.add_widget(self.name_button)
-        self.minus=make_button("-",bold=True,size_hint_x=None,width=dp(46))
+        
+        control_box = BoxLayout(size_hint_x=None, width=dp(120), spacing=dp(5))
+        self.minus=make_button("-",bold=True,size_hint_x=None,width=dp(40))
         self.minus.bind(on_release=lambda *_:self._step(-1))
-        self.add_widget(self.minus)
-        self.qty=make_label("0",17,True,size_hint_x=None,width=dp(32))
-        self.add_widget(self.qty)
-        self.plus=make_button("+",bold=True,size_hint_x=None,width=dp(46))
+        control_box.add_widget(self.minus)
+        self.qty=make_label("0",18,True,size_hint_x=None,width=dp(30))
+        control_box.add_widget(self.qty)
+        self.plus=make_button("+",bold=True,size_hint_x=None,width=dp(40))
         self.plus.bind(on_release=lambda *_:self._step(1))
-        self.add_widget(self.plus)
+        control_box.add_widget(self.plus)
+        
+        self.add_widget(control_box)
         self._paint()
+        
     def _paint(self):
         active=self.checkbox.active
-        self.name_button.text=("선택 · " if active else "")+self.member
+        self.name_button.text=("✓ " if active else "")+self.member
         self.name_button._tone.rgba=COLOR_PRIMARY if active else COLOR_PRIMARY_LIGHT
-        self.name_button.color=(1,1,1,1) if active else COLOR_TEXT
+        self.name_button.color=(1,1,1,1) if active else COLOR_PRIMARY
         self.minus.disabled=not active
+        
     def _toggle(self,*_):
         self._step(-self.selected_qty() if self.checkbox.active else 1)
+        
     def _step(self,delta):
         old=self.selected_qty()
         screen=getattr(self,"settle_screen",None)
@@ -1491,19 +1629,23 @@ class MemberRow(BoxLayout):
         remaining=self.max_qty-sum(r.selected_qty() for r in peers if r is not self)
         value=max(0,min(old+delta,remaining,self.max_qty))
         if delta>0 and value==old:
-            show_toast("남은 수량이 없습니다. 다른 참여자 수량을 먼저 줄여 주세요.")
+            show_toast("남은 수량이 없습니다.")
             return
         self.set_value(value)
         self.on_changed()
+        
     def set_value(self,value):
         value=max(0,min(int(value),self.max_qty))
         self.checkbox.active=value>0
         self.qty.text=str(value)
         self._paint()
+        
     def selected_qty(self):
         return int(self.qty.text) if self.checkbox.active else 0
+        
     def set_max_allowed(self,allowed):
         if self.selected_qty()>allowed:self.set_value(allowed)
+        
     def set_check_disabled(self,disabled):
         self.name_button.disabled=bool(disabled and not self.checkbox.active)
 
@@ -1521,96 +1663,96 @@ class SettleScreen(Screen):
 
         outer=add_page_layout()
         body_scroll=ScrollView(do_scroll_x=False)
-        main=BoxLayout(orientation="vertical",size_hint_y=None,spacing=dp(10))
+        main=BoxLayout(orientation="vertical",size_hint_y=None,spacing=dp(16))
         main.bind(minimum_height=main.setter("height"))
         body_scroll.add_widget(main)
         outer.add_widget(body_scroll)
         main.add_widget(add_logo_header(self))
-        main.add_widget(make_label("영수증 정산", 22, True, size_hint_y=None, height=dp(44)))
+        main.add_widget(make_label("정산 설정", 24, True, size_hint_y=None, height=dp(48)))
 
         if not self.current_receipts:
             main.add_widget(make_label(
-                "인식된 영수증이 없습니다.\n영수증을 먼저 추가해 주세요.",
-                halign="center", size_hint_y=None, height=dp(70)
+                "선택된 영수증이 없습니다.\n영수증을 먼저 추가해 주세요.",
+                color=COLOR_MUTED, halign="center", size_hint_y=None, height=dp(80)
             ))
-            go = make_primary_button("영수증 추가", size_hint_y=None, height=dp(50))
+            go = make_primary_button("영수증 추가하러 가기", size_hint_y=None, height=dp(55))
             go.bind(on_press=lambda *_: setattr(self.manager, "current", "camera"))
             main.add_widget(go)
             main.add_widget(Widget())
             self.add_widget(outer)
             return
 
-        main.add_widget(make_label("입금받을 계좌 정보", 17, True, size_hint_y=None, height=dp(34)))
+        main.add_widget(make_label("입금받을 계좌", 18, True, size_hint_y=None, height=dp(34)))
 
-        account_row = BoxLayout(orientation="horizontal", size_hint_y=None, height=dp(45), spacing=dp(8))
+        account_row = BoxLayout(orientation="horizontal", size_hint_y=None, height=dp(55), spacing=dp(10))
         self.bank_input = Spinner(
             text="토스뱅크",
-            values=("토스뱅크", "카카오페이"),
+            values=("토스뱅크", "카카오뱅크", "국민은행", "신한은행", "우리은행", "하나은행", "농협은행"),
             option_cls=KoreanSpinnerOption,
-            font_name=FONT_REGULAR,
+            font_name=FONT_BOLD,
             font_size=dp(15),
-            color=COLOR_TEXT,
+            color=COLOR_PRIMARY,
             background_normal="",
-            background_color=COLOR_SURFACE,
-            size_hint_x=0.38,
+            background_color=COLOR_PRIMARY_LIGHT,
+            size_hint_x=0.35,
         )
         self.acc_input = make_text_input(
-            hint_text="계좌번호",
+            hint_text="계좌번호 입력",
             multiline=False,
-            size_hint_x=0.62,
+            size_hint_x=0.65,
         )
         account_row.add_widget(self.bank_input)
         account_row.add_widget(self.acc_input)
         main.add_widget(account_row)
 
-        main.add_widget(make_label("정산 참여자", 17, True, size_hint_y=None, height=dp(34)))
+        main.add_widget(make_label("정산 참여자", 18, True, size_hint_y=None, height=dp(34)))
 
-        self.member_box = BoxLayout(orientation="vertical", size_hint_y=None, spacing=dp(7))
+        self.member_box = BoxLayout(orientation="vertical", size_hint_y=None, spacing=dp(10))
         self.member_box.bind(minimum_height=self.member_box.setter("height"))
 
         self.add_member_field()
 
-        member_scroll = ScrollView(size_hint_y=None, height=dp(170))
+        member_scroll = ScrollView(size_hint_y=None, height=dp(180))
         member_scroll.add_widget(self.member_box)
         main.add_widget(member_scroll)
 
-        member_actions = BoxLayout(size_hint_y=None, height=dp(40), spacing=dp(7))
-        add_name_btn = make_button("+ 이름 추가", size_hint_x=0.45)
+        member_actions = BoxLayout(size_hint_y=None, height=dp(50), spacing=dp(10))
+        add_name_btn = make_button("+ 인원 추가", size_hint_x=0.45)
         add_name_btn.bind(on_press=lambda *_: self.add_member_field())
-        apply_names_btn = make_primary_button("참여자 적용", size_hint_x=0.55)
+        apply_names_btn = make_primary_button("✓ 참여자 확정", size_hint_x=0.55)
         apply_names_btn.bind(on_press=self.apply_members)
         member_actions.add_widget(add_name_btn)
         member_actions.add_widget(apply_names_btn)
         main.add_widget(member_actions)
 
-        friends_label = make_label("내 친구 · 누르면 빈 이름 칸에 추가", 13, True,
-                                   color=COLOR_MUTED, size_hint_y=None, height=dp(24))
+        friends_label = make_label("내 친구목록 (터치하여 자동 추가)", 14, True,
+                                   color=COLOR_MUTED, size_hint_y=None, height=dp(28))
         main.add_widget(friends_label)
 
-        self.friend_quick_box = BoxLayout(size_hint_y=None, height=dp(40), spacing=dp(6))
+        self.friend_quick_box = BoxLayout(size_hint_y=None, height=dp(45), spacing=dp(8))
         main.add_widget(self.friend_quick_box)
         self.render_friend_quick_add()
 
         total = sum(r["total"] for r in self.current_receipts)
-        total_card = Card(size_hint_y=None, height=dp(66))
-        total_card.add_widget(make_label(f"전체 영수증 {len(self.current_receipts)}개", 13, False,
-                                         color=COLOR_MUTED, size_hint_y=None, height=dp(22)))
-        total_card.add_widget(make_label(f"총 {total:,}원", 20, True, size_hint_y=None, height=dp(30)))
+        total_card = Card(size_hint_y=None, height=dp(80))
+        total_card.add_widget(make_label(f"전체 영수증 {len(self.current_receipts)}장", 14, False,
+                                         color=COLOR_MUTED, size_hint_y=None, height=dp(24)))
+        total_card.add_widget(make_label(f"총 결제금액 {total:,}원", 22, True, size_hint_y=None, height=dp(35)))
         main.add_widget(total_card)
 
         self.items_scroll = ScrollView(size_hint_y=None,height=dp(460),do_scroll_x=False)
         self.items_container = BoxLayout(
             orientation="vertical", size_hint_y=None,
-            spacing=dp(12), padding=[0, dp(3), 0, dp(3)]
+            spacing=dp(16), padding=[0, dp(5), 0, dp(5)]
         )
         self.items_container.bind(minimum_height=self.items_container.setter("height"))
         self.items_scroll.add_widget(self.items_container)
         main.add_widget(self.items_scroll)
 
-        action_row = BoxLayout(size_hint_y=None, height=dp(52), spacing=dp(8))
-        add_receipt = make_button("+ 영수증 추가", size_hint_x=0.38)
+        action_row = BoxLayout(size_hint_y=None, height=dp(60), spacing=dp(10))
+        add_receipt = make_button("영수증 재선택", size_hint_x=0.35)
         add_receipt.bind(on_press=lambda *_: setattr(self.manager, "current", "camera"))
-        settle_btn = make_primary_button("정산 링크 복사", size_hint_x=0.62)
+        settle_btn = make_primary_button("정산 링크 복사하기", size_hint_x=0.65)
         self.settle_button=settle_btn
         settle_btn.bind(on_press=lambda *_: self.process_settlement())
         action_row.add_widget(add_receipt)
@@ -1625,12 +1767,12 @@ class SettleScreen(Screen):
 
         entered=[inp.text.strip() for inp in self.name_inputs if inp.text.strip()]
         if len(entered)!=len(set(entered)):
-            show_message("중복 이름","동명이인은 이름 뒤에 숫자를 붙여 구분해 주세요.")
+            show_message("안내","중복된 이름이 있습니다. 이름 뒤에 숫자를 붙여 구분해 주세요.")
             return
         members = self.collect_members()
 
         if not members:
-            show_message("참여자 입력", "참여자 이름을 한 명 이상 입력해 주세요.")
+            show_message("안내", "참여자 이름을 한 명 이상 입력해 주세요.")
             return
 
         self.render_menu_items()
@@ -1641,44 +1783,27 @@ class SettleScreen(Screen):
             self.items_scroll.scroll_y = 1
 
     def add_member_field(self, preset=""):
-        row = BoxLayout(size_hint_y=None, height=dp(44), spacing=dp(7))
+        row = BoxLayout(size_hint_y=None, height=dp(50), spacing=dp(10))
 
         index = len(self.name_inputs) + 1
         inp = make_text_input(
-            hint_text=f"{index}번째 이름",
+            hint_text=f"참여자 {index} 이름",
             text=preset,
             multiline=False,
         )
         row.member_input = inp
         self.name_inputs.append(inp)
 
-        paste_btn = make_button("붙여넣기", size_hint_x=None, width=dp(78))
-        paste_btn.bind(on_press=lambda *_: self.paste_into_input(inp))
-
-        minus = make_button("삭제", bold=True, size_hint_x=None, width=dp(52))
+        minus = SoftButton(COLOR_BORDER, text="삭제", bold=True, color=COLOR_MUTED, size_hint_x=None, width=dp(65))
         minus.bind(on_press=lambda *_: self.remove_member_field(inp))
 
         if len(self.name_inputs) == 1:
             minus.disabled = True
 
         row.add_widget(inp)
-        row.add_widget(paste_btn)
         row.add_widget(minus)
 
-        # + 버튼은 마지막 줄에만 하나 두지 않고 이름영역 상단에 따로 배치하지 않기 위해
-        # 첫 줄 아래에 별도 add 버튼을 추가합니다.
         self.member_box.add_widget(row)
-
-    def paste_into_input(self, inp):
-        try:
-            text = Clipboard.paste() or ""
-        except Exception as e:
-            show_message("붙여넣기 실패", str(e))
-            return
-        text = text.replace("\n", " ").strip()
-        if text:
-            inp.text = text
-            inp.focus = False
 
     def remove_member_field(self, inp):
         if len(self.name_inputs) <= 1:
@@ -1697,11 +1822,11 @@ class SettleScreen(Screen):
         self.friend_quick_box.clear_widgets()
         friends = SESSION_STATE.get("friends", [])
         if not friends:
-            self.friend_quick_box.add_widget(make_label("친구 없음", 12, color=COLOR_MUTED))
+            self.friend_quick_box.add_widget(make_label("친구가 없습니다.", 13, color=COLOR_MUTED))
             return
 
-        for friend in friends[:5]:
-            btn = make_button(friend["name"], size_hint_x=None, width=dp(82))
+        for friend in friends[:4]:
+            btn = make_button(friend["name"], size_hint_x=None, width=dp(80))
             btn.bind(on_press=lambda _btn, name=friend["name"]: self.fill_next_member(name))
             self.friend_quick_box.add_widget(btn)
 
@@ -1730,7 +1855,7 @@ class SettleScreen(Screen):
         if not members:
             self.items_container.add_widget(make_label(
                 "위의 이름 칸에 참여자를 추가해 주세요.",
-                size_hint_y=None, height=dp(48), halign="center"
+                color=COLOR_MUTED, size_hint_y=None, height=dp(60), halign="center"
             ))
             return
 
@@ -1738,21 +1863,21 @@ class SettleScreen(Screen):
             items = receipt["items"]
             receipt_card = Card(
                 size_hint_y=None,
-                height=dp(58 + sum(48 + 44 * len(members) for _ in items))
+                height=dp(70 + sum(60 + 55 * len(members) for _ in items))
             )
             receipt_card.bind(minimum_height=receipt_card.setter("height"))
             receipt_card.add_widget(make_label(
                 f"영수증 {receipt_index + 1} · {receipt['total']:,}원",
-                16, True, size_hint_y=None, height=dp(28)
+                18, True, size_hint_y=None, height=dp(35)
             ))
 
             for item_index, item in enumerate(items):
                 max_qty = max(1, int(item["qty"]))
-                sub = Card(size_hint_y=None, height=dp(50 + 44 * len(members)))
+                sub = Card(size_hint_y=None, height=dp(60 + 55 * len(members)), padding=dp(12))
                 sub.bind(minimum_height=sub.setter("height"))
                 sub.add_widget(make_label(
                     f"{item['item']}  {item['price']:,}원 · {max_qty}개",
-                    14, True, size_hint_y=None, height=dp(26)
+                    16, True, size_hint_y=None, height=dp(30)
                 ))
 
                 rows = []
@@ -1766,11 +1891,11 @@ class SettleScreen(Screen):
 
                 key = (receipt_index, item_index)
                 self.member_rows[key] = rows
-                controls=BoxLayout(size_hint_y=None,height=dp(44),spacing=dp(8))
-                status=make_label("",13,color=COLOR_MUTED)
+                controls=BoxLayout(size_hint_y=None,height=dp(50),spacing=dp(10))
+                status=make_label("",14,color=COLOR_MUTED)
                 self.item_status[key]=status
                 controls.add_widget(status)
-                equal=make_button("균등 배분",size_hint_x=None,width=dp(100))
+                equal=make_button("1/N 배분",size_hint_x=None,width=dp(100))
                 equal.bind(on_release=lambda _btn,k=key:self.equal_allocate(k))
                 controls.add_widget(equal)
                 sub.add_widget(controls)
@@ -1810,8 +1935,8 @@ class SettleScreen(Screen):
                 selected = sum(r.selected_qty() for r in rows)
 
             if key in getattr(self,"item_status",{}):
-                self.item_status[key].text=f"배분 {selected}/{max_qty} · 남음 {max(0,max_qty-selected)}"
-                self.item_status[key].color=COLOR_SUCCESS if selected==max_qty else COLOR_MUTED
+                self.item_status[key].text=f"배분 {selected}/{max_qty} · 남은수량 {max(0,max_qty-selected)}"
+                self.item_status[key].color=COLOR_PRIMARY if selected==max_qty else COLOR_MUTED
             for row in rows:
                 row.plus.disabled=selected>=max_qty
                 own = row.selected_qty()
@@ -1826,33 +1951,33 @@ class SettleScreen(Screen):
     def process_settlement(self):
         if getattr(self,"_settle_busy",False):return
         if not SESSION_STATE["current_user"]:
-            show_message("로그인 필요", "정산 링크를 만들려면 먼저 로그인해 주세요.")
+            show_message("안내", "정산 링크를 만들려면\n먼저 로그인해 주세요.")
             self.manager.current = "login"
             return
 
         bank = self.bank_input.text.strip()
         account = self.acc_input.text.strip()
         if not bank or not account:
-            show_message("경고", "입금받을 계좌 정보를 입력해 주세요.")
+            show_message("안내", "입금받을 계좌 정보를 입력해 주세요.")
             return
 
         members = self.collect_members()
         if not members:
-            show_message("경고", "참여자 이름을 한 명 이상 입력해 주세요.")
+            show_message("안내", "참여자 이름을 한 명 이상 입력해 주세요.")
             return
 
         if not self.member_rows:
-            show_message("참여자 적용", "참여자 이름을 입력한 뒤 '참여자 적용'을 눌러 주세요.")
+            show_message("안내", "참여자 이름을 입력한 뒤\n'참여자 확정'을 눌러 주세요.")
             return
 
         member_totals = {m: Fraction(0) for m in members}
         expected_total = sum(int(r["total"]) for r in self.current_receipts)
         item_total = sum(int(i["price"]) for r in self.current_receipts for i in r["items"])
         if item_total != expected_total:
-            show_message("총액 확인", "품목 금액 합계와 영수증 총액을 일치시켜 주세요.")
+            show_message("금액 오류", "품목 금액 합계와 영수증 총 결제금액이 다릅니다.")
             return
         if any(row.member not in members for rows in self.member_rows.values() for row in rows):
-            show_message("참여자 적용", "참여자가 변경되었습니다. 참여자 적용을 다시 눌러 주세요.")
+            show_message("안내", "참여자가 변경되었습니다. '참여자 확정'을 다시 눌러 주세요.")
             return
         allocated = []
 
@@ -1868,8 +1993,8 @@ class SettleScreen(Screen):
 
             if total_selected != max_qty:
                 show_message(
-                    "배분 필요",
-                    f"영수증 {receipt_index + 1}의 '{item['item']}' 수량을\n"
+                    "배분 미완료",
+                    f"영수증 {receipt_index + 1}의 [{item['item']}] 수량이 남았습니다.\n"
                     f"참여자에게 모두 배분해 주세요. ({total_selected}/{max_qty})",
                 )
                 return
@@ -1925,13 +2050,13 @@ class SettleScreen(Screen):
     def settlement_failed(self,error):
         self._settle_busy=False
         self.settle_button.disabled=False
-        self.settle_button.text="정산 링크 복사"
-        show_message("정산 생성 실패",error)
+        self.settle_button.text="정산 링크 복사하기"
+        show_message("생성 실패",error)
 
     def settlement_created(self, data):
         self._settle_busy=False
         self.settle_button.disabled=False
-        self.settle_button.text="정산 링크 복사"
+        self.settle_button.text="정산 링크 복사하기"
         share_url = data["share_url"]
         Clipboard.copy(share_url)
 
@@ -1943,8 +2068,7 @@ class SettleScreen(Screen):
             "count": len(data["receipts"]),
         })
 
-        # 결과 팝업 없이 링크를 바로 클립보드에 복사
-        show_toast(f"정산 링크가 복사되었습니다.\n{total:,}원")
+        show_toast(f"정산 링크가 클립보드에 복사되었습니다!\n(총액: {total:,}원)")
         SESSION_STATE["receipts"] = []
         self.manager.current = "home"
 
@@ -2024,7 +2148,6 @@ class DutchPayApp(App):
 
     def handle_back_key(self, window, key, *args):
         if key == 27 and self.root and self.root.current != "landing":
-            # Let an open popup handle Back before navigating the page.
             from kivy.uix.modalview import ModalView
             for child in Window.children:
                 if isinstance(child, ModalView):
