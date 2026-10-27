@@ -12,7 +12,13 @@ import mimetypes
 import ssl
 import certifi
 import uuid
-HTTPS_CONTEXT = ssl.create_default_context(cafile=certifi.where())
+
+def get_https_context():
+    try:
+        return ssl.create_default_context(cafile=certifi.where())
+    except Exception:
+        return ssl._create_unverified_context()
+
 from fractions import Fraction
 from kivy.app import App
 from kivy.animation import Animation
@@ -129,7 +135,7 @@ def api_request(method, path, json_data=None, auth=True, timeout=70, token=None)
     body = None if json_data is None else json.dumps(json_data).encode("utf-8")
     req = urllib.request.Request(url=url, data=body, headers=headers, method=method.upper())
     try:
-        with urllib.request.urlopen(req, timeout=timeout, context=HTTPS_CONTEXT) as response:
+        with urllib.request.urlopen(req, timeout=timeout, context=get_https_context()) as response:
             status_code = response.status
             raw = response.read()
     except urllib.error.HTTPError as exc:
@@ -172,7 +178,7 @@ def _multipart_upload_image(path, token, timeout=75):
         headers={"Authorization": f"Bearer {token}", "Content-Type": f"multipart/form-data; boundary={boundary}"},
     )
     try:
-        with urllib.request.urlopen(req, timeout=timeout, context=HTTPS_CONTEXT) as response:
+        with urllib.request.urlopen(req, timeout=timeout, context=get_https_context()) as response:
             status_code, raw = response.status, response.read()
     except urllib.error.HTTPError as exc:
         status_code, raw = exc.code, exc.read()

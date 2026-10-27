@@ -8,10 +8,10 @@ source.dir = .
 source.include_exts = py,kv,png,jpg,jpeg,ttf,xml
 source.exclude_patterns = server.py,validation.py,ocr_service.py,test_*.py,*.json,*.db*,*.log
 version = 1.1.0
-requirements = python3,kivy,plyer,certifi,charset-normalizer==3.4.2
+requirements = python3,kivy,plyer,certifi,charset-normalizer==3.4.2,pyjnius
 orientation = portrait
 fullscreen = 0
-android.permissions = INTERNET,CAMERA,POST_NOTIFICATIONS
+android.permissions = INTERNET,CAMERA,POST_NOTIFICATIONS,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
 android.api = 34
 android.minapi = 24
 android.archs = arm64-v8a
