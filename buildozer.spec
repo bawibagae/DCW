@@ -3,12 +3,11 @@ title = DutchPay
 package.name = dcw
 package.domain = com.jaewoo
 p4a.branch = develop
-p4a.commit = d2ee8c5
 source.dir = .
 source.include_exts = py,kv,png,jpg,jpeg,ttf,xml
 source.exclude_patterns = server.py,validation.py,ocr_service.py,test_*.py,*.json,*.db*,*.log
 version = 1.1.0
-requirements = python3,kivy,plyer,certifi,charset-normalizer==3.4.2,pyjnius
+requirements = python3,kivy,plyer,certifi,pyjnius,requests,urllib3
 orientation = portrait
 fullscreen = 0
 android.permissions = INTERNET,CAMERA,POST_NOTIFICATIONS,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE

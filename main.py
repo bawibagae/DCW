@@ -12,6 +12,45 @@ import mimetypes
 import ssl
 import certifi
 import uuid
+import requests
+
+def api_request(method, path, json_data=None, auth=True, timeout=70, token=None):
+    headers = {}
+    if json_data is not None:
+        headers["Content-Type"] = "application/json"
+    if auth and token:
+        headers["Authorization"] = f"Bearer {token}"
+        
+    url = f"{API_BASE_URL}{path}"
+    
+    try:
+        # verify=False를 주어 안드로이드 환경의 까다로운 SSL 인증서 검증을 원천적으로 무시합니다.
+        import urllib3
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        
+        response = requests.request(
+            method=method.upper(),
+            url=url,
+            json=json_data,
+            headers=headers,
+            timeout=timeout,
+            verify=False 
+        )
+        status_code = response.status_code
+        
+        try:
+            data = response.json()
+        except:
+            data = {"error": response.text}
+            
+    except Exception as exc:
+        raise RuntimeError(f"서버 연결 실패\n서버가 자고 있거나 인터넷 문제일 수 있습니다.\n{exc}") from exc
+
+    if status_code >= 400:
+        message = data.get("error", "서버 오류") if isinstance(data, dict) else "서버 오류"
+        raise RuntimeError(f"HTTP {status_code} · {path}\n{message}")
+        
+    return data
 
 def get_https_context():
     if platform == "android":
