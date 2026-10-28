@@ -14,9 +14,17 @@ import certifi
 import uuid
 
 def get_https_context():
+    if platform == "android":
+        # 안드로이드 환경에서는 urllib의 SSL 인증서 경로 참조 오류가 발생하므로 검증을 우회합니다.
+        import ssl
+        return ssl._create_unverified_context()
+    
     try:
+        import ssl
+        import certifi
         return ssl.create_default_context(cafile=certifi.where())
     except Exception:
+        import ssl
         return ssl._create_unverified_context()
 
 from fractions import Fraction
