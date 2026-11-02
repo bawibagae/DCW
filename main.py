@@ -13,6 +13,10 @@ import ssl
 import certifi
 import uuid
 import requests
+import urllib3
+
+# 안드로이드 SSL 인증서 경고 숨김
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def api_request(method, path, json_data=None, auth=True, timeout=70, token=None):
     headers = {}
@@ -24,33 +28,31 @@ def api_request(method, path, json_data=None, auth=True, timeout=70, token=None)
     url = f"{API_BASE_URL}{path}"
     
     try:
-        # verify=False를 주어 안드로이드 환경의 까다로운 SSL 인증서 검증을 원천적으로 무시합니다.
-        import urllib3
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-        
         response = requests.request(
             method=method.upper(),
             url=url,
             json=json_data,
             headers=headers,
             timeout=timeout,
-            verify=False 
+            verify=False  # 안드로이드 SSL 인증서 오류 원천 차단
         )
-        status_code = response.status_code
         
+        status_code = response.status_code
         try:
             data = response.json()
         except:
-            data = {"error": response.text}
+            data = {"error": response.text or "서버 응답을 읽을 수 없습니다."}
             
-    except Exception as exc:
-        raise RuntimeError(f"서버 연결 실패\n서버가 자고 있거나 인터넷 문제일 수 있습니다.\n{exc}") from exc
-
-    if status_code >= 400:
-        message = data.get("error", "서버 오류") if isinstance(data, dict) else "서버 오류"
-        raise RuntimeError(f"HTTP {status_code} · {path}\n{message}")
+        if status_code >= 400:
+            message = data.get("error", "서버 오류") if isinstance(data, dict) else "서버 오류"
+            trace = data.get("request_id") if isinstance(data, dict) else None
+            suffix = f"\n요청 ID: {trace}" if trace and str(trace) not in str(message) else ""
+            raise RuntimeError(f"HTTP {status_code} · {path}\n{message}{suffix}")
+            
+        return data
         
-    return data
+    except requests.exceptions.RequestException as exc:
+        raise RuntimeError(f"서버 연결 실패\n{url}\n{exc}")
 
 # def get_https_context():
 #     if platform == "android":
@@ -205,39 +207,30 @@ def api_request(method, path, json_data=None, auth=True, timeout=70, token=None)
 def _multipart_upload_image(path, token, timeout=75):
     if os.path.getsize(path) > 10 * 1024 * 1024:
         raise ValueError("이미지는 10MB 이하로 선택해 주세요.")
-    with open(path, "rb") as image_file:
-        image_bytes = image_file.read()
-    boundary = "----DutchPayBoundary" + format(int(time.time() * 1000000), "x")
+        
+    url = f"{API_BASE_URL}/api/ocr"
+    headers = {"Authorization": f"Bearer {token}"}
     mime_type = mimetypes.guess_type(path)[0] or "application/octet-stream"
     filename = os.path.basename(path) or "receipt.jpg"
-    body = b"".join([
-        f"--{boundary}\r\n".encode("utf-8"),
-        f'Content-Disposition: form-data; name="image"; filename="{filename}"\r\n'.encode("utf-8"),
-        f"Content-Type: {mime_type}\r\n\r\n".encode("utf-8"),
-        image_bytes,
-        b"\r\n",
-        f"--{boundary}--\r\n".encode("utf-8"),
-    ])
-    req = urllib.request.Request(
-        url=f"{API_BASE_URL}/api/ocr",
-        data=body,
-        method="POST",
-        headers={"Authorization": f"Bearer {token}", "Content-Type": f"multipart/form-data; boundary={boundary}"},
-    )
+    
     try:
-        with urllib.request.urlopen(req, timeout=timeout, context=get_https_context()) as response:
-            status_code, raw = response.status, response.read()
-    except urllib.error.HTTPError as exc:
-        status_code, raw = exc.code, exc.read()
-    except (urllib.error.URLError, TimeoutError) as exc:
-        raise RuntimeError(f"OCR 서버 연결 실패\n{exc}") from exc
-    try:
-        data = json.loads(raw.decode("utf-8"))
-    except Exception as exc:
-        raise RuntimeError("OCR 서버가 JSON 대신 다른 응답을 반환했습니다.") from exc
-    if status_code >= 400:
-        raise RuntimeError(data.get("error", f"OCR 서버 오류 ({status_code})"))
-    return data
+        with open(path, "rb") as image_file:
+            files = {"image": (filename, image_file, mime_type)}
+            response = requests.post(url, headers=headers, files=files, timeout=timeout, verify=False)
+            
+        status_code = response.status_code
+        try:
+            data = response.json()
+        except:
+            data = {"error": "OCR 서버가 JSON 대신 다른 응답을 반환했습니다."}
+            
+        if status_code >= 400:
+            raise RuntimeError(data.get("error", f"OCR 서버 오류 ({status_code})"))
+            
+        return data
+        
+    except requests.exceptions.RequestException as exc:
+        raise RuntimeError(f"OCR 서버 연결 실패\n{exc}")
 
 def async_api(method, path, json_data, on_success, on_error, auth=True):
     token = SESSION_STATE.get("token") if auth else None
