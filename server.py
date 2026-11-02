@@ -107,11 +107,11 @@ def add_cors_headers(response):
 
 @app.route("/", methods=["GET"])
 def web_index():
-    return send_from_directory(os.path.join(APP_DIR, "web"), "landing.html")
+    return jsonify({"message": "DutchPay API 서버가 정상 작동 중입니다."})
 
 @app.route("/landing", methods=["GET"])
 def landing_page():
-    return send_from_directory(os.path.join(APP_DIR, "web"), "landing.html")
+    return jsonify({"message": "DutchPay API 서버가 정상 작동 중입니다."})
 
 @app.route("/settlement", methods=["GET"])
 def settlement_page():
