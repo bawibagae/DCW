@@ -18,7 +18,7 @@ import urllib3
 # 안드로이드 SSL 인증서 경고 숨김
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-def api_request(method, path, json_data=None, auth=True, timeout=70, token=None):
+def api_request(method, path, json_data=None, auth=True, timeout=120, token=None):
     headers = {}
     if json_data is not None:
         headers["Content-Type"] = "application/json"
@@ -54,19 +54,19 @@ def api_request(method, path, json_data=None, auth=True, timeout=70, token=None)
     except requests.exceptions.RequestException as exc:
         raise RuntimeError(f"서버 연결 실패\n{url}\n{exc}")
 
-# def get_https_context():
-#     if platform == "android":
-#         # 안드로이드 환경에서는 urllib의 SSL 인증서 경로 참조 오류가 발생하므로 검증을 우회합니다.
-#         import ssl
-#         return ssl._create_unverified_context()
+def get_https_context():
+    if platform == "android":
+        # 안드로이드 환경에서는 urllib의 SSL 인증서 경로 참조 오류가 발생하므로 검증을 우회합니다.
+        import ssl
+        return ssl._create_unverified_context()
     
-#     try:
-#         import ssl
-#         import certifi
-#         return ssl.create_default_context(cafile=certifi.where())
-#     except Exception:
-#         import ssl
-#         return ssl._create_unverified_context()
+    try:
+        import ssl
+        import certifi
+        return ssl.create_default_context(cafile=certifi.where())
+    except Exception:
+        import ssl
+        return ssl._create_unverified_context()
 
 from fractions import Fraction
 from kivy.app import App
@@ -204,7 +204,7 @@ def api_request(method, path, json_data=None, auth=True, timeout=70, token=None)
     return data
 
 
-def _multipart_upload_image(path, token, timeout=75):
+def _multipart_upload_image(path, token, timeout=120):
     if os.path.getsize(path) > 10 * 1024 * 1024:
         raise ValueError("이미지는 10MB 이하로 선택해 주세요.")
         
@@ -789,15 +789,15 @@ class LoginScreen(Screen):
         main.add_widget(Widget(size_hint_y=0.3))
         self.add_widget(main)
 
-    def do_login(self, *_):
+    def do_login(self, btn_instance, *args):
         email = self.email_input.text.strip()
         pw = self.pw_input.text.strip()
         if not email or not pw:
             show_message("안내", "이메일과 비밀번호를\n모두 입력해 주세요.")
             return
 
-        auth_submit(self, _[0], "/api/auth/login",
-                    {"email":email,"password":pw},self.login_success)
+        auth_submit(self, btn_instance, "/api/auth/login",
+                {"email":email,"password":pw},self.login_success)
 
     def login_success(self, data):
         SESSION_STATE["token"] = data["token"]
@@ -874,7 +874,7 @@ class SignupScreen(Screen):
         main.add_widget(Widget(size_hint_y=0.25))
         self.add_widget(main)
 
-    def do_signup(self, *_):
+    def do_signup(self, btn_instance, *args):
         name = self.name_input.text.strip()
         email = self.email_input.text.strip()
         pw = self.pw_input.text.strip()
@@ -885,8 +885,8 @@ class SignupScreen(Screen):
         if len(pw)<6:
             show_message("안내","비밀번호는 6자 이상 입력해 주세요.")
             return
-        auth_submit(self, _[0], "/api/auth/register",
-                    {"name":name,"email":email,"password":pw},lambda data:self.signup_success())
+        auth_submit(self, btn_instance, "/api/auth/register",
+                {"name":name,"email":email,"password":pw},lambda data:self.signup_success())
 
     def signup_success(self):
         self.name_input.text = ""
