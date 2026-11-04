@@ -5,6 +5,7 @@ package.domain = com.jaewoo
 p4a.branch = develop
 source.dir = .
 source.include_exts = py,kv,png,jpg,jpeg,ttf,xml
+source.exclude_dirs = venv, bin, web, migrations, .buildozer, __pycache__
 source.exclude_patterns = server.py,validation.py,ocr_service.py,test_*.py,*.json,*.db*,*.log
 version = 1.1.0
 requirements = python3, kivy, requests, urllib3, certifi

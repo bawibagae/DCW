@@ -310,7 +310,7 @@ class ModernTextInput(TextInput):
         with self.canvas.before:
             Color(rgba=COLOR_SURFACE)
             self.bg_rect = RoundedRectangle(radius=[dp(10)])
-            Color(rgba=COLOR_BORDER)
+            self.border_color = Color(rgba=COLOR_BORDER)
             self.border_line = Line(rounded_rectangle=(0,0,0,0,dp(10)), width=1.1)
             
         self.bind(pos=self.update_canvas, size=self.update_canvas, focus=self.update_canvas)
@@ -321,9 +321,9 @@ class ModernTextInput(TextInput):
         self.border_line.rounded_rectangle = (self.x, self.y, self.width, self.height, dp(10))
         # 포커스 시 테두리 색상 변경
         if self.focus:
-            self.canvas.before.children[-2].rgba = COLOR_PRIMARY
+            self.border_color.rgba = COLOR_PRIMARY
         else:
-            self.canvas.before.children[-2].rgba = COLOR_BORDER
+            self.border_color.rgba = COLOR_BORDER
 
 def make_text_input(**kwargs):
     return ModernTextInput(**kwargs)
