@@ -271,11 +271,11 @@ def make_label(text="", font_size=16, bold=False, **kwargs):
 
 
 class SoftButton(Button):
-    def __init__(self, tone, **kwargs):
+    def __init__(self, tone, radius=12, **kwargs):
         super().__init__(background_normal="", background_down="", background_color=(0,0,0,0), **kwargs)
         with self.canvas.before:
             self._tone = Color(*tone)
-            self._shape = RoundedRectangle(radius=[dp(12)])
+            self._shape = RoundedRectangle(radius=[dp(radius)])
         self.bind(pos=self._draw, size=self._draw, state=self._draw, disabled=self._draw)
         self._draw()
     def _draw(self,*_):
@@ -287,6 +287,15 @@ class SoftButton(Button):
 def make_button(text="",bold=False,**kwargs):
     return SoftButton(COLOR_PRIMARY_LIGHT,text=text,font_name=FONT_BOLD if bold else FONT_REGULAR,
                       font_size=dp(15),color=COLOR_PRIMARY,**kwargs)
+
+
+def make_header_button(text="", bold=False, width=None):
+    """헤더(맨 위) 전용 작은 버튼: 높이 36dp, 글자 13dp, 모서리 8dp"""
+    return SoftButton(COLOR_PRIMARY_LIGHT, radius=8, text=text,
+                      font_name=FONT_BOLD if bold else FONT_REGULAR,
+                      font_size=dp(13), color=COLOR_PRIMARY,
+                      size_hint=(None, None), width=width or dp(60), height=dp(36),
+                      pos_hint={"center_y": .5})
 
 
 def make_primary_button(text="",**kwargs):
@@ -422,36 +431,54 @@ def show_message(title, message):
 
 
 def show_toast(message):
-    content = BoxLayout(padding=dp(16))
-    label = make_label(message, 14, True, color=(1,1,1,1), halign="center", valign="middle")
-    content.add_widget(label)
-    
-    popup = Popup(
-        content=content,
+    """화면 아래쪽에 잠깐 떴다 사라지는 알림.
+    Popup을 쓰면 제목이 없을 때 'No title'과 모양 테두리가 같이 그려져서
+    Popup 대신 Label을 화면(Window) 위에 직접 올린다."""
+    toast = Label(
+        text=str(message),
+        font_name=FONT_BOLD,
+        font_size=dp(14),
+        color=COLOR_TEXT,              # 진한 글자색 (밝은 배경 위에서 잘 보임)
+        halign="center",
+        valign="middle",
         size_hint=(None, None),
-        size=(dp(300), dp(60)),
-        separator_height=0,
-        background="",
-        background_color=(0,0,0,0),
-        auto_dismiss=True,
+        padding=(dp(18), dp(12)),
     )
-    
-    with popup.canvas.before:
-        Color(rgba=(0.1, 0.1, 0.1, 0.85))
-        popup.bg_rect = RoundedRectangle(radius=[dp(30)])
-    popup.bind(pos=lambda obj,v: setattr(popup.bg_rect, 'pos', v))
-    popup.bind(size=lambda obj,v: setattr(popup.bg_rect, 'size', v))
+    max_w = min(Window.width * 0.88, dp(340))
+    toast.text_size = (max_w - dp(36), None)
+    toast.texture_update()
+    toast.size = (max_w, toast.texture_size[1] + dp(24))
+    toast.center_x = Window.width / 2
+    toast.y = dp(48)
 
-    popup.open()
-    Clock.schedule_once(lambda *_: popup.dismiss(), 1.6)
+    with toast.canvas.before:
+        Color(rgba=COLOR_BORDER)                       # 얇은 테두리
+        toast._border = RoundedRectangle(radius=[dp(8)])
+        Color(rgba=COLOR_SURFACE)                      # 흰 배경
+        toast._bg = RoundedRectangle(radius=[dp(8)])
+    def _draw(*_):
+        toast._border.pos = toast.pos
+        toast._border.size = toast.size
+        toast._bg.pos = (toast.x + dp(1), toast.y + dp(1))
+        toast._bg.size = (toast.width - dp(2), toast.height - dp(2))
+    toast.bind(pos=_draw, size=_draw)
+    _draw()
+
+    Window.add_widget(toast)
+    def _close(*_):
+        if toast.parent:
+            toast.parent.remove_widget(toast)
+    Clock.schedule_once(_close, 1.8)
+    return toast
 
 
 def add_logo_header(screen):
     header = BoxLayout(orientation="horizontal", size_hint_y=None,
-                       height=dp(62), spacing=dp(8))
-    logo = SoftButton(COLOR_PRIMARY_DARK, text="DUTCH\n더치페이",
-                      font_name=FONT_BOLD, font_size=dp(17),
-                      color=(1, 1, 1, 1), size_hint_x=None, width=dp(112))
+                       height=dp(44), spacing=dp(6))
+    logo = SoftButton(COLOR_PRIMARY_DARK, radius=8, text="DUTCH 더치페이",
+                      font_name=FONT_BOLD, font_size=dp(13),
+                      color=(1, 1, 1, 1), size_hint=(None, None),
+                      width=dp(104), height=dp(36), pos_hint={"center_y": .5})
     def home(*_):
         if screen.manager:
             screen.manager.transition.direction = "right"
@@ -460,10 +487,10 @@ def add_logo_header(screen):
     header.add_widget(logo)
     header.add_widget(Widget())
     if screen.name != "home":
-        button = make_button("홈", size_hint_x=None, width=dp(44))
+        button = make_header_button("홈", width=dp(44))
         button.bind(on_release=home)
         header.add_widget(button)
-    user = make_button("로그인", bold=True, size_hint_x=None, width=dp(88))
+    user = make_header_button("로그인", bold=True, width=dp(78))
     def refresh(*_):
         user.text = "마이페이지" if SESSION_STATE["current_user"] else "로그인"
     refresh()
@@ -568,7 +595,7 @@ class LandingScreen(Screen):
     SLIDES = (
         ("01 — CAPTURE", "영수증 한 장.\n정산은 순식간.", "카메라로 찍으면 품목과 금액을 읽어와요.\n애매한 결과는 바로 확인하고 고칠 수 있어요.", "SCAN", "품목 · 수량 · 금액\n파스타 × 2     28,000원\n스테이크 × 1   32,000원\n\nTOTAL          60,000원"),
         ("02 — SPLIT", "복잡한 계산은\n우리에게 맡겨요.", "누가 무엇을 먹었는지 선택하세요.\n사람별 금액을 공정하게 정리합니다.", "SPLIT", "민지                    20,000원\n준호                    20,000원\n서연                    20,000원\n\n합계                    60,000원"),
-        ("03 — SETTLE", "부담 없이 보내고,\n깔끔하게 끝내요.", "개인별 정산 링크로 정보를 안전하게 전달하고\n입금 현황까지 한눈에 확인하세요.", "DONE", "민지                    ✓ 입금 완료\n준호                    ✓ 입금 완료\n서연                    입금 대기\n\n3명 중 2명 완료"),
+        ("03 — SETTLE", "부담 없이 보내고,\n깔끔하게 끝내요.", "개인별 정산 링크로 정보를 안전하게 전달하고\n입금 현황까지 한눈에 확인하세요.", "DONE", "민지                    입금 완료\n준호                    입금 완료\n서연                    입금 대기\n\n3명 중 2명 완료"),
     )
     def __init__(self, **kwargs):
         super().__init__(**kwargs); self.slide_index=0; self._slide_event=None; self._paused=False; self.build_ui()
@@ -621,7 +648,7 @@ class HomeScreen(Screen):
         main = add_page_layout()
         user = SESSION_STATE.get("current_user") or {}
         greeting = BoxLayout(size_hint_y=None, height=dp(64))
-        avatar = SoftButton(COLOR_SURFACE_BLUE, text="◯", font_size=dp(28), color=COLOR_PRIMARY, size_hint_x=None, width=dp(54))
+        avatar = SoftButton(COLOR_SURFACE_BLUE, text="MY", font_name=FONT_BOLD, font_size=dp(15), color=COLOR_PRIMARY, size_hint_x=None, width=dp(54))
         avatar.bind(on_release=lambda *_: setattr(self.manager, "current", "mypage" if user else "login"))
         greeting.add_widget(avatar)
         greeting.add_widget(make_label(f"안녕하세요, {user.get('name', '더치페이')}님", 23, True, color=COLOR_TEXT, padding=[dp(14),0]))
@@ -662,10 +689,10 @@ class HomeScreen(Screen):
         main.add_widget(help_card)
 
         nav = BoxLayout(size_hint_y=None, height=dp(64), spacing=dp(12))
-        home_nav = SoftButton(COLOR_SURFACE_BLUE, text="⌂\n홈", font_name=FONT_BOLD, font_size=dp(13), color=COLOR_PRIMARY)
-        pay_nav = SoftButton(COLOR_SURFACE, text="⇄\n새 정산", font_name=FONT_BOLD, font_size=dp(13), color=COLOR_MUTED)
+        home_nav = SoftButton(COLOR_SURFACE_BLUE, text="홈", font_name=FONT_BOLD, font_size=dp(13), color=COLOR_PRIMARY)
+        pay_nav = SoftButton(COLOR_SURFACE, text="새 정산", font_name=FONT_BOLD, font_size=dp(13), color=COLOR_MUTED)
         pay_nav.bind(on_release=self.start_new_settlement)
-        more_nav = SoftButton(COLOR_SURFACE, text="◌\n내 정보", font_name=FONT_BOLD, font_size=dp(13), color=COLOR_MUTED)
+        more_nav = SoftButton(COLOR_SURFACE, text="내 정보", font_name=FONT_BOLD, font_size=dp(13), color=COLOR_MUTED)
         more_nav.bind(on_release=lambda *_: setattr(self.manager, "current", "mypage" if user else "login"))
         nav.add_widget(home_nav); nav.add_widget(pay_nav); nav.add_widget(more_nav); main.add_widget(nav)
 
@@ -1074,7 +1101,7 @@ class PhoneCamera(BoxLayout):
         )
         self.add_widget(self.info)
 
-        open_button = make_primary_button("📷 휴대폰 카메라 열기", size_hint_y=None, height=dp(60))
+        open_button = make_primary_button("휴대폰 카메라 열기", size_hint_y=None, height=dp(60))
         open_button.bind(on_press=self.open_camera)
         self.add_widget(open_button)
 
@@ -1292,10 +1319,10 @@ class CameraScreen(Screen):
         main.add_widget(self.status)
 
         action_row = BoxLayout(size_hint_y=None, height=dp(60), spacing=dp(10))
-        camera_btn = make_button("📷 카메라", size_hint_x=0.5)
+        camera_btn = make_button("카메라", size_hint_x=0.5)
         camera_btn.bind(on_press=self.open_camera)
         
-        file_btn = make_button("📁 갤러리", size_hint_x=0.5)
+        file_btn = make_button("갤러리", size_hint_x=0.5)
         file_btn.bind(on_press=self.open_file)
         
         action_row.add_widget(camera_btn)
@@ -1660,7 +1687,7 @@ class MemberRow(BoxLayout):
         
     def _paint(self):
         active=self.checkbox.active
-        self.name_button.text=("✓ " if active else "")+self.member
+        self.name_button.text=self.member
         self.name_button._tone.rgba=COLOR_PRIMARY if active else COLOR_PRIMARY_LIGHT
         self.name_button.color=(1,1,1,1) if active else COLOR_PRIMARY
         self.minus.disabled=not active
@@ -1765,7 +1792,7 @@ class SettleScreen(Screen):
         member_actions = BoxLayout(size_hint_y=None, height=dp(50), spacing=dp(10))
         add_name_btn = make_button("+ 인원 추가", size_hint_x=0.45)
         add_name_btn.bind(on_press=lambda *_: self.add_member_field())
-        apply_names_btn = make_primary_button("✓ 참여자 확정", size_hint_x=0.55)
+        apply_names_btn = make_primary_button("참여자 확정", size_hint_x=0.55)
         apply_names_btn.bind(on_press=self.apply_members)
         member_actions.add_widget(add_name_btn)
         member_actions.add_widget(apply_names_btn)
