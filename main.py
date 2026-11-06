@@ -247,14 +247,39 @@ def async_api(method, path, json_data, on_success, on_error, auth=True):
 # ============================================================
 # INDEX.HTML 기반 색상/컴포넌트
 # ============================================================
+
+# ===== 글꼴/글자색 전역 보정 =====
+# 1) Kivy 기본 글꼴(Roboto)에는 한글이 없어서, 글꼴을 지정하지 않은 글자가 X(네모)로 보임
+#    → 기본 글꼴 이름 "Roboto" 자체를 나눔고딕으로 교체 (팝업 제목, 스피너 목록 등 전부 적용)
+try:
+    from kivy.core.text import LabelBase as _LabelBase
+    _font_dir = os.path.dirname(os.path.abspath(__file__))
+    _reg = os.path.join(_font_dir, "NanumGothic.ttf")
+    _bold = os.path.join(_font_dir, "NanumGothicBold.ttf")
+    if os.path.exists(_reg):
+        _LabelBase.register(name="Roboto", fn_regular=_reg,
+                            fn_bold=_bold if os.path.exists(_bold) else _reg)
+except Exception as _e:
+    print("기본 글꼴 교체 실패:", _e)
+
+# 2) Kivy Label의 기본 글자색은 '흰색' → 흰 배경에서 안 보임
+#    → 글자색을 지정하지 않은 Label은 진한 색, Button은 기존처럼 흰색
+from kivy.lang import Builder as _Builder
+_Builder.load_string("""
+<Label>:
+    color: 0.07, 0.08, 0.10, 1
+<Button>:
+    color: 1, 1, 1, 1
+""")
+
 COLOR_BG = (0.972, 0.969, 0.955, 1)           # warm porcelain
 COLOR_SURFACE = (1, 1, 1, 1)
 COLOR_SURFACE_BLUE = (0.92, 0.95, 1, 1)       # calm blue wash
 COLOR_PRIMARY = (0.26, 0.38, 0.93, 1)         # Modern Blue (#4361EE)
 COLOR_PRIMARY_DARK = (0.15, 0.25, 0.75, 1)
 COLOR_PRIMARY_LIGHT = (0.94, 0.95, 0.98, 1)
-COLOR_TEXT = (0.13, 0.14, 0.16, 1)            # #212529
-COLOR_MUTED = (0.52, 0.55, 0.59, 1)           # #868E96
+COLOR_TEXT = (0.07, 0.08, 0.10, 1)            # #121418 (더 진하게)
+COLOR_MUTED = (0.29, 0.31, 0.34, 1)           # #495057 (흐린 회색 → 진한 회색)
 COLOR_BORDER = (0.91, 0.92, 0.94, 1)          # #E9ECEF
 COLOR_SUCCESS = (0.08, 0.52, 0.36, 1)
 
@@ -410,7 +435,7 @@ def show_message(title, message):
         title_color=COLOR_TEXT,
         title_align='center',
         background="",
-        background_color=(0,0,0,0.4),
+        background_color=(1,1,1,1), overlay_color=(0,0,0,0.45),
         separator_color=(0,0,0,0),
         content=content,
         size_hint=(0.85, None),
@@ -1387,7 +1412,7 @@ class CameraScreen(Screen):
 
     def open_camera(self, *_):
         content_holder = BoxLayout(orientation="vertical")
-        popup = Popup(title="카메라 촬영", title_font=FONT_BOLD, title_color=COLOR_TEXT, title_align='center', background="", background_color=(0,0,0,0.5), separator_color=(0,0,0,0), content=content_holder, size_hint=(0.95, 0.7))
+        popup = Popup(title="카메라 촬영", title_font=FONT_BOLD, title_color=COLOR_TEXT, title_align='center', background="", background_color=(1,1,1,1), overlay_color=(0,0,0,0.45), separator_color=(0,0,0,0), content=content_holder, size_hint=(0.95, 0.7))
         with popup.canvas.before:
             Color(rgba=COLOR_SURFACE)
             popup.bg_rect = RoundedRectangle(radius=[dp(16)])
@@ -1487,7 +1512,7 @@ class CameraScreen(Screen):
             title_color=COLOR_TEXT,
             title_align='center',
             background="",
-            background_color=(0,0,0,0.5),
+            background_color=(1,1,1,1), overlay_color=(0,0,0,0.45),
             separator_color=(0,0,0,0),
             content=content,
             size_hint=(0.95, 0.85),
@@ -1590,7 +1615,7 @@ class CameraScreen(Screen):
             title_color=COLOR_TEXT,
             title_align='center',
             background="",
-            background_color=(0,0,0,0.5),
+            background_color=(1,1,1,1), overlay_color=(0,0,0,0.45),
             separator_color=(0,0,0,0),
             content=layout,
             size_hint=(.95, .85)
