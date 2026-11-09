@@ -84,7 +84,10 @@ from kivy.uix.checkbox import CheckBox
 from kivy.uix.filechooser import FileChooserListView
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
-from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
+from kivy.uix.stencilview import StencilView
+from kivy.uix.floatlayout import FloatLayout
+from kivy.properties import StringProperty
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.spinner import Spinner, SpinnerOption
 from kivy.uix.textinput import TextInput
@@ -270,6 +273,8 @@ _Builder.load_string("""
     color: 0.07, 0.08, 0.10, 1
 <Button>:
     color: 1, 1, 1, 1
+<TextInput>:
+    hint_text_color: 0.36, 0.39, 0.44, 1
 """)
 
 COLOR_BG = (0.972, 0.969, 0.955, 1)           # warm porcelain
@@ -281,6 +286,8 @@ COLOR_PRIMARY_LIGHT = (0.94, 0.95, 0.98, 1)
 COLOR_TEXT = (0.07, 0.08, 0.10, 1)            # #121418 (더 진하게)
 COLOR_MUTED = (0.29, 0.31, 0.34, 1)           # #495057 (흐린 회색 → 진한 회색)
 COLOR_BORDER = (0.91, 0.92, 0.94, 1)          # #E9ECEF
+COLOR_INPUT_BORDER = (0.80, 0.82, 0.86, 1)    # #CCD1DB 입력칸 테두리 (더 또렷하게)
+COLOR_HINT = (0.36, 0.39, 0.44, 1)            # #5C6370 입력칸 안내 글자(placeholder) 전용
 COLOR_SUCCESS = (0.08, 0.52, 0.36, 1)
 
 
@@ -336,7 +343,7 @@ class ModernTextInput(TextInput):
         self.background_normal = ""
         self.background_active = ""
         self.cursor_color = COLOR_PRIMARY
-        self.hint_text_color = COLOR_MUTED
+        self.hint_text_color = COLOR_HINT
         self.padding = [dp(15), dp(15), dp(15), dp(15)]
         self.use_handles = True
         self.write_tab = False
@@ -344,7 +351,7 @@ class ModernTextInput(TextInput):
         with self.canvas.before:
             Color(rgba=COLOR_SURFACE)
             self.bg_rect = RoundedRectangle(radius=[dp(10)])
-            self.border_color = Color(rgba=COLOR_BORDER)
+            self.border_color = Color(rgba=COLOR_INPUT_BORDER)
             self.border_line = Line(rounded_rectangle=(0,0,0,0,dp(10)), width=1.1)
             
         self.bind(pos=self.update_canvas, size=self.update_canvas, focus=self.update_canvas)
@@ -357,7 +364,7 @@ class ModernTextInput(TextInput):
         if self.focus:
             self.border_color.rgba = COLOR_PRIMARY
         else:
-            self.border_color.rgba = COLOR_BORDER
+            self.border_color.rgba = COLOR_INPUT_BORDER
 
 def make_text_input(**kwargs):
     return ModernTextInput(**kwargs)
@@ -616,53 +623,198 @@ class LandingPanel(BoxLayout):
         self.bind(pos=self._paint, size=self._paint)
     def _paint(self, *_): self._bg.pos, self._bg.size = self.pos, self.size
 
+class WordMask(StencilView):
+    """단어 하나를 담는 '창문'. 창문 밖으로 나간 글자는 잘려 보이지 않음.
+    offset: -1 = 창문 아래(숨김) → 0 = 제자리 → 1 = 창문 위(숨김)"""
+    offset = NumericProperty(-1.0)
+
+    def __init__(self, text, font_size, bold, color, **kwargs):
+        super().__init__(size_hint=(None, None), **kwargs)
+        self.label = Label(text=text, font_name=FONT_BOLD if bold else FONT_REGULAR,
+                           font_size=dp(font_size), color=color, size_hint=(None, None))
+        self.label.texture_update()
+        self.label.size = self.label.texture_size
+        self.size = (self.label.width, self.label.height + dp(4))
+        self.add_widget(self.label)
+        self.bind(pos=self._place, size=self._place, offset=self._place)
+        self._place()
+
+    def _place(self, *_):
+        self.label.x = self.x
+        self.label.y = self.y + dp(2) + self.offset * self.height
+
+
+class SlideText(BoxLayout):
+    """여러 줄 문장을 단어 단위로 아래→위로 올라오게 보여주는 위젯"""
+    def __init__(self, font_size, bold=False, color=None, per_word=True, **kwargs):
+        super().__init__(orientation="vertical", size_hint_y=None, spacing=dp(2), **kwargs)
+        self.font_size, self.bold = font_size, bold
+        self.color = color or COLOR_TEXT
+        self.per_word = per_word
+        self.words = []
+
+    def set_text(self, text):
+        for w in self.words:
+            Animation.cancel_all(w)
+        self.clear_widgets(); self.words = []
+        height = 0
+        for line in text.split("\n"):
+            row = BoxLayout(orientation="horizontal", size_hint_y=None, spacing=dp(6))
+            parts = line.split(" ") if self.per_word else [line]
+            row_h = 0
+            for part in parts:
+                if not part:
+                    continue
+                mask = WordMask(part, self.font_size, self.bold, self.color)
+                row.add_widget(mask); self.words.append(mask)
+                row_h = max(row_h, mask.height)
+            row.add_widget(Widget())          # 왼쪽 정렬용 빈칸
+            row.height = row_h or dp(self.font_size)
+            self.add_widget(row); height += row.height + self.spacing
+        self.height = height
+
+    def reveal(self, delay=0.0, step=0.07, duration=0.75):
+        """단어가 아래에서 위로 차례대로 올라옴"""
+        for i, w in enumerate(self.words):
+            w.offset = -1
+            anim = Animation(d=delay + i * step) + Animation(offset=0, d=duration, t="out_cubic")
+            anim.start(w)
+        return delay + max(len(self.words) - 1, 0) * step + duration
+
+    def hide(self, delay=0.0, step=0.04, duration=0.5):
+        """단어가 위로 밀려 올라가며 사라짐"""
+        for i, w in enumerate(self.words):
+            Animation.cancel_all(w)
+            anim = Animation(d=delay + i * step) + Animation(offset=1, d=duration, t="in_cubic")
+            anim.start(w)
+        return delay + max(len(self.words) - 1, 0) * step + duration
+
+    def stop(self):
+        for w in self.words:
+            Animation.cancel_all(w)
+
+
 class LandingScreen(Screen):
+    """첫 화면: 문구가 아래에서 위로 올라오며 천천히 바뀜 (페이지 번호 없음)"""
     SLIDES = (
-        ("01 — CAPTURE", "영수증 한 장.\n정산은 순식간.", "카메라로 찍으면 품목과 금액을 읽어와요.\n애매한 결과는 바로 확인하고 고칠 수 있어요.", "SCAN", "품목 · 수량 · 금액\n파스타 × 2     28,000원\n스테이크 × 1   32,000원\n\nTOTAL          60,000원"),
-        ("02 — SPLIT", "복잡한 계산은\n우리에게 맡겨요.", "누가 무엇을 먹었는지 선택하세요.\n사람별 금액을 공정하게 정리합니다.", "SPLIT", "민지                    20,000원\n준호                    20,000원\n서연                    20,000원\n\n합계                    60,000원"),
-        ("03 — SETTLE", "부담 없이 보내고,\n깔끔하게 끝내요.", "개인별 정산 링크로 정보를 안전하게 전달하고\n입금 현황까지 한눈에 확인하세요.", "DONE", "민지                    입금 완료\n준호                    입금 완료\n서연                    입금 대기\n\n3명 중 2명 완료"),
+        ("CAPTURE", "영수증 한 장으로\n정산은 순식간에", "카메라로 찍으면 품목과 금액을 읽어와요.\n애매한 결과는 바로 고칠 수 있어요.",
+         "파스타 × 2       28,000원\n스테이크 × 1     32,000원\n\n합계              60,000원"),
+        ("SPLIT", "복잡한 계산은\n우리에게 맡겨요", "누가 무엇을 먹었는지 고르기만 하세요.\n사람별 금액을 공정하게 나눠요.",
+         "민지              20,000원\n준호              20,000원\n서연              20,000원"),
+        ("SETTLE", "부담 없이 보내고\n깔끔하게 끝내요", "정산 링크 하나로 토스·카카오페이 송금까지.\n입금 현황도 한눈에 확인하세요.",
+         "민지              입금 완료\n준호              입금 완료\n서연              입금 대기"),
     )
+    HOLD_SECONDS = 3.2    # 문구가 다 올라온 뒤 머무는 시간
+    rise = NumericProperty(0.0)   # 미리보기 카드 위치 (아래 -0.08 → 제자리 0 → 위 0.08)
+
     def __init__(self, **kwargs):
-        super().__init__(**kwargs); self.slide_index=0; self._slide_event=None; self._paused=False; self.build_ui()
+        super().__init__(**kwargs)
+        self.slide_index = 0
+        self._events = []        # 예약된 다음 동작들 (화면을 떠나면 전부 취소)
+        self._active = False
+        self.build_ui()
+
     def build_ui(self):
-        root=LandingPanel(COLOR_BG, orientation="vertical", padding=dp(24), spacing=dp(16))
-        brand=BoxLayout(size_hint_y=None,height=dp(48)); brand.add_widget(make_label("dutch[color=4361EE]pay[/color]",25,True,markup=True,color=COLOR_TEXT)); brand.add_widget(Widget())
-        login=SoftButton(COLOR_PRIMARY_LIGHT,text="로그인",font_name=FONT_BOLD,font_size=dp(14),color=COLOR_PRIMARY,size_hint_x=None,width=dp(86)); login.bind(on_release=self.open_account); brand.add_widget(login); root.add_widget(brand)
-        self.eyebrow=make_label("",13,True,color=COLOR_PRIMARY,size_hint_y=None,height=dp(28)); root.add_widget(self.eyebrow)
-        self.title=make_label("",34,True,color=COLOR_TEXT,size_hint_y=None,height=dp(94),halign="left",valign="middle"); self.title.bind(size=lambda obj,value:setattr(obj,"text_size",value)); root.add_widget(self.title)
-        self.description=make_label("",15,color=COLOR_MUTED,size_hint_y=None,height=dp(58),halign="left",valign="middle"); self.description.bind(size=lambda obj,value:setattr(obj,"text_size",value)); root.add_widget(self.description)
-        self.preview=LandingPanel(COLOR_SURFACE_BLUE,orientation="vertical",padding=dp(22)); self.preview_label=make_label("",14,color=COLOR_TEXT,halign="left",valign="middle"); self.preview_label.bind(size=lambda obj,value:setattr(obj,"text_size",value)); self.preview.add_widget(self.preview_label); root.add_widget(self.preview)
-        self.primary=SoftButton(COLOR_PRIMARY,text="영수증 스캔 시작",font_name=FONT_BOLD,font_size=dp(16),color=(1,1,1,1),size_hint_y=None,height=dp(56)); self.primary.bind(on_release=self.start); root.add_widget(self.primary)
-        self.indicator=make_label("",12,True,color=COLOR_MUTED,size_hint_y=None,height=dp(30),halign="center")
-        root.add_widget(self.indicator);self.add_widget(root);self.show_slide(0, animate=False)
-    def show_slide(self,index,animate=True):
-        def apply_slide(*_):
-            self.slide_index=index%len(self.SLIDES); eyebrow,title,description,badge,preview=self.SLIDES[self.slide_index]
-            self.eyebrow.text=eyebrow;self.title.text=title;self.description.text=description
-            self.preview_label.text=f"[color=4361EE]{badge}[/color]\n\n{preview}";self.preview_label.markup=True
-            self.indicator.text=f"{self.slide_index+1:02d}  /  {len(self.SLIDES):02d} · 자동 소개"
-            if animate:
-                for widget in (self.eyebrow,self.title,self.description,self.preview,self.indicator): Animation(opacity=1,duration=.42,t='out_quad').start(widget)
-        if not animate:
-            apply_slide(); return
-        fading=(self.eyebrow,self.title,self.description,self.preview,self.indicator)
-        for widget in fading: Animation.cancel_all(widget)
-        completed=[0]
-        def after_fade(*_):
-            completed[0]+=1
-            if completed[0]==len(fading): apply_slide()
-        for widget in fading: Animation(opacity=0,duration=.30,t='in_quad').bind(on_complete=after_fade).start(widget)
-    def _start_autoplay(self):
-        if self._slide_event is not None:self._slide_event.cancel()
-        self._slide_event=Clock.schedule_interval(lambda _dt:self.show_slide(self.slide_index+1),3)
-    def on_pre_enter(self,*_):
-        if not self._paused:self._start_autoplay()
-    def on_leave(self,*_):
-        if self._slide_event is not None:self._slide_event.cancel();self._slide_event=None
-    def open_account(self,*_):self.manager.current="mypage" if SESSION_STATE.get("current_user") else "login"
-    def start(self,*_):
-        if SESSION_STATE.get("current_user"):SESSION_STATE["receipts"]=[];self.manager.current="camera"
-        else:self.manager.current="login"
+        root = LandingPanel(COLOR_BG, orientation="vertical", padding=dp(24), spacing=dp(14))
+        brand = BoxLayout(size_hint_y=None, height=dp(48))
+        brand.add_widget(make_label("dutch[color=4361EE]pay[/color]", 25, True, markup=True,
+                                    color=COLOR_TEXT, size_hint_x=None, width=dp(130), halign="left"))
+        brand.add_widget(Widget())
+        login = make_header_button("로그인", bold=True, width=dp(72))
+        login.bind(on_release=self.open_account)
+        brand.add_widget(login)
+        root.add_widget(brand)
+
+        root.add_widget(Widget(size_hint_y=0.15))
+        self.eyebrow = SlideText(13, True, COLOR_PRIMARY)
+        self.title = SlideText(32, True, COLOR_TEXT)
+        self.description = SlideText(15, False, COLOR_MUTED, per_word=False)
+        root.add_widget(self.eyebrow); root.add_widget(self.title); root.add_widget(self.description)
+
+        self.preview = LandingPanel(COLOR_SURFACE_BLUE, orientation="vertical", padding=dp(22))
+        self.preview_label = make_label("", 14, color=COLOR_TEXT, halign="left", valign="middle")
+        self.preview_label.bind(size=lambda obj, value: setattr(obj, "text_size", value))
+        self.preview.add_widget(self.preview_label)
+        self.preview_holder = FloatLayout()
+        self.preview.size_hint = (1, 1); self.preview.pos_hint = {"x": 0, "y": 0}
+        self.preview_holder.add_widget(self.preview)
+        root.add_widget(self.preview_holder)
+
+        self.primary = make_primary_button("영수증 스캔 시작", size_hint_y=None, height=dp(56))
+        self.primary.bind(on_release=self.start)
+        root.add_widget(self.primary)
+        self.add_widget(root)
+        self._fill(0)
+
+    # ---- 슬라이드 내용 채우기 ----
+    def _fill(self, index):
+        self.slide_index = index % len(self.SLIDES)
+        eyebrow, title, desc, preview = self.SLIDES[self.slide_index]
+        self.eyebrow.set_text(eyebrow)
+        self.title.set_text(title)
+        self.description.set_text(desc)
+        self.preview_label.text = preview
+
+    def _later(self, seconds, func):
+        ev = Clock.schedule_once(lambda _dt: func() if self._active else None, seconds)
+        self._events.append(ev)
+
+    def _cancel_all(self):
+        for ev in self._events:
+            ev.cancel()
+        self._events = []
+        for t in (self.eyebrow, self.title, self.description):
+            t.stop()
+        Animation.cancel_all(self.preview)
+        Animation.cancel_all(self, "rise")
+
+    # ---- 등장 / 퇴장 ----
+    def _enter_slide(self, index):
+        self._fill(index)
+        self.preview.opacity = 0; self.rise = -0.08
+        self.eyebrow.reveal(0.0)
+        t = self.title.reveal(0.12, step=0.08, duration=0.8)
+        self.description.reveal(0.45, step=0.12, duration=0.7)
+        anim = Animation(d=0.35) + Animation(opacity=1, d=0.7, t="out_cubic")
+        anim.start(self.preview)
+        self._move_preview(0, 0.35, 0.7, "out_cubic")
+        self._later(max(t, 1.2) + self.HOLD_SECONDS, self._leave_slide)
+
+    def _leave_slide(self):
+        self.eyebrow.hide(0.0)
+        t = self.title.hide(0.05)
+        self.description.hide(0.1, step=0.06)
+        Animation(opacity=0, d=0.45, t="in_cubic").start(self.preview)
+        self._move_preview(0.08, 0, 0.45, "in_cubic")
+        self._later(t + 0.15, lambda: self._enter_slide(self.slide_index + 1))
+
+    def _move_preview(self, target_y, delay, duration, easing):
+        Animation.cancel_all(self, "rise")
+        (Animation(d=delay) + Animation(rise=target_y, d=duration, t=easing)).start(self)
+
+    def on_rise(self, *_):
+        self.preview.pos_hint = {"x": 0, "y": self.rise}
+        self.preview_holder.do_layout()
+
+    # ---- 화면 들어올 때 / 나갈 때 ----
+    def on_enter(self, *_):
+        self._active = True
+        self._cancel_all()
+        self._enter_slide(self.slide_index)
+
+    def on_pre_leave(self, *_):
+        self._active = False
+        self._cancel_all()
+
+    def open_account(self, *_):
+        self.manager.current = "mypage" if SESSION_STATE.get("current_user") else "login"
+
+    def start(self, *_):
+        if SESSION_STATE.get("current_user"):
+            SESSION_STATE["receipts"] = []
+            self.manager.current = "camera"
+        else:
+            self.manager.current = "login"
 
 # ============================================================
 # HOME
@@ -2228,10 +2380,16 @@ def load_history_from_server():
 # ============================================================
 # APP
 # ============================================================
+class SmoothTransition(FadeTransition):
+    """화면 전환: 옆으로 밀지 않고 부드럽게 겹쳐 바뀜.
+    기존 코드가 transition.direction 을 바꾸므로 direction 속성만 남겨둠."""
+    direction = StringProperty("left")
+
+
 class DutchPayApp(App):
     def build(self):
         self.title = "영수증 더치페이"
-        sm = ScreenManager()
+        sm = ScreenManager(transition=SmoothTransition(duration=0.35))
         sm.add_widget(LandingScreen(name="landing"))
         sm.add_widget(HomeScreen(name="home"))
         sm.add_widget(LoginScreen(name="login"))
