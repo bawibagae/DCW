@@ -340,9 +340,10 @@ def make_button(text="",bold=False,**kwargs):
 def make_ghost_button(text="", bold=False, **kwargs):
     kwargs.setdefault("size_hint_y", None)
     kwargs.setdefault("height", dp(44))
-    return SoftButton((0, 0, 0, 0), role="ghost", radius=10, text=text,
-                      font_name=FONT_BOLD if bold else FONT_REGULAR,
-                      font_size=dp(14), color=COLOR_MUTED, **kwargs)
+    kwargs.setdefault("font_name", FONT_BOLD if bold else FONT_REGULAR)
+    kwargs.setdefault("font_size", dp(14))
+    kwargs.setdefault("color", COLOR_MUTED)
+    return SoftButton((0, 0, 0, 0), role="ghost", radius=10, text=text, **kwargs)
 
 
 def make_destructive_button(text="", **kwargs):

@@ -1,0 +1,1218 @@
+--------- beginning of main
+11-24 14:29:17.762 I/HalDevMgr(  684): bestIfaceCreationProposal is null, requestIface=STA, existingIface=[name=wlan0 type=STA]
+11-24 14:29:19.770 D/androidtc(  684): Initializing SystemTextClassifier, type = System
+11-24 14:29:19.772 I/AiAiTextClassifier( 1887): onCreateTextClassificationSession = TextClassificationSessionId {44f49a68-39c9-4769-aff5-19247aa3ddf4}
+--------- beginning of system
+11-24 14:29:19.772 E/ClipboardService(  684): Denying clipboard access to com.android.chrome, application is not in focus nor is it a system service for user 0
+11-24 14:29:19.775 I/AiAiTranslate( 1887): C2T - not in a conversation
+11-24 14:29:19.776 I/ClipboardListener( 1169): Clipboard overlay suppressed.
+11-24 14:29:19.776 I/AiAiTextClassifier( 1887): GenerateLinks did not find valid links, returning empty result
+11-24 14:29:19.778 E/ClipboardService(  684): Denying clipboard access to com.android.chrome, application is not in focus nor is it a system service for user 0
+11-24 14:29:19.779 I/ClipboardListener( 1169): Clipboard overlay suppressed.
+11-24 14:29:19.782 I/AiAiTextClassifier( 1887): GenerateLinks did not find valid links, returning empty result
+11-24 14:29:20.146 D/SatelliteController( 1295): isInCarrierRoamingNbIotNtn: satellite is disabled
+11-24 14:29:20.146 D/SatelliteController( 1295): getCarrierRoamingNtnConnectType: Checking connect type from PLMN config for subId: 1
+11-24 14:29:20.146 D/TelephonyConfigUpdateInstallReceiver( 1295): getConfigParser: domain=satellite
+11-24 14:29:20.146 V/SatelliteController( 1295): satelliteConfigParser is not ready
+11-24 14:29:20.146 D/SatelliteController( 1295): isSatelliteAttachSupportedViaConfigupdater: return null (satelliteConfig is null)
+11-24 14:29:20.147 D/SatelliteController( 1295): getSatellitePerPlmnConfiguration: invalid subId or not supported via carrier.
+11-24 14:29:20.147 D/SatelliteController( 1295): getCarrierRoamingNtnConnectType: config: null
+11-24 14:29:20.147 D/TelephonyConfigUpdateInstallReceiver( 1295): getConfigParser: domain=satellite
+11-24 14:29:20.147 V/SatelliteController( 1295): satelliteConfigParser is not ready
+11-24 14:29:20.147 D/SatelliteController( 1295): getCarrierRoamingNtnConnectTypeViaConfigUpdater: return null (satelliteConfig is null)
+11-24 14:29:20.147 D/SatelliteController( 1295): getCarrierRoamingNtnConnectType: Falling back to global carrier config connect type: 0
+11-24 14:29:20.147 D/TelephonyConfigUpdateInstallReceiver( 1295): getConfigParser: domain=satellite
+11-24 14:29:20.147 V/SatelliteController( 1295): satelliteConfigParser is not ready
+11-24 14:29:20.147 D/SatelliteController( 1295): isSatelliteAttachSupportedViaConfigupdater: return null (satelliteConfig is null)
+11-24 14:29:20.147 D/SatelliteController( 1295): getCarrierRoamingNtnConnectType: Checking connect type from PLMN config for subId: 1
+11-24 14:29:20.147 D/TelephonyConfigUpdateInstallReceiver( 1295): getConfigParser: domain=satellite
+11-24 14:29:20.147 V/SatelliteController( 1295): satelliteConfigParser is not ready
+11-24 14:29:20.147 D/SatelliteController( 1295): isSatelliteAttachSupportedViaConfigupdater: return null (satelliteConfig is null)
+11-24 14:29:20.147 D/SatelliteController( 1295): getSatellitePerPlmnConfiguration: invalid subId or not supported via carrier.
+11-24 14:29:20.147 D/SatelliteController( 1295): getCarrierRoamingNtnConnectType: config: null
+11-24 14:29:20.147 D/TelephonyConfigUpdateInstallReceiver( 1295): getConfigParser: domain=satellite
+11-24 14:29:20.147 V/SatelliteController( 1295): satelliteConfigParser is not ready
+11-24 14:29:20.147 D/SatelliteController( 1295): getCarrierRoamingNtnConnectTypeViaConfigUpdater: return null (satelliteConfig is null)
+11-24 14:29:20.148 D/SatelliteController( 1295): getCarrierRoamingNtnConnectType: Falling back to global carrier config connect type: 0
+11-24 14:29:20.148 D/TelephonyConfigUpdateInstallReceiver( 1295): getConfigParser: domain=satellite
+11-24 14:29:20.148 V/SatelliteController( 1295): satelliteConfigParser is not ready
+11-24 14:29:20.148 D/SatelliteController( 1295): isSatelliteAttachSupportedViaConfigupdater: return null (satelliteConfig is null)
+11-24 14:29:20.190 W/System  ( 1169): A resource failed to call release. 
+11-24 14:29:20.765 I/HalDevMgr(  684): bestIfaceCreationProposal is null, requestIface=STA, existingIface=[name=wlan0 type=STA]
+11-24 14:29:20.843 I/NetworkScheduler.Stats( 8205): (REDACTED) Task %s/%s started execution. cause:%s exec_start_elapsed_seconds: %s
+11-24 14:29:20.890 D/BoundBrokerSvc( 8205): onRebind: Intent { act=com.google.android.gms.onboardingconsent.api.ConsentManagerApiService.START dat=chimera-action:/... xflg=0x4 cmp=com.google.android.gms/.chimera.GmsApiService }
+11-24 14:29:20.895 I/ConsentManagerApiServic( 8205): (REDACTED) ConsentManagerApiService onGetService success %s
+11-24 14:29:20.898 D/BoundBrokerSvc( 8205): onBind: Intent { act=com.google.android.gms.common.BIND_SHARED_PREFS xflg=0x4 pkg=com.google.android.gms }
+11-24 14:29:20.898 D/BoundBrokerSvc( 8205): Loading bound service for intent: Intent { act=com.google.android.gms.common.BIND_SHARED_PREFS xflg=0x4 pkg=com.google.android.gms }
+11-24 14:29:20.915 D/ActivityManager(  684): sync unfroze 7435 com.google.android.gms.unstable for 6
+11-24 14:29:20.921 W/ProcessStats(  684): Tracking association SourceState{3371da2 com.google.android.gms/10205 BFgs #12694} whose proc state 4 is better than process ProcessState{6cb2a33 com.google.android.gms.unstable/10205 pkg=com.google.android.gms (sub)} proc state 14 (2 skipped)
+11-24 14:29:20.946 D/FileUtils(  684): Rounded bytes from 4102320128 to 8000000000
+11-24 14:29:20.947 W/libc    ( 7435): Access denied finding property "persist.adb.tls_server.enable"
+11-24 14:29:20.948 W/libc    ( 7435): Access denied finding property "service.adb.tls.port"
+11-24 14:29:20.976 E/knrr    ( 8205): *~*~*~ Previous channel {0} was garbage collected without being shut down! ~*~*~*
+11-24 14:29:20.976 E/knrr    ( 8205):     Make sure to call shutdown()/shutdownNow()
+11-24 14:29:20.976 E/knrr    ( 8205): java.lang.RuntimeException: ManagedChannel allocation site
+11-24 14:29:20.976 E/knrr    ( 8205): 	at knrq.<init>(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):21)
+11-24 14:29:20.976 E/knrr    ( 8205): 	at knrr.<init>(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):10)
+11-24 14:29:20.976 E/knrr    ( 8205): 	at knrp.a(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):294)
+11-24 14:29:20.976 E/knrr    ( 8205): 	at kmzf.a(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):5)
+11-24 14:29:20.976 E/knrr    ( 8205): 	at duns.h(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):143)
+11-24 14:29:20.976 E/knrr    ( 8205): 	at dunp.a(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):149)
+11-24 14:29:20.976 E/knrr    ( 8205): 	at isei.a(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):55)
+11-24 14:29:20.976 E/knrr    ( 8205): 	at ifug.a(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):17)
+11-24 14:29:20.976 E/knrr    ( 8205): 	at iopd.a(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):3)
+11-24 14:29:20.976 E/knrr    ( 8205): 	at iooe.run(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):18)
+11-24 14:29:20.976 E/knrr    ( 8205): 	at iopf.run(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):5)
+11-24 14:29:20.976 E/knrr    ( 8205): 	at btra.d(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):50)
+11-24 14:29:20.976 E/knrr    ( 8205): 	at btra.c(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):5)
+11-24 14:29:20.976 E/knrr    ( 8205): 	at btra.run(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):81)
+11-24 14:29:20.976 E/knrr    ( 8205): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1100)
+11-24 14:29:20.976 E/knrr    ( 8205): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+11-24 14:29:20.976 E/knrr    ( 8205): 	at btxe.run(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):8)
+11-24 14:29:20.976 E/knrr    ( 8205): 	at java.lang.Thread.run(Thread.java:1572)
+11-24 14:29:20.980 W/Auth    ( 8205): [DeviceKeyStore] Cannot load key: Device key file not found. [CONTEXT service_id=343 ]
+11-24 14:29:20.999 D/FileUtils(  684): Rounded bytes from 4102320128 to 8000000000
+11-24 14:29:21.000 W/libc    ( 7435): Access denied finding property "persist.adb.tls_server.enable"
+11-24 14:29:21.000 W/libc    ( 7435): Access denied finding property "service.adb.tls.port"
+11-24 14:29:21.008 W/GmsUrlRequestImpl( 8205): [https://android.googleapis.com/auth/devicekey] Content-Type header is overwritten.
+11-24 14:29:21.102 W/Auth    ( 8205): [AppCertManager] Exception while requesting key: [CONTEXT service_id=343 ]
+11-24 14:29:21.102 W/Auth    ( 8205): java.util.concurrent.ExecutionException: dsyp: Parsing Exception
+11-24 14:29:21.102 W/Auth    ( 8205): 	at iokt.k(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):21)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at iolb.u(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):73)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at asds.b(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):416)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at asdq.a(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):110)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at asdm.a(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):3)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at asdo.a(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):58)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at asdo.b(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):17)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at btjp.m(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):13)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at btkd.h(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):10)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at bufs.a(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):43)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at bufo.w(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):166)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at com.google.android.gms.constellation.RefreshGcmTaskChimeraService.a(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):168)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at dthh.call(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):37)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at java.util.concurrent.FutureTask.run(FutureTask.java:328)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at btra.d(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):50)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at btra.c(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):5)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at btra.run(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):81)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1100)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at btxe.run(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):8)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at java.lang.Thread.run(Thread.java:1572)
+11-24 14:29:21.102 W/Auth    ( 8205): Caused by: dsyp: Parsing Exception
+11-24 14:29:21.102 W/Auth    ( 8205): 	at dszq.jr(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):15)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at ionm.run(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):55)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at btra.d(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):50)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at btra.c(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):27)
+11-24 14:29:21.102 W/Auth    ( 8205): 	... 5 more
+11-24 14:29:21.102 W/Auth    ( 8205): Caused by: jpdq: Protocol message end-group tag did not match expected tag.
+11-24 14:29:21.102 W/Auth    ( 8205): 	at jpfh.a(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):56)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at jpeg.i(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):427)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at jpcr.R(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):22)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at jpcm.q(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):3)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at jpao.e(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):7)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at jpao.b(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):1)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at jpao.m(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):1)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at dszp.a(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):11)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at dszt.call(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):8)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at java.util.concurrent.FutureTask.run(FutureTask.java:328)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at btra.d(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):50)
+11-24 14:29:21.102 W/Auth    ( 8205): 	at btra.c(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):5)
+11-24 14:29:21.102 W/Auth    ( 8205): 	... 5 more
+11-24 14:29:21.103 W/Auth    ( 8205): [DeviceKeyStore] Cannot load key: Device key file not found. [CONTEXT service_id=343 ]
+11-24 14:29:22.174 I/adbd    ( 1891): adbd service requested 'shell,v2:export ANDROID_LOG_TAGS=''; exec logcat '-d' '-v' 'time''
+11-24 14:29:23.146 I/NetworkScheduler.Stats( 8205): (REDACTED) Task %s/%s finished executing. cause:%s result: %s elapsed_millis: %s uptime_millis: %s exec_start_elapsed_seconds: %s
+11-24 14:29:23.769 I/HalDevMgr(  684): bestIfaceCreationProposal is null, requestIface=STA, existingIface=[name=wlan0 type=STA]
+11-24 14:29:23.769 I/AdbWifiNetworkMonitor(  684): Wi-Fi network available
+11-24 14:29:23.769 I/AdbWifiNetworkMonitor(  684): Received the same Wi-Fi SSID. Ignoring.
+11-24 14:29:23.773 I/NullBinder( 8205): NullBinder for android.net.action.RECOMMEND_NETWORKS triggering remote TransactionTooLargeException due to Service without Chimera impl, calling uid: 1000, calling pid: 0
+11-24 14:29:23.773 W/libbinder.Binder( 8205): Large reply transaction of 1056768 bytes, interface descriptor , function: UNKNOWN_FUNCTION_NAME, code: 1, flags: 17
+11-24 14:29:23.773 W/libbinder.IPCThreadState(  684): Sending oneway calls to frozen process.
+11-24 14:29:23.776 D/ConnectivityService(  684): NetReassign [no changes] [c 1] [a 0] [i 1]
+11-24 14:29:23.776 I/NearbyMediums( 8205): Wifi changed new SSID: "AndroidWifi"
+11-24 14:29:23.776 I/NearbyMediums( 8205): WifiLanConnectivityInfo is not changed, skip notify.
+11-24 14:29:24.253 W/AlarmManager( 8205): alarm window unlikely to be respected [CONTEXT service_id=231 ]
+11-24 14:29:24.253 W/AlarmManager( 8205): java.lang.IllegalArgumentException: alarm "NetworkLocationActivityDetection" has short window length
+11-24 14:29:24.253 W/AlarmManager( 8205): 	at drid.c(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):32)
+11-24 14:29:24.253 W/AlarmManager( 8205): 	at dric.c(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):18)
+11-24 14:29:24.253 W/AlarmManager( 8205): 	at hwqe.b(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):118)
+11-24 14:29:24.253 W/AlarmManager( 8205): 	at hutp.v(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):59)
+11-24 14:29:24.253 W/AlarmManager( 8205): 	at hutp.u(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):8)
+11-24 14:29:24.253 W/AlarmManager( 8205): 	at huuo.q(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):25)
+11-24 14:29:24.253 W/AlarmManager( 8205): 	at huui.b(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):28)
+11-24 14:29:24.253 W/AlarmManager( 8205): 	at hutl.m(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):188)
+11-24 14:29:24.253 W/AlarmManager( 8205): 	at hutj.k(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):55)
+11-24 14:29:24.253 W/AlarmManager( 8205): 	at hvlw.run(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):7)
+11-24 14:29:24.253 W/AlarmManager( 8205): 	at android.os.Handler.handleCallback(Handler.java:1095)
+11-24 14:29:24.253 W/AlarmManager( 8205): 	at android.os.Handler.dispatchMessageImpl(Handler.java:135)
+11-24 14:29:24.253 W/AlarmManager( 8205): 	at android.os.Handler.dispatchMessage(Handler.java:125)
+11-24 14:29:24.253 W/AlarmManager( 8205): 	at dtfh.lX(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):1)
+11-24 14:29:24.253 W/AlarmManager( 8205): 	at dtfh.dispatchMessage(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):152)
+11-24 14:29:24.253 W/AlarmManager( 8205): 	at android.os.Looper.loopOnce(Looper.java:296)
+11-24 14:29:24.253 W/AlarmManager( 8205): 	at android.os.Looper.loop(Looper.java:397)
+11-24 14:29:24.253 W/AlarmManager( 8205): 	at android.os.HandlerThread.run(HandlerThread.java:139)
+11-24 14:29:24.277 I/NearbySharing( 8205): Network state changed: NetworkState(isRestricted=false, isOnline=true, isCongested=false, isMetered=false, isWifiConnected=true)
+11-24 14:29:24.551 I/adbd    ( 1891): adbd service requested 'shell,v2,raw:dumpsys package com.google.android.gms'
+11-24 14:29:24.633 I/artd    ( 8103): GetBestInfo: odex next to the dex file (/data/app/~~XyRqs_p8pvUPo0WrPqrDHA==/com.google.android.gms-0QYT0PgqC9Vo4buRvYhf2g==/oat/x86_64/base.odex) is kOatUpToDate with filter 'speed-profile' executable 'false'
+11-24 14:29:24.636 I/artd    ( 8103): GetBestInfo: dm (/data/app/~~XyRqs_p8pvUPo0WrPqrDHA==/com.google.android.gms-0QYT0PgqC9Vo4buRvYhf2g==/split_AdsDynamite_installtime.dm) is kOatUpToDate with filter 'verify' executable 'false'
+11-24 14:29:24.637 I/artd    ( 8103): GetBestInfo: odex next to the dex file (/data/app/~~XyRqs_p8pvUPo0WrPqrDHA==/com.google.android.gms-0QYT0PgqC9Vo4buRvYhf2g==/oat/x86_64/split_CronetDynamite_installtime.odex) is kOatUpToDate with filter 'speed-profile' executable 'false'
+11-24 14:29:24.638 I/artd    ( 8103): GetBestInfo: dm (/data/app/~~XyRqs_p8pvUPo0WrPqrDHA==/com.google.android.gms-0QYT0PgqC9Vo4buRvYhf2g==/split_DynamiteLoader_installtime.dm) is kOatUpToDate with filter 'verify' executable 'false'
+11-24 14:29:24.639 I/artd    ( 8103): GetBestInfo: dm (/data/app/~~XyRqs_p8pvUPo0WrPqrDHA==/com.google.android.gms-0QYT0PgqC9Vo4buRvYhf2g==/split_DynamiteModulesA_installtime.dm) is kOatUpToDate with filter 'verify' executable 'false'
+11-24 14:29:24.641 I/artd    ( 8103): GetBestInfo: dm (/data/app/~~XyRqs_p8pvUPo0WrPqrDHA==/com.google.android.gms-0QYT0PgqC9Vo4buRvYhf2g==/split_DynamiteModulesC_installtime.dm) is kOatUpToDate with filter 'verify' executable 'false'
+11-24 14:29:24.642 I/artd    ( 8103): GetBestInfo: dm (/data/app/~~XyRqs_p8pvUPo0WrPqrDHA==/com.google.android.gms-0QYT0PgqC9Vo4buRvYhf2g==/split_GoogleCertificates_installtime.dm) is kOatUpToDate with filter 'verify' executable 'false'
+11-24 14:29:24.643 I/artd    ( 8103): GetBestInfo: dm (/data/app/~~XyRqs_p8pvUPo0WrPqrDHA==/com.google.android.gms-0QYT0PgqC9Vo4buRvYhf2g==/split_MapsDynamite_installtime.dm) is kOatUpToDate with filter 'verify' executable 'false'
+11-24 14:29:24.645 I/artd    ( 8103): GetBestInfo: dm (/data/app/~~XyRqs_p8pvUPo0WrPqrDHA==/com.google.android.gms-0QYT0PgqC9Vo4buRvYhf2g==/split_MeasurementDynamite_installtime.dm) is kOatUpToDate with filter 'verify' executable 'false'
+11-24 14:29:24.646 I/artd    ( 8103): GetBestInfo: dm (/data/app/~~XyRqs_p8pvUPo0WrPqrDHA==/com.google.android.gms-0QYT0PgqC9Vo4buRvYhf2g==/split_all_locale_splits.dm) is kOatUpToDate with filter 'verify' executable 'false'
+11-24 14:29:24.647 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/00000008/dl-Appsearch.optional_261136100800.apk has no usable artifacts
+11-24 14:29:24.648 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/00000001/CronetDynamite.apk has no usable artifacts
+11-24 14:29:24.650 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/0000000e/dl-MlkitOcrCommon.optional_261136100800.apk has no usable artifacts
+11-24 14:29:24.651 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/0000000d/dl-VisionOcr.optional_261136100000.apk has no usable artifacts
+11-24 14:29:24.652 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/00000002/DynamiteLoader.apk has no usable artifacts
+11-24 14:29:24.652 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/00000005/GoogleCertificates.apk has no usable artifacts
+11-24 14:29:24.653 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/00000015/dl-PlayCloudSearch.optional_264531100000.apk has no usable artifacts
+11-24 14:29:24.654 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/00000011/dl-Appsearch.optional_264531100800.apk has no usable artifacts
+11-24 14:29:24.656 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/00000009/dl-IdentityCredentialsPlatform.optional_261136100800.apk has no usable artifacts
+11-24 14:29:24.657 I/AiAiTextClassifier( 1887): onDestroyTextClassificationSession = TextClassificationSessionId {91181145-9864-49d8-854e-75979059604f}
+11-24 14:29:24.658 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/00000013/dl-MlkitBarcodeUi.optional_264531100800.apk has no usable artifacts
+11-24 14:29:24.658 I/AiAiTextClassifier( 1887): onDestroyTextClassificationSession = TextClassificationSessionId {f45871b1-8cd8-4b86-bca0-d8417a25ade6}
+11-24 14:29:24.658 I/AiAiTextClassifier( 1887): onDestroyTextClassificationSession = TextClassificationSessionId {552c2c73-b853-4f76-b7e9-cf991943b3a0}
+11-24 14:29:24.659 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/0000000f/dl-PlayCloudSearch.optional_261136100000.apk has no usable artifacts
+11-24 14:29:24.660 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/0000000a/dl-TfliteDynamiteDynamite.integ_264010405100800.apk has no usable artifacts
+11-24 14:29:24.661 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/00000010/dl-VisionOcr.optional_264531100000.apk has no usable artifacts
+11-24 14:29:24.662 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/00000012/dl-IdentityCredentialsPlatform.optional_264531100800.apk has no usable artifacts
+11-24 14:29:24.663 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/00000007/MeasurementDynamite.apk has no usable artifacts
+11-24 14:29:24.664 I/artd    ( 8103): GetBestInfo: vdex next to the dex file (/data/user/0/com.google.android.gms/app_dg_cache/BCD37DA6707F74E3F78AB9C0F65BC34E65B1F2E1/oat/x86_64/the.vdex) is kOatUpToDate with filter 'verify' executable 'false'
+11-24 14:29:24.665 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/0000001a/dl-MlkitDocscanUi.optional_264531100800.apk has no usable artifacts
+11-24 14:29:24.667 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/0000000b/dl-MlkitBarcodeUi.optional_261136100800.apk has no usable artifacts
+11-24 14:29:26.175 D/IpClient/wlan0( 1238): interfaceLinkStateChanged: ifindex 16 up
+11-24 14:29:26.774 I/HalDevMgr(  684): bestIfaceCreationProposal is null, requestIface=STA, existingIface=[name=wlan0 type=STA]
+11-24 14:29:27.193 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.193 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.205 W/AS.PlaybackActivityMon(  684): No piid assigned for invalid/internal port id 15
+11-24 14:29:27.206 W/AS.PlaybackActivityMon(  684): No piid assigned for invalid/internal port id 15
+11-24 14:29:27.206 V/GrammaticalInflectionUtils(  684): AttributionSource: android.content.AttributionSource@2618dea does not have READ_SYSTEM_GRAMMATICAL_GENDER permission.
+11-24 14:29:27.207 D/AudioFlinger(  512): mixer(0x79d41a1fd790) throttle end: throttle time(34)
+11-24 14:29:27.213 D/CorePackageUpdate(  684): onRecentTaskRemoved Removing task: 19
+11-24 14:29:27.214 D/CorePackageUpdate(  684): Couldn't find a persistent state for task= 19
+11-24 14:29:27.215 V/ActivityTaskManager(  684): TaskLaunchParamsModifier: phase=3 task=Task{eba3469 #20 type=standard A=10237:com.jaewoo.dcw} activity=ActivityRecord{132888304 u0 com.jaewoo.dcw/org.kivy.android.PythonActivity t-1} display-from-option=0 display-id=0 task-display-area-windowing-mode=1 suggested-display-area=DefaultTaskDisplayArea@77476449 inherit-from-source=fullscreen non-freeform-task-display-area display-area=DefaultTaskDisplayArea@77476449 skip-bounds-fullscreen
+11-24 14:29:27.215 I/ActivityTaskManager(  684): START u0 {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 xflg=0x4 cmp=com.jaewoo.dcw/org.kivy.android.PythonActivity bnds=[50,93][266,354]} with LAUNCH_SINGLE_TASK from uid 10196 (com.google.android.apps.nexuslauncher) (sr=29340466) (BAL_ALLOW_VISIBLE_WINDOW) result code=0
+11-24 14:29:27.215 D/StatsLog( 1484): LAUNCHER_APP_LAUNCH_TAP
+11-24 14:29:27.216 V/GrammaticalInflectionUtils(  684): AttributionSource: android.content.AttributionSource@2618dea does not have READ_SYSTEM_GRAMMATICAL_GENDER permission.
+11-24 14:29:27.216 D/StatsLog( 1484): LAUNCHER_HOTSEAT_RANKED
+11-24 14:29:27.216 V/WindowManagerShell( 1169): Transition requested (#71): android.os.BinderProxy@436b179 TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=20 effectiveUid=10237 displayId=0 isRunning=true baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=com.jaewoo.dcw/org.kivy.android.PythonActivity } baseActivity=ComponentInfo{com.jaewoo.dcw/org.kivy.android.PythonActivity} topActivity=ComponentInfo{com.jaewoo.dcw/org.kivy.android.PythonActivity} origActivity=null realActivity=ComponentInfo{com.jaewoo.dcw/org.kivy.android.PythonActivity} realActivityIsAppLockEnabled=false numActivities=1 lastActiveTime=1272562 supportsMultiWindow=true supportsMultiWindowWithoutConstraints=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{android.os.BinderProxy@1f29ebe} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=Rect(0, 0 - 0, 0) topActivityInfo=ActivityInfo{59fab1f org.kivy.android.PythonActivity} launchCookies=[android.os.BinderProxy@4197e6c] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isInteractive=false isVisible=false isVisibleRequested=false isTopActivityNoDisplay=false isSleeping=false locusId=null displayAreaFeatureId=1 isTopActivityTransparent=false isActivityStackTransparent=false lastNonFullscreenBounds=null leafTaskBoundsFromOptions= false capturedLink=null capturedLinkTimestamp=0 requestedVisibleTypes=503 topActivityRequestOpenInBrowserEducationTimestamp=0 appCompatTaskInfo=AppCompatTaskInfo { topActivityInSizeCompat=false isLeafTask= true eligibleForLetterboxEducation= false isLetterboxEducationEnabled= true isLetterboxDoubleTapEnabled= false eligibleForUserAspectRatioButton= false topActivityBoundsLetterboxed= false isFromLetterboxDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 topActivityAppBounds=Rect(0, 0 - 1080, 2337) isUserFullscreenOverrideEnabled=false isSystemFullscreenOverrideEnabled=false hasMinAspectRatioOverride=false topActivityLetterboxBounds=null topNonResizableActivityAspectRatio=-1.0} topActivityMainWindowFrame=null isAppBubble=false}, pipChange = null, remoteTransitionInfo = RemoteTransitionInfo { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@6e7ec35, debugName = QuickstepLaunch, filter = null }, displayChanges = null, requestedLocation = null, userChange = null, windowingLayerChange = null, fullscreenRequestChange = null, flags = 0, debugId = 71 }
+11-24 14:29:27.216 W/DisconnectHandler( 1169): No disconnect change found in the transition, not handling request.
+11-24 14:29:27.216 W/DisconnectHandler( 1169): No disconnect change found in the transition, not handling request.
+11-24 14:29:27.216 V/ShellDesktopMode( 1169): DesktopTasksController: skipping handleRequest reason=triggerTask's display doesn't support desktop mode
+11-24 14:29:27.216 D/ShellSplitScreen( 1169): logExit: no-op, mLoggerSessionId is null
+11-24 14:29:27.217 D/RecentsView( 1484): onTaskDisplayChanged: 20, new displayId = 0
+11-24 14:29:27.217 V/WindowManagerShell( 1169): RemoteTransition directly requested for (#71) android.os.BinderProxy@436b179: RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@6e7ec35, appThread = null, debugName = QuickstepLaunch, filter = null }
+11-24 14:29:27.217 V/WindowManagerShell( 1169): Transition (#71): request handled by DefaultMixedHandler
+11-24 14:29:27.217 D/BaseActivity( 1484): Launcher flags updated: [state_started|state_resumed|state_deferred_resumed|state_window_focused|state_user_active] -[]
+11-24 14:29:27.217 I/libbinder.BpBinder(  525): onLastStrongRef automatically unlinking death recipients for binder (0x76f537622300) with descriptor: '(not cached)'
+11-24 14:29:27.219 D/BaseActivity( 1484): Launcher flags updated: [state_started|state_resumed|state_deferred_resumed|state_window_focused] -[state_user_active]
+11-24 14:29:27.220 D/BaseActivity( 1484): Launcher flags updated: [state_started|state_window_focused] -[state_resumed|state_deferred_resumed]
+11-24 14:29:27.220 W/SplitSelectStateCtor( 1484): Missing session instanceIds
+11-24 14:29:27.220 D/StatsLog( 1484): LAUNCHER_SPLIT_SELECTION_EXIT_INTERRUPTED
+11-24 14:29:27.223 D/QuickstepModelDelegate( 1484): notifyAppTargetEvent action=1 launchLocation=workspace/1/[0,0]/[1,1]
+11-24 14:29:27.224 V/WindowManager(  684): Defer transition id=71 for TaskFragmentTransaction=android.os.Binder@938ae25
+11-24 14:29:27.225 I/Surface ( 1169): Creating surface for consumer unnamed-1169-13 with slotExpansion=1 for 64 slots
+11-24 14:29:27.228 W/libbinder.IPCThreadState(  594): Sending oneway calls to frozen process.
+11-24 14:29:27.230 V/RecentTasksController( 1169): Notify recent tasks changed
+11-24 14:29:27.230 W/InputChannel-JNI(  684): Channel already disposed.
+11-24 14:29:27.231 D/ShellDesktopMode( 1169): DesktopRepository(0): Removes freeform task: taskId=19
+11-24 14:29:27.231 W/ShellDesktopMode( 1169): DesktopRepository(0): No display id found for task: taskId=19
+11-24 14:29:27.231 V/RecentTasksController( 1169): Notify recent tasks changed
+11-24 14:29:27.231 D/WindowManagerShell( 1169): setLauncherKeepClearAreaHeight: visible=false, height=495
+11-24 14:29:27.231 D/RecentTasksList( 1484): invalidateLoadedTasks - previous requestLoadId: -1
+11-24 14:29:27.232 D/RecentTasksList( 1484): invalidateLoadedTasks - previous requestLoadId: -1
+11-24 14:29:27.235 D/Zygote  (  477): Forked child process 9998
+11-24 14:29:27.236 V/WindowManager(  684): Continue transition id=71 for TaskFragmentTransaction=android.os.Binder@938ae25
+11-24 14:29:27.236 I/ActivityManager(  684): Start proc 9998:com.jaewoo.dcw/u0a237 for next-top-activity {com.jaewoo.dcw/org.kivy.android.PythonActivity}
+11-24 14:29:27.246 E/ConsumerBase( 1169): [ImageReader-420x420f1u2816m2-1169-2] abandonLocked: ConsumerBase is abandoned!
+11-24 14:29:27.246 D/BaseActivity( 1484): Launcher flags updated: [state_started] -[state_window_focused]
+11-24 14:29:27.247 I/libprocessgroup( 9998): Created cgroup /sys/fs/cgroup/apps/uid_10237/pid_9998
+11-24 14:29:27.255 D/WindowOnBackDispatcher( 1169): setTopOnBackInvokedCallback (unwrapped): android.view.ViewRootImpl$$ExternalSyntheticLambda14@e526134
+11-24 14:29:27.255 D/CoreBackPreview(  684): Window{247c5ab u0 Splash Screen com.jaewoo.dcw}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@d6b7dc6, mPriority=0, mIsAnimationCallback=false, mOverrideBehavior=0}
+11-24 14:29:27.255 D/WindowManager(  684): setClientSurface Surface(name=VRI-Splash Screen com.jaewoo.dcw#588)/@0x43b1187 for 247c5ab Splash Screen com.jaewoo.dcw
+11-24 14:29:27.259 I/Zygote  ( 9998): Process 9998 created for com.jaewoo.dcw
+11-24 14:29:27.260 I/com.jaewoo.dcw( 9998): Late-enabling -Xcheck:jni
+11-24 14:29:27.261 I/Surface ( 1169): Creating surface for consumer unnamed-1169-14 with slotExpansion=1 for 64 slots
+11-24 14:29:27.262 I/Surface ( 1169): Creating surface for consumer VRI[dcw]#11(BLAST Consumer)11 with slotExpansion=1 for 64 slots
+11-24 14:29:27.283 I/com.jaewoo.dcw( 9998): Using generational CollectorTypeCMC GC.
+11-24 14:29:27.284 W/com.jaewoo.dcw( 9998): Unexpected CPU variant for x86: x86_64.
+11-24 14:29:27.284 W/com.jaewoo.dcw( 9998): Known variants: atom, sandybridge, silvermont, goldmont, goldmont-plus, goldmont-without-sha-xsaves, tremont, kabylake, alderlake, pantherlake, default
+11-24 14:29:27.339 V/RecentTasksController( 1169): Notify recent tasks changed
+11-24 14:29:27.349 I/berberis( 9998): Initialized Berberis ((null)), version 16.0.0
+11-24 14:29:27.355 V/RecentTasksController( 1169): generateList(getRecentTasks)
+11-24 14:29:27.355 V/RecentTasksController( 1169): initializeDesksMap - allDeskIds: []
+11-24 14:29:27.355 V/RecentTasksController( 1169): Task 20 is not an active desktop task
+11-24 14:29:27.356 V/RecentTasksController( 1169): Added fullscreen task: 20
+11-24 14:29:27.356 V/RecentTasksController( 1169): Task 13 is not an active desktop task
+11-24 14:29:27.356 V/RecentTasksController( 1169): Added fullscreen task: 13
+11-24 14:29:27.356 V/RecentTasksController( 1169): Task 11 is not an active desktop task
+11-24 14:29:27.356 V/RecentTasksController( 1169): Added fullscreen task: 11
+11-24 14:29:27.356 V/RecentTasksController( 1169): generateList - complete
+11-24 14:29:27.372 I/APM_AudioPolicyManager(  512): getNewOutputDevices io 13 recent device override {AUDIO_DEVICE_OUT_SPEAKER, @:}
+11-24 14:29:27.377 D/PreloadThumbnailUseCase( 1484): Preloading thumbnails for task ids: [[id=11 windowingMode=1 user=0 lastActiveTime=365729] null, [id=13 windowingMode=1 user=0 lastActiveTime=418366] null, [id=20 windowingMode=1 user=0 lastActiveTime=1272562] null]
+11-24 14:29:27.385 V/WindowManager(  684): Sent Transition (#71) createdAt=11-24 14:29:27.207 via request=TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=20 effectiveUid=10237 displayId=0 isRunning=true baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=com.jaewoo.dcw/org.kivy.android.PythonActivity } baseActivity=ComponentInfo{com.jaewoo.dcw/org.kivy.android.PythonActivity} topActivity=ComponentInfo{com.jaewoo.dcw/org.kivy.android.PythonActivity} origActivity=null realActivity=ComponentInfo{com.jaewoo.dcw/org.kivy.android.PythonActivity} realActivityIsAppLockEnabled=false numActivities=1 lastActiveTime=1272562 supportsMultiWindow=true supportsMultiWindowWithoutConstraints=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{RemoteToken{f92bc20 Task{eba3469 #20 type=standard A=10237:com.jaewoo.dcw}}} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=Rect(0, 0 - 0, 0) topActivityInfo=ActivityInfo{78c09d9 org.kivy.android.PythonActivity} launchCookies=[android.os.BinderProxy@8767f9e] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isInteractive=false isVisible=false isVisibleRequested=false isTopActivityNoDisplay=false isSleeping=false locusId=null displayAreaFeatureId=1 isTopActivityTransparent=false isActivityStackTransparent=false lastNonFullscreenBounds=null leafTaskBoundsFromOptions= false capturedLink=null capturedLinkTimestamp=0 requestedVisibleTypes=503 topActivityRequestOpenInBrowserEducationTimestamp=0 appCompatTaskInfo=AppCompatTaskInfo { topActivityInSizeCompat=false isLeafTask= true eligibleForLetterboxEducation= false isLetterboxEducationEnabled= true isLetterboxDoubleTapEnabled= false eligibleForUserAspectRatioButton= false topActivityBoundsLetterboxed= false isFromLetterboxDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 topActivityAppBounds=Rect(0, 0 - 1080, 2337) isUserFullscreenOverrideEnabled=false isSystemFullscreenOverrideEnabled=false hasMinAspectRatioOverride=false topActivityLetterboxBounds=null topNonResizableActivityAspectRatio=-1.0} topActivityMainWindowFrame=null isAppBubble=false}, pipChange = null, remoteTransitionInfo = RemoteTransitionInfo { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@78aaa7f, debugName = QuickstepLaunch, filter = null }, displayChanges = null, requestedLocation = null, userChange = null, windowingLayerChange = null, fullscreenRequestChange = null, flags = 0, debugId = 71 }
+11-24 14:29:27.385 V/WindowManagerShell( 1169): onTransitionReady(transaction=2937757635203)
+11-24 14:29:27.385 V/WindowManager(  684):     startWCT=WindowContainerTransaction { changes= {} hops= [] flags= 0 errorCallbackToken=null taskFragmentOrganizer=null }
+11-24 14:29:27.385 V/WindowManager(  684):     info={id=71 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[
+11-24 14:29:27.385 V/WindowManager(  684):         {WCT{RemoteToken{f92bc20 Task{eba3469 #20 type=standard A=10237:com.jaewoo.dcw}}} m=OPEN f=MOVE_TO_TOP|FLAG_CHANGED_INTERACTIVE leash=Surface(name=Task=20#585)/@0x1e7c8b4 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0 taskParent=-1 winMode=1 userId=0},
+11-24 14:29:27.385 V/WindowManager(  684):         {WCT{RemoteToken{a6e04c5 Task{9cd3267 #1 type=home}}} m=TO_BACK f=SHOW_WALLPAPER|FLAG_CHANGED_INTERACTIVE leash=Surface(name=Task=1#35)/@0x354c10d sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0 taskParent=-1 winMode=1 userId=0},
+11-24 14:29:27.385 V/WindowManager(  684):         {m=TO_BACK f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{307fb3f}#51)/@0x1306e6d sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0}
+11-24 14:29:27.385 V/WindowManager(  684):     ]}
+11-24 14:29:27.386 V/WindowManagerShell( 1169): onTransitionReady (#71) android.os.BinderProxy@436b179: {id=71 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[
+11-24 14:29:27.386 V/WindowManagerShell( 1169):         {m=OPEN f=MOVE_TO_TOP|FLAG_CHANGED_INTERACTIVE leash=Surface(name=Task=20#585)/@0x603a915 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0 taskParent=-1 winMode=1 userId=0},
+11-24 14:29:27.386 V/WindowManagerShell( 1169):         {m=TO_BACK f=SHOW_WALLPAPER|FLAG_CHANGED_INTERACTIVE leash=Surface(name=Task=1#35)/@0x851942a sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0 taskParent=-1 winMode=1 userId=0},
+11-24 14:29:27.386 V/WindowManagerShell( 1169):         {m=TO_BACK f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{307fb3f}#51)/@0x85d121b sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0}
+11-24 14:29:27.386 V/WindowManagerShell( 1169):     ]}
+11-24 14:29:27.389 V/WindowManagerShell( 1169): Playing animation for (#71) android.os.BinderProxy@436b179@0
+11-24 14:29:27.389 V/WindowManagerShell( 1169):  try firstHandler com.android.wm.shell.transition.DefaultMixedHandler@67787f7
+11-24 14:29:27.389 V/WindowManagerShell( 1169): Mixed transition for opening an intent with a remote transition and PIP or Desktop #71
+11-24 14:29:27.389 V/WindowManagerShell( 1169): tryAnimateOpenIntentWithRemoteAndPipOrDesktop
+11-24 14:29:27.389 V/WindowManagerShell( 1169):  Delegate animation for (#71) to RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@6e7ec35, appThread = null, debugName = QuickstepLaunch, filter = null }
+11-24 14:29:27.392 V/WindowManagerShell( 1169):  animated by firstHandler
+11-24 14:29:27.393 V/ShellTaskOrganizer( 1169): Task appeared taskId=20 listener=FullscreenTaskListener
+11-24 14:29:27.393 V/ShellTaskOrganizer( 1169): Fullscreen Task Appeared: #20
+11-24 14:29:27.393 D/ShellPackageUpdate( 1169): PackageUpdateController: Setting handlePackageUpdate for task: 20
+11-24 14:29:27.394 E/TransitionChain(  684): Can't collect into a chain with no transition
+11-24 14:29:27.395 V/RecentTasksController( 1169): Notify recent tasks changed
+11-24 14:29:27.466 D/LauncherStateManager( 1484): StateManager.cancelAnimation: animation ongoing: false, partial trace:
+11-24 14:29:27.466 D/LauncherStateManager( 1484): 	at com.android.launcher3.statemanager.StateManager.setCurrentAnimation(go/retraceme 9bf9d747b28c192bd799fb0161a08498ac2b938f666e7966c0095b4da2c9b843:59)
+11-24 14:29:27.466 D/LauncherStateManager( 1484): 	at com.android.launcher3.QuickstepTransitionManager$AppLaunchAnimationRunner.onAnimationStart(go/retraceme 9bf9d747b28c192bd799fb0161a08498ac2b938f666e7966c0095b4da2c9b843:433)
+11-24 14:29:27.466 D/LauncherStateManager( 1484): 	at com.android.launcher3.LauncherAnimationRunner$$ExternalSyntheticLambda2.run(go/retraceme 9bf9d747b28c192bd799fb0161a08498ac2b938f666e7966c0095b4da2c9b843:71)
+11-24 14:29:27.470 D/RecentTasksList( 1484): invalidateLoadedTasks - previous requestLoadId: -1
+11-24 14:29:27.479 D/RecentTasksList( 1484): invalidateLoadedTasks - previous requestLoadId: -1
+11-24 14:29:27.507 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.508 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.508 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.508 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.508 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.524 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.524 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.524 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.524 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.524 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.529 I/adbd    ( 1891): jdwp connection from 9998
+11-24 14:29:27.540 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.540 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.541 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.541 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.541 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.541 D/nativeloader( 9998): Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+11-24 14:29:27.557 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.557 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.557 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.557 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.557 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.573 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.573 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.573 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.573 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.573 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.578 D/CompatChangeReporter( 9998): Compat change id reported: 242716250; UID 10237; state: ENABLED
+11-24 14:29:27.581 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.581 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.591 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.591 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.591 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.591 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.591 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.607 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.607 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.607 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.607 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.607 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.624 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.624 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.624 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.624 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.624 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.639 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.639 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.639 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.639 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.639 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.655 D/nativeloader( 9998): Configuring clns-9 for other apk /data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/base.apk. target_sdk_version=34, uses_libraries=, library_path=/data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/lib/arm64:/data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/com.jaewoo.dcw
+11-24 14:29:27.657 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.657 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.657 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.657 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.657 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.673 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.673 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.673 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.673 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.673 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.683 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.684 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.707 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.707 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.707 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.707 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.707 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.717 W/AppOps  (  684): Noting op not finished: uid 10205 pkg com.google.android.gms code 79 startTime of in progress event=1795497296665
+11-24 14:29:27.720 W/AppOps  (  684): Noting op not finished: uid 10205 pkg com.google.android.gms code 113 startTime of in progress event=1795497296665
+11-24 14:29:27.723 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.723 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.723 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.723 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.723 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.740 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.740 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.740 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.740 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.740 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.748 I/ActivityScheduler( 8205): nextTriggerTime: 1511196, in 238100ms, detectorType: 39, FULL_TYPE alarmWindowMillis: 80000
+11-24 14:29:27.749 W/AlarmManager( 8205): alarm window unlikely to be respected [CONTEXT service_id=231 ]
+11-24 14:29:27.749 W/AlarmManager( 8205): java.lang.IllegalArgumentException: alarm "NetworkLocationActivityDetection" has short window length
+11-24 14:29:27.749 W/AlarmManager( 8205): 	at drid.c(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):32)
+11-24 14:29:27.749 W/AlarmManager( 8205): 	at dric.c(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):18)
+11-24 14:29:27.749 W/AlarmManager( 8205): 	at hwqe.b(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):118)
+11-24 14:29:27.749 W/AlarmManager( 8205): 	at hutp.v(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):59)
+11-24 14:29:27.749 W/AlarmManager( 8205): 	at huvh.q(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):135)
+11-24 14:29:27.749 W/AlarmManager( 8205): 	at huvh.u(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):107)
+11-24 14:29:27.749 W/AlarmManager( 8205): 	at huvn.E(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):74)
+11-24 14:29:27.749 W/AlarmManager( 8205): 	at huui.p(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):31)
+11-24 14:29:27.749 W/AlarmManager( 8205): 	at huuo.q(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):14)
+11-24 14:29:27.749 W/AlarmManager( 8205): 	at huui.b(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):28)
+11-24 14:29:27.749 W/AlarmManager( 8205): 	at hutl.m(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):188)
+11-24 14:29:27.749 W/AlarmManager( 8205): 	at hutj.k(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):55)
+11-24 14:29:27.749 W/AlarmManager( 8205): 	at hvlw.run(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):7)
+11-24 14:29:27.749 W/AlarmManager( 8205): 	at android.os.Handler.handleCallback(Handler.java:1095)
+11-24 14:29:27.749 W/AlarmManager( 8205): 	at android.os.Handler.dispatchMessageImpl(Handler.java:135)
+11-24 14:29:27.749 W/AlarmManager( 8205): 	at android.os.Handler.dispatchMessage(Handler.java:125)
+11-24 14:29:27.749 W/AlarmManager( 8205): 	at dtfh.lX(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):1)
+11-24 14:29:27.749 W/AlarmManager( 8205): 	at dtfh.dispatchMessage(:com.google.android.gms@264531038@26.45.31 (260800-1020418964):152)
+11-24 14:29:27.749 W/AlarmManager( 8205): 	at android.os.Looper.loopOnce(Looper.java:296)
+11-24 14:29:27.749 W/AlarmManager( 8205): 	at android.os.Looper.loop(Looper.java:397)
+11-24 14:29:27.749 W/AlarmManager( 8205): 	at android.os.HandlerThread.run(HandlerThread.java:139)
+11-24 14:29:27.758 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.758 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.758 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.758 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.758 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.773 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.773 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.773 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.773 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.773 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.780 V/GraphicsEnvironment( 9998): Currently set values for:
+11-24 14:29:27.780 V/GraphicsEnvironment( 9998):   angle_gl_driver_selection_pkgs=[]
+11-24 14:29:27.780 V/GraphicsEnvironment( 9998):   angle_gl_driver_selection_values=[]
+11-24 14:29:27.780 V/GraphicsEnvironment( 9998): com.jaewoo.dcw is not listed in per-application setting
+11-24 14:29:27.781 V/GraphicsEnvironment( 9998): No special selections for ANGLE, returning default driver choice
+11-24 14:29:27.782 V/GraphicsEnvironment( 9998): Neither updatable production driver nor prerelease driver is supported.
+11-24 14:29:27.784 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.784 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.789 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.789 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.789 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.789 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.790 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.794 D/CorePackageUpdate(  684): Couldn't find a persistent state for task= 20
+11-24 14:29:27.794 I/AppsFilter(  684): interaction: PackageSetting{7eb94eb com.jaewoo.dcw/10237} -> PackageSetting{bcdebbd com.google.android.apps.nexuslauncher/10196} BLOCKED
+11-24 14:29:27.804 I/DisplayManager( 9998): Choreographer implicitly registered for the refresh rate.
+11-24 14:29:27.807 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.807 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.807 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.807 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.807 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.821 D/DesktopExperienceFlags( 9998): Toggle override initialized to: false
+11-24 14:29:27.823 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.823 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.823 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.823 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.823 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.838 V/PythonActivity( 9998): PythonActivity onCreate running
+11-24 14:29:27.838 V/PythonActivity( 9998): About to do super onCreate
+11-24 14:29:27.838 V/SDL     ( 9998): Device: emu64xa
+11-24 14:29:27.838 V/SDL     ( 9998): Model: sdk_gphone64_x86_64
+11-24 14:29:27.838 V/SDL     ( 9998): onCreate()
+11-24 14:29:27.838 V/PythonActivity( 9998): Did super onCreate
+11-24 14:29:27.839 V/SDL     ( 9998): getting identifier
+11-24 14:29:27.839 V/SDL     ( 9998): kind is layout and name lottie
+11-24 14:29:27.839 V/SDL     ( 9998): result is 0
+11-24 14:29:27.839 E/com.jaewoo.dcw( 9998): Invalid resource ID 0x00000000.
+11-24 14:29:27.839 V/SDL     ( 9998): couldn't find lottie layout or animation, trying static splash
+11-24 14:29:27.839 V/SDL     ( 9998): getting identifier
+11-24 14:29:27.839 V/SDL     ( 9998): kind is drawable and name presplash
+11-24 14:29:27.839 V/SDL     ( 9998): result is 2130968596
+11-24 14:29:27.840 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.840 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.840 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.840 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.840 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.856 V/SDL     ( 9998): asked to get string presplash_color
+11-24 14:29:27.856 V/SDL     ( 9998): getting identifier
+11-24 14:29:27.856 V/SDL     ( 9998): kind is string and name presplash_color
+11-24 14:29:27.857 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.857 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.857 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.857 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.857 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.858 V/SDL     ( 9998): result is 2131296264
+11-24 14:29:27.873 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.873 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.873 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.873 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.873 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.880 V/SDL     ( 9998): onStart()
+11-24 14:29:27.881 V/PythonActivity( 9998): Ready to unpack
+11-24 14:29:27.883 V/pythonutil( 9998): Unpacking private app
+11-24 14:29:27.883 I/GFXSTREAM( 9998): [eglDisplay.cpp(297)] Opening libGLESv1_CM_emulation.so
+11-24 14:29:27.883 V/pythonutil( 9998): Data version is 09e6c41eb324babcc5a13045115d04e6ee49130a
+11-24 14:29:27.883 V/pythonutil( 9998): Unpacking /data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/lib/arm64/libpybundle app
+11-24 14:29:27.884 V/pythonutil( 9998): Data version is 09e6c41eb324babcc5a13045115d04e6ee49130a
+11-24 14:29:27.884 V/PythonActivity( 9998): onResume()
+11-24 14:29:27.884 V/SDL     ( 9998): onResume()
+11-24 14:29:27.885 I/GFXSTREAM( 9998): [eglDisplay.cpp(297)] Opening libGLESv2_emulation.so
+11-24 14:29:27.885 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.885 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.885 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.892 W/libc    ( 9998): Access denied finding property "vendor.mesa.virtgpu.kumquat"
+11-24 14:29:27.893 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.893 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.893 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.893 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.893 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.904 W/HWUI    ( 9998): Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+11-24 14:29:27.904 W/HWUI    ( 9998): Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-24 14:29:27.907 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.907 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.907 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.907 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.907 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.932 W/HWUI    ( 9998): Unknown dataspace 0
+11-24 14:29:27.941 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.941 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.941 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.941 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.941 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.947 W/InputChannel-JNI(  684): Channel already disposed.
+11-24 14:29:27.956 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.957 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.957 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.957 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.957 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.960 W/libc    ( 9998): Access denied finding property "vendor.mesa.virtgpu.kumquat"
+11-24 14:29:27.963 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libSDL2.so
+11-24 14:29:27.963 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libtvg-svg2pngbin.so
+11-24 14:29:27.964 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libwebpdecoder.so
+11-24 14:29:27.964 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libSDL2_ttf.so
+11-24 14:29:27.964 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libffi.so
+11-24 14:29:27.964 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libSDL2_image.so
+11-24 14:29:27.964 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libomp.so
+11-24 14:29:27.964 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libpythonbin.so
+11-24 14:29:27.964 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libwebp.so
+11-24 14:29:27.964 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libtvg-lottie2gifbin.so
+11-24 14:29:27.965 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libc++_shared.so
+11-24 14:29:27.965 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libwebpmux.so
+11-24 14:29:27.965 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libwebpdemux.so
+11-24 14:29:27.965 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libthorvg-1.so
+11-24 14:29:27.965 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libpng16.so
+11-24 14:29:27.965 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libmain.so
+11-24 14:29:27.965 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libcrypto.so
+11-24 14:29:27.965 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libjpeg.so
+11-24 14:29:27.965 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libturbojpeg.so
+11-24 14:29:27.965 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libSDL2_mixer.so
+11-24 14:29:27.965 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libssl.so
+11-24 14:29:27.965 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libpybundle.so
+11-24 14:29:27.966 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libsqlite3.so
+11-24 14:29:27.966 V/pythonutil( 9998): Pattern libsqlite3\.so matched file libsqlite3.so
+11-24 14:29:27.966 V/pythonutil( 9998): Checking pattern libsqlite3\.so against libpython3.14.so
+11-24 14:29:27.966 V/pythonutil( 9998): Checking pattern libffi\.so against libSDL2.so
+11-24 14:29:27.966 V/pythonutil( 9998): Checking pattern libffi\.so against libtvg-svg2pngbin.so
+11-24 14:29:27.966 V/pythonutil( 9998): Checking pattern libffi\.so against libwebpdecoder.so
+11-24 14:29:27.967 V/pythonutil( 9998): Checking pattern libffi\.so against libSDL2_ttf.so
+11-24 14:29:27.967 V/pythonutil( 9998): Checking pattern libffi\.so against libffi.so
+11-24 14:29:27.967 V/pythonutil( 9998): Pattern libffi\.so matched file libffi.so
+11-24 14:29:27.967 V/pythonutil( 9998): Checking pattern libffi\.so against libSDL2_image.so
+11-24 14:29:27.967 V/pythonutil( 9998): Checking pattern libffi\.so against libomp.so
+11-24 14:29:27.967 V/pythonutil( 9998): Checking pattern libffi\.so against libpythonbin.so
+11-24 14:29:27.967 V/pythonutil( 9998): Checking pattern libffi\.so against libwebp.so
+11-24 14:29:27.967 V/pythonutil( 9998): Checking pattern libffi\.so against libtvg-lottie2gifbin.so
+11-24 14:29:27.968 V/pythonutil( 9998): Checking pattern libffi\.so against libc++_shared.so
+11-24 14:29:27.968 V/pythonutil( 9998): Checking pattern libffi\.so against libwebpmux.so
+11-24 14:29:27.968 V/pythonutil( 9998): Checking pattern libffi\.so against libwebpdemux.so
+11-24 14:29:27.968 V/pythonutil( 9998): Checking pattern libffi\.so against libthorvg-1.so
+11-24 14:29:27.968 V/pythonutil( 9998): Checking pattern libffi\.so against libpng16.so
+11-24 14:29:27.968 V/pythonutil( 9998): Checking pattern libffi\.so against libmain.so
+11-24 14:29:27.968 V/pythonutil( 9998): Checking pattern libffi\.so against libcrypto.so
+11-24 14:29:27.968 V/pythonutil( 9998): Checking pattern libffi\.so against libjpeg.so
+11-24 14:29:27.968 V/pythonutil( 9998): Checking pattern libffi\.so against libturbojpeg.so
+11-24 14:29:27.968 V/pythonutil( 9998): Checking pattern libffi\.so against libSDL2_mixer.so
+11-24 14:29:27.968 V/pythonutil( 9998): Checking pattern libffi\.so against libssl.so
+11-24 14:29:27.968 V/pythonutil( 9998): Checking pattern libffi\.so against libpybundle.so
+11-24 14:29:27.968 V/pythonutil( 9998): Checking pattern libffi\.so against libsqlite3.so
+11-24 14:29:27.968 V/pythonutil( 9998): Checking pattern libffi\.so against libpython3.14.so
+11-24 14:29:27.968 V/pythonutil( 9998): Checking pattern libpng16\.so against libSDL2.so
+11-24 14:29:27.969 V/pythonutil( 9998): Checking pattern libpng16\.so against libtvg-svg2pngbin.so
+11-24 14:29:27.969 V/pythonutil( 9998): Checking pattern libpng16\.so against libwebpdecoder.so
+11-24 14:29:27.969 V/pythonutil( 9998): Checking pattern libpng16\.so against libSDL2_ttf.so
+11-24 14:29:27.969 V/pythonutil( 9998): Checking pattern libpng16\.so against libffi.so
+11-24 14:29:27.969 V/pythonutil( 9998): Checking pattern libpng16\.so against libSDL2_image.so
+11-24 14:29:27.969 V/pythonutil( 9998): Checking pattern libpng16\.so against libomp.so
+11-24 14:29:27.969 V/pythonutil( 9998): Checking pattern libpng16\.so against libpythonbin.so
+11-24 14:29:27.969 V/pythonutil( 9998): Checking pattern libpng16\.so against libwebp.so
+11-24 14:29:27.970 V/pythonutil( 9998): Checking pattern libpng16\.so against libtvg-lottie2gifbin.so
+11-24 14:29:27.970 V/pythonutil( 9998): Checking pattern libpng16\.so against libc++_shared.so
+11-24 14:29:27.970 V/pythonutil( 9998): Checking pattern libpng16\.so against libwebpmux.so
+11-24 14:29:27.970 V/pythonutil( 9998): Checking pattern libpng16\.so against libwebpdemux.so
+11-24 14:29:27.970 V/pythonutil( 9998): Checking pattern libpng16\.so against libthorvg-1.so
+11-24 14:29:27.970 V/pythonutil( 9998): Checking pattern libpng16\.so against libpng16.so
+11-24 14:29:27.971 V/pythonutil( 9998): Pattern libpng16\.so matched file libpng16.so
+11-24 14:29:27.971 V/pythonutil( 9998): Checking pattern libpng16\.so against libmain.so
+11-24 14:29:27.971 V/pythonutil( 9998): Checking pattern libpng16\.so against libcrypto.so
+11-24 14:29:27.971 V/pythonutil( 9998): Checking pattern libpng16\.so against libjpeg.so
+11-24 14:29:27.971 V/pythonutil( 9998): Checking pattern libpng16\.so against libturbojpeg.so
+11-24 14:29:27.971 V/pythonutil( 9998): Checking pattern libpng16\.so against libSDL2_mixer.so
+11-24 14:29:27.971 V/pythonutil( 9998): Checking pattern libpng16\.so against libssl.so
+11-24 14:29:27.971 V/pythonutil( 9998): Checking pattern libpng16\.so against libpybundle.so
+11-24 14:29:27.971 V/pythonutil( 9998): Checking pattern libpng16\.so against libsqlite3.so
+11-24 14:29:27.971 V/pythonutil( 9998): Checking pattern libpng16\.so against libpython3.14.so
+11-24 14:29:27.972 V/pythonutil( 9998): Checking pattern libssl.*\.so against libSDL2.so
+11-24 14:29:27.972 V/pythonutil( 9998): Checking pattern libssl.*\.so against libtvg-svg2pngbin.so
+11-24 14:29:27.972 V/pythonutil( 9998): Checking pattern libssl.*\.so against libwebpdecoder.so
+11-24 14:29:27.972 V/pythonutil( 9998): Checking pattern libssl.*\.so against libSDL2_ttf.so
+11-24 14:29:27.972 V/pythonutil( 9998): Checking pattern libssl.*\.so against libffi.so
+11-24 14:29:27.972 V/pythonutil( 9998): Checking pattern libssl.*\.so against libSDL2_image.so
+11-24 14:29:27.972 V/pythonutil( 9998): Checking pattern libssl.*\.so against libomp.so
+11-24 14:29:27.972 V/pythonutil( 9998): Checking pattern libssl.*\.so against libpythonbin.so
+11-24 14:29:27.972 V/pythonutil( 9998): Checking pattern libssl.*\.so against libwebp.so
+11-24 14:29:27.972 V/pythonutil( 9998): Checking pattern libssl.*\.so against libtvg-lottie2gifbin.so
+11-24 14:29:27.972 V/pythonutil( 9998): Checking pattern libssl.*\.so against libc++_shared.so
+11-24 14:29:27.972 V/pythonutil( 9998): Checking pattern libssl.*\.so against libwebpmux.so
+11-24 14:29:27.972 V/pythonutil( 9998): Checking pattern libssl.*\.so against libwebpdemux.so
+11-24 14:29:27.972 V/pythonutil( 9998): Checking pattern libssl.*\.so against libthorvg-1.so
+11-24 14:29:27.972 V/pythonutil( 9998): Checking pattern libssl.*\.so against libpng16.so
+11-24 14:29:27.972 V/pythonutil( 9998): Checking pattern libssl.*\.so against libmain.so
+11-24 14:29:27.972 V/pythonutil( 9998): Checking pattern libssl.*\.so against libcrypto.so
+11-24 14:29:27.973 V/pythonutil( 9998): Checking pattern libssl.*\.so against libjpeg.so
+11-24 14:29:27.973 V/pythonutil( 9998): Checking pattern libssl.*\.so against libturbojpeg.so
+11-24 14:29:27.973 V/pythonutil( 9998): Checking pattern libssl.*\.so against libSDL2_mixer.so
+11-24 14:29:27.973 V/pythonutil( 9998): Checking pattern libssl.*\.so against libssl.so
+11-24 14:29:27.973 V/pythonutil( 9998): Pattern libssl.*\.so matched file libssl.so
+11-24 14:29:27.973 V/pythonutil( 9998): Checking pattern libssl.*\.so against libpybundle.so
+11-24 14:29:27.973 V/pythonutil( 9998): Checking pattern libssl.*\.so against libsqlite3.so
+11-24 14:29:27.973 V/pythonutil( 9998): Checking pattern libssl.*\.so against libpython3.14.so
+11-24 14:29:27.973 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libSDL2.so
+11-24 14:29:27.973 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libtvg-svg2pngbin.so
+11-24 14:29:27.973 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libwebpdecoder.so
+11-24 14:29:27.973 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libSDL2_ttf.so
+11-24 14:29:27.973 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libffi.so
+11-24 14:29:27.973 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libSDL2_image.so
+11-24 14:29:27.973 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.973 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libomp.so
+11-24 14:29:27.973 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libpythonbin.so
+11-24 14:29:27.973 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libwebp.so
+11-24 14:29:27.973 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libtvg-lottie2gifbin.so
+11-24 14:29:27.973 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libc++_shared.so
+11-24 14:29:27.973 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libwebpmux.so
+11-24 14:29:27.974 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libwebpdemux.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libthorvg-1.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libpng16.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libmain.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libcrypto.so
+11-24 14:29:27.974 V/pythonutil( 9998): Pattern libcrypto.*\.so matched file libcrypto.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libjpeg.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libturbojpeg.so
+11-24 14:29:27.974 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libSDL2_mixer.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libssl.so
+11-24 14:29:27.974 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.974 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libpybundle.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libsqlite3.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libcrypto.*\.so against libpython3.14.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libSDL2.so
+11-24 14:29:27.974 V/pythonutil( 9998): Pattern libSDL2\.so matched file libSDL2.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libtvg-svg2pngbin.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libwebpdecoder.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libSDL2_ttf.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libffi.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libSDL2_image.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libomp.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libpythonbin.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libwebp.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libtvg-lottie2gifbin.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libc++_shared.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libwebpmux.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libwebpdemux.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libthorvg-1.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libpng16.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libmain.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libcrypto.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libjpeg.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libturbojpeg.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libSDL2_mixer.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libssl.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libpybundle.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libsqlite3.so
+11-24 14:29:27.974 V/pythonutil( 9998): Checking pattern libSDL2\.so against libpython3.14.so
+11-24 14:29:27.975 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libSDL2.so
+11-24 14:29:27.975 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libtvg-svg2pngbin.so
+11-24 14:29:27.975 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libwebpdecoder.so
+11-24 14:29:27.975 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libSDL2_ttf.so
+11-24 14:29:27.975 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libffi.so
+11-24 14:29:27.975 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libSDL2_image.so
+11-24 14:29:27.975 V/pythonutil( 9998): Pattern libSDL2_image\.so matched file libSDL2_image.so
+11-24 14:29:27.975 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libomp.so
+11-24 14:29:27.975 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libpythonbin.so
+11-24 14:29:27.975 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libwebp.so
+11-24 14:29:27.975 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libtvg-lottie2gifbin.so
+11-24 14:29:27.975 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libc++_shared.so
+11-24 14:29:27.975 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libwebpmux.so
+11-24 14:29:27.975 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libwebpdemux.so
+11-24 14:29:27.975 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libthorvg-1.so
+11-24 14:29:27.976 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libpng16.so
+11-24 14:29:27.976 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libmain.so
+11-24 14:29:27.976 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libcrypto.so
+11-24 14:29:27.976 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libjpeg.so
+11-24 14:29:27.976 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libturbojpeg.so
+11-24 14:29:27.976 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libSDL2_mixer.so
+11-24 14:29:27.976 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libssl.so
+11-24 14:29:27.976 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libpybundle.so
+11-24 14:29:27.976 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libsqlite3.so
+11-24 14:29:27.976 V/pythonutil( 9998): Checking pattern libSDL2_image\.so against libpython3.14.so
+11-24 14:29:27.976 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libSDL2.so
+11-24 14:29:27.976 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libtvg-svg2pngbin.so
+11-24 14:29:27.976 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libwebpdecoder.so
+11-24 14:29:27.976 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libSDL2_ttf.so
+11-24 14:29:27.976 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libffi.so
+11-24 14:29:27.976 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libSDL2_image.so
+11-24 14:29:27.977 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libomp.so
+11-24 14:29:27.977 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libpythonbin.so
+11-24 14:29:27.977 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libwebp.so
+11-24 14:29:27.977 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libtvg-lottie2gifbin.so
+11-24 14:29:27.978 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libc++_shared.so
+11-24 14:29:27.978 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libwebpmux.so
+11-24 14:29:27.978 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libwebpdemux.so
+11-24 14:29:27.978 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libthorvg-1.so
+11-24 14:29:27.978 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libpng16.so
+11-24 14:29:27.978 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libmain.so
+11-24 14:29:27.978 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libcrypto.so
+11-24 14:29:27.978 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libjpeg.so
+11-24 14:29:27.978 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libturbojpeg.so
+11-24 14:29:27.978 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libSDL2_mixer.so
+11-24 14:29:27.978 V/pythonutil( 9998): Pattern libSDL2_mixer\.so matched file libSDL2_mixer.so
+11-24 14:29:27.978 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libssl.so
+11-24 14:29:27.978 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libpybundle.so
+11-24 14:29:27.979 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libsqlite3.so
+11-24 14:29:27.979 V/pythonutil( 9998): Checking pattern libSDL2_mixer\.so against libpython3.14.so
+11-24 14:29:27.980 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libSDL2.so
+11-24 14:29:27.980 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libtvg-svg2pngbin.so
+11-24 14:29:27.980 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libwebpdecoder.so
+11-24 14:29:27.980 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libSDL2_ttf.so
+11-24 14:29:27.980 V/pythonutil( 9998): Pattern libSDL2_ttf\.so matched file libSDL2_ttf.so
+11-24 14:29:27.980 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libffi.so
+11-24 14:29:27.980 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libSDL2_image.so
+11-24 14:29:27.980 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libomp.so
+11-24 14:29:27.980 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libpythonbin.so
+11-24 14:29:27.980 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libwebp.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libtvg-lottie2gifbin.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libc++_shared.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libwebpmux.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libwebpdemux.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libthorvg-1.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libpng16.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libmain.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libcrypto.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libjpeg.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libturbojpeg.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libSDL2_mixer.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libssl.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libpybundle.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libsqlite3.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL2_ttf\.so against libpython3.14.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL3\.so against libSDL2.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL3\.so against libtvg-svg2pngbin.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL3\.so against libwebpdecoder.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL3\.so against libSDL2_ttf.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL3\.so against libffi.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL3\.so against libSDL2_image.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL3\.so against libomp.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL3\.so against libpythonbin.so
+11-24 14:29:27.981 V/pythonutil( 9998): Checking pattern libSDL3\.so against libwebp.so
+11-24 14:29:27.982 V/pythonutil( 9998): Checking pattern libSDL3\.so against libtvg-lottie2gifbin.so
+11-24 14:29:27.982 V/pythonutil( 9998): Checking pattern libSDL3\.so against libc++_shared.so
+11-24 14:29:27.982 V/pythonutil( 9998): Checking pattern libSDL3\.so against libwebpmux.so
+11-24 14:29:27.982 V/pythonutil( 9998): Checking pattern libSDL3\.so against libwebpdemux.so
+11-24 14:29:27.982 V/pythonutil( 9998): Checking pattern libSDL3\.so against libthorvg-1.so
+11-24 14:29:27.982 V/pythonutil( 9998): Checking pattern libSDL3\.so against libpng16.so
+11-24 14:29:27.982 V/pythonutil( 9998): Checking pattern libSDL3\.so against libmain.so
+11-24 14:29:27.982 V/pythonutil( 9998): Checking pattern libSDL3\.so against libcrypto.so
+11-24 14:29:27.982 V/pythonutil( 9998): Checking pattern libSDL3\.so against libjpeg.so
+11-24 14:29:27.982 V/pythonutil( 9998): Checking pattern libSDL3\.so against libturbojpeg.so
+11-24 14:29:27.982 V/pythonutil( 9998): Checking pattern libSDL3\.so against libSDL2_mixer.so
+11-24 14:29:27.983 V/pythonutil( 9998): Checking pattern libSDL3\.so against libssl.so
+11-24 14:29:27.983 V/pythonutil( 9998): Checking pattern libSDL3\.so against libpybundle.so
+11-24 14:29:27.983 V/pythonutil( 9998): Checking pattern libSDL3\.so against libsqlite3.so
+11-24 14:29:27.983 V/pythonutil( 9998): Checking pattern libSDL3\.so against libpython3.14.so
+11-24 14:29:27.984 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libSDL2.so
+11-24 14:29:27.984 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libtvg-svg2pngbin.so
+11-24 14:29:27.984 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libwebpdecoder.so
+11-24 14:29:27.984 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libSDL2_ttf.so
+11-24 14:29:27.984 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libffi.so
+11-24 14:29:27.984 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libSDL2_image.so
+11-24 14:29:27.984 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libomp.so
+11-24 14:29:27.984 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libpythonbin.so
+11-24 14:29:27.984 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libwebp.so
+11-24 14:29:27.984 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libtvg-lottie2gifbin.so
+11-24 14:29:27.984 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libc++_shared.so
+11-24 14:29:27.984 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libwebpmux.so
+11-24 14:29:27.984 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libwebpdemux.so
+11-24 14:29:27.984 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libthorvg-1.so
+11-24 14:29:27.985 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libpng16.so
+11-24 14:29:27.985 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libmain.so
+11-24 14:29:27.985 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libcrypto.so
+11-24 14:29:27.985 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libjpeg.so
+11-24 14:29:27.985 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libturbojpeg.so
+11-24 14:29:27.985 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libSDL2_mixer.so
+11-24 14:29:27.985 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libssl.so
+11-24 14:29:27.985 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libpybundle.so
+11-24 14:29:27.986 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libsqlite3.so
+11-24 14:29:27.986 V/pythonutil( 9998): Checking pattern libSDL3_image\.so against libpython3.14.so
+11-24 14:29:27.986 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libSDL2.so
+11-24 14:29:27.986 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libtvg-svg2pngbin.so
+11-24 14:29:27.986 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libwebpdecoder.so
+11-24 14:29:27.986 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libSDL2_ttf.so
+11-24 14:29:27.986 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libffi.so
+11-24 14:29:27.986 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libSDL2_image.so
+11-24 14:29:27.986 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libomp.so
+11-24 14:29:27.986 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libpythonbin.so
+11-24 14:29:27.986 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libwebp.so
+11-24 14:29:27.986 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libtvg-lottie2gifbin.so
+11-24 14:29:27.986 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libc++_shared.so
+11-24 14:29:27.986 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libwebpmux.so
+11-24 14:29:27.986 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libwebpdemux.so
+11-24 14:29:27.986 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libthorvg-1.so
+11-24 14:29:27.986 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libpng16.so
+11-24 14:29:27.987 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libmain.so
+11-24 14:29:27.987 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libcrypto.so
+11-24 14:29:27.987 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libjpeg.so
+11-24 14:29:27.987 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libturbojpeg.so
+11-24 14:29:27.987 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libSDL2_mixer.so
+11-24 14:29:27.987 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libssl.so
+11-24 14:29:27.987 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libpybundle.so
+11-24 14:29:27.987 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libsqlite3.so
+11-24 14:29:27.987 V/pythonutil( 9998): Checking pattern libSDL3_mixer\.so against libpython3.14.so
+11-24 14:29:27.987 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libSDL2.so
+11-24 14:29:27.987 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libtvg-svg2pngbin.so
+11-24 14:29:27.988 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libwebpdecoder.so
+11-24 14:29:27.988 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libSDL2_ttf.so
+11-24 14:29:27.988 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libffi.so
+11-24 14:29:27.988 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libSDL2_image.so
+11-24 14:29:27.988 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libomp.so
+11-24 14:29:27.988 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libpythonbin.so
+11-24 14:29:27.988 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libwebp.so
+11-24 14:29:27.988 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libtvg-lottie2gifbin.so
+11-24 14:29:27.988 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libc++_shared.so
+11-24 14:29:27.988 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libwebpmux.so
+11-24 14:29:27.988 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libwebpdemux.so
+11-24 14:29:27.988 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libthorvg-1.so
+11-24 14:29:27.988 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libpng16.so
+11-24 14:29:27.988 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libmain.so
+11-24 14:29:27.988 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libcrypto.so
+11-24 14:29:27.988 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libjpeg.so
+11-24 14:29:27.988 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libturbojpeg.so
+11-24 14:29:27.988 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libSDL2_mixer.so
+11-24 14:29:27.989 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libssl.so
+11-24 14:29:27.989 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libpybundle.so
+11-24 14:29:27.989 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libsqlite3.so
+11-24 14:29:27.989 V/pythonutil( 9998): Checking pattern libSDL3_ttf\.so against libpython3.14.so
+11-24 14:29:27.989 V/pythonutil( 9998): Loading library: sqlite3
+11-24 14:29:27.990 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.990 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.991 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.991 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.991 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.993 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.993 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:27.994 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:28.003 V/WindowManagerShell( 1169): Received remote transition finished callback for (#71)
+11-24 14:29:28.004 V/WindowManagerShell( 1169): Transition animation finished (aborted=false), notifying core (#71) android.os.BinderProxy@436b179@0
+11-24 14:29:28.008 V/WindowManager(  684): Finish Transition (#71): created at 11-24 14:29:27.207 collect-started=0.292ms request-sent=7.065ms started=18.06ms ready=172.45ms sent=174.94ms commit=83.134ms finished=798.596ms
+11-24 14:29:28.009 V/WindowManagerShell( 1169): Track 0 became idle
+11-24 14:29:28.009 V/WindowManagerShell( 1169): All active transition animations finished
+11-24 14:29:28.011 D/WallpaperService( 1169): onVisibilityChanged(false): com.android.systemui.wallpapers.ImageWallpaper$CanvasEngine@dde04a2
+11-24 14:29:28.026 D/VRI[NexusLauncherActivity]( 1484): visibilityChanged oldVisibility=true newVisibility=false
+11-24 14:29:28.028 D/SmartspaceInteractor( 1484): notifySmartspaceEvent: SmartspaceTargetEvent{mSmartspaceTarget=null, mSmartspaceActionId='null', mEventType=7}
+11-24 14:29:28.094 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:28.180 D/nativeloader( 9998): Load /data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/lib/arm64/libsqlite3.so using class loader ns clns-9 (caller=/data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/base.apk!classes6.dex): ok
+11-24 14:29:28.185 V/pythonutil( 9998): Loading library: ffi
+11-24 14:29:28.187 D/nativeloader( 9998): Load /data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/lib/arm64/libffi.so using class loader ns clns-9 (caller=/data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/base.apk!classes6.dex): ok
+11-24 14:29:28.187 V/pythonutil( 9998): Loading library: png16
+11-24 14:29:28.188 D/nativeloader( 9998): Load /data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/lib/arm64/libpng16.so using class loader ns clns-9 (caller=/data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/base.apk!classes6.dex): ok
+11-24 14:29:28.188 V/pythonutil( 9998): Loading library: ssl
+11-24 14:29:28.194 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:28.204 D/nativeloader( 9998): Load /data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/lib/arm64/libssl.so using class loader ns clns-9 (caller=/data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/base.apk!classes6.dex): ok
+11-24 14:29:28.204 V/pythonutil( 9998): Loading library: crypto
+11-24 14:29:28.205 D/nativeloader( 9998): Load /data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/lib/arm64/libcrypto.so using class loader ns clns-9 (caller=/data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/base.apk!classes6.dex): ok
+11-24 14:29:28.205 V/pythonutil( 9998): Loading library: SDL2
+11-24 14:29:28.339 D/nativeloader( 9998): Load /data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/lib/arm64/libSDL2.so using class loader ns clns-9 (caller=/data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/base.apk!classes6.dex): ok
+11-24 14:29:28.343 V/pythonutil( 9998): Loading library: SDL2_image
+11-24 14:29:28.345 D/nativeloader( 9998): Load /data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/lib/arm64/libSDL2_image.so using class loader ns clns-9 (caller=/data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/base.apk!classes6.dex): ok
+11-24 14:29:28.345 V/pythonutil( 9998): Loading library: SDL2_mixer
+11-24 14:29:28.347 D/nativeloader( 9998): Load /data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/lib/arm64/libSDL2_mixer.so using class loader ns clns-9 (caller=/data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/base.apk!classes6.dex): ok
+11-24 14:29:28.347 V/pythonutil( 9998): Loading library: SDL2_ttf
+11-24 14:29:28.354 D/nativeloader( 9998): Load /data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/lib/arm64/libSDL2_ttf.so using class loader ns clns-9 (caller=/data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/base.apk!classes6.dex): ok
+11-24 14:29:28.354 V/pythonutil( 9998): Loading library: python3.14
+11-24 14:29:28.359 D/nativeloader( 9998): Load /data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/lib/arm64/libpython3.14.so using class loader ns clns-9 (caller=/data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/base.apk!classes6.dex): ok
+11-24 14:29:28.359 V/pythonutil( 9998): Loading library: main
+11-24 14:29:28.355 W/SDLActivity( 9998): type=1400 audit(0.0:93): avc:  denied  { getattr } for  path="/proc/sys/vm/overcommit_memory" dev="proc" ino=50314 scontext=u:r:untrusted_app_34:s0:c237,c256,c512,c768 tcontext=u:object_r:proc_overcommit_memory:s0 tclass=file permissive=0 app=com.jaewoo.dcw
+11-24 14:29:28.361 D/nativeloader( 9998): Load /data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/lib/arm64/libmain.so using class loader ns clns-9 (caller=/data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/base.apk!classes6.dex): ok
+11-24 14:29:28.361 V/pythonutil( 9998): Loaded everything!
+11-24 14:29:28.355 W/SDLActivity( 9998): type=1400 audit(0.0:94): avc:  denied  { getattr } for  path="/proc/sys/vm/overcommit_memory" dev="proc" ino=50314 scontext=u:r:untrusted_app_34:s0:c237,c256,c512,c768 tcontext=u:object_r:proc_overcommit_memory:s0 tclass=file permissive=0 app=com.jaewoo.dcw
+11-24 14:29:28.364 V/SDL     ( 9998): nativeSetupJNI()
+11-24 14:29:28.355 W/SDLActivity( 9998): type=1400 audit(0.0:95): avc:  denied  { getattr } for  path="/proc/sys/vm/overcommit_memory" dev="proc" ino=50314 scontext=u:r:untrusted_app_34:s0:c237,c256,c512,c768 tcontext=u:object_r:proc_overcommit_memory:s0 tclass=file permissive=0 app=com.jaewoo.dcw
+11-24 14:29:28.367 V/SDL     ( 9998): AUDIO nativeSetupJNI()
+11-24 14:29:28.367 V/SDL     ( 9998): CONTROLLER nativeSetupJNI()
+11-24 14:29:28.355 W/SDLActivity( 9998): type=1400 audit(0.0:96): avc:  denied  { read } for  name="overcommit_memory" dev="proc" ino=50314 scontext=u:r:untrusted_app_34:s0:c237,c256,c512,c768 tcontext=u:object_r:proc_overcommit_memory:s0 tclass=file permissive=0 app=com.jaewoo.dcw
+11-24 14:29:28.370 D/AudioSystem( 9998): onNewService: media.audio_policy service obtained 0x72e97002ee50
+11-24 14:29:28.370 D/AudioSystem( 9998): getService: IAudioPolicyService retrieved: 0x72e97002ee50  cached: 0x72e97002ee50
+11-24 14:29:28.385 V/PythonActivity( 9998): Setting env vars for start.c and Python to use
+11-24 14:29:28.386 V/PythonActivity( 9998): Access to our meta-data...
+11-24 14:29:28.386 I/PythonActivity( 9998): Surface will NOT be transparent
+11-24 14:29:28.388 D/VRI[PythonActivity]( 9998): WindowInsets changed: 1080x2400 statusBars:[0,63,0,0] navigationBars:[0,0,0,63] mandatorySystemGestures:[0,63,0,84] 
+11-24 14:29:28.389 D/WindowOnBackDispatcher( 9998): setTopOnBackInvokedCallback (unwrapped): android.view.ViewRootImpl$$ExternalSyntheticLambda14@6ac185e
+11-24 14:29:28.389 D/CoreBackPreview(  684): Window{4310b03 u0 com.jaewoo.dcw/org.kivy.android.PythonActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@e2f545f, mPriority=0, mIsAnimationCallback=false, mOverrideBehavior=0}
+11-24 14:29:28.391 D/WindowManager(  684): setClientSurface Surface(name=VRI-com.jaewoo.dcw/org.kivy.android.PythonActivity#598)/@0x6560eac for 4310b03 com.jaewoo.dcw/org.kivy.android.PythonActivity
+11-24 14:29:28.394 I/Surface ( 9998): Creating surface for consumer unnamed-9998-0 with slotExpansion=1 for 64 slots
+11-24 14:29:28.395 I/Surface ( 9998): Creating surface for consumer VRI[PythonActivity]#0(BLAST Consumer)0 with slotExpansion=1 for 64 slots
+11-24 14:29:28.405 I/Surface ( 9998): Creating surface for consumer unnamed-9998-1 with slotExpansion=1 for 64 slots
+11-24 14:29:28.406 I/Surface ( 9998): Creating surface for consumer 8a98d99 SurfaceView[com.jaewoo.dcw/org.kivy.android.PythonActivity]#1(BLAST Consumer)1 with slotExpansion=1 for 64 slots
+11-24 14:29:28.407 V/SDL     ( 9998): surfaceCreated()
+11-24 14:29:28.407 V/SDL     ( 9998): surfaceChanged()
+11-24 14:29:28.407 V/SDL     ( 9998): Window size: 1080x2274
+11-24 14:29:28.407 V/SDL     ( 9998): Device size: 1080x2400
+11-24 14:29:28.416 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:28.421 V/SDL     ( 9998): Running main function SDL_main from library /data/app/~~kivTcMuRPoOvxduJrL2-ig==/com.jaewoo.dcw-rVwGEToaojbQJ3F56P-gmw==/lib/arm64/libmain.so
+11-24 14:29:28.421 V/PythonActivity( 9998): appConfirmedActive() -> preparing loading screen removal
+11-24 14:29:28.421 V/SDL     ( 9998): nativeRunMain()
+11-24 14:29:28.426 I/python  ( 9998): Initializing Python for Android
+11-24 14:29:28.426 I/python  ( 9998): Setting additional env vars from p4a_env_vars.txt
+11-24 14:29:28.430 I/python  ( 9998): Changing directory to '/data/user/0/com.jaewoo.dcw/files/app'
+11-24 14:29:28.450 I/python  ( 9998): Preparing to initialize python
+11-24 14:29:28.451 I/python  ( 9998): _python_bundle dir exists
+11-24 14:29:28.465 I/python  ( 9998): set wchar paths...
+11-24 14:29:28.541 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:28.550 I/ActivityTaskManager(  684): Displayed com.jaewoo.dcw/org.kivy.android.PythonActivity for user 0: +1s342ms
+11-24 14:29:28.565 D/BaseActivity( 1484): Launcher flags updated: [] -[state_started]
+11-24 14:29:28.565 D/BaseDepthController( 1484): setSurface:
+11-24 14:29:28.565 D/BaseDepthController( 1484): 	mWaitingOnSurfaceValidity: false
+11-24 14:29:28.565 D/BaseDepthController( 1484): 	mBaseSurface: null
+11-24 14:29:28.565 D/BaseDepthController( 1484): mSurface is null and mCurrentBlur is: 0
+11-24 14:29:28.567 D/LauncherStateManager( 1484): StateManager.goToState: fromState: Normal, toState: Normal, partial trace:
+11-24 14:29:28.567 D/LauncherStateManager( 1484): 	at com.android.launcher3.statemanager.StateManager.moveToRestState(go/retraceme 9bf9d747b28c192bd799fb0161a08498ac2b938f666e7966c0095b4da2c9b843:26)
+11-24 14:29:28.567 D/LauncherStateManager( 1484): 	at com.android.launcher3.statemanager.StateManager.moveToRestState(go/retraceme 9bf9d747b28c192bd799fb0161a08498ac2b938f666e7966c0095b4da2c9b843:35)
+11-24 14:29:28.567 D/LauncherStateManager( 1484): 	at com.android.launcher3.statemanager.StatefulActivity.onStop(go/retraceme 9bf9d747b28c192bd799fb0161a08498ac2b938f666e7966c0095b4da2c9b843:31)
+11-24 14:29:28.567 D/LauncherStateManager( 1484): StateManager.onRepeatStateSetAborted: state: Normal
+11-24 14:29:28.567 D/KeyboardStateManager( 1484): hideKeyboard
+11-24 14:29:28.567 D/KeyboardStateManager( 1484): isImeShown: false
+11-24 14:29:28.567 D/StatsLog( 1484): LAUNCHER_ONSTOP
+11-24 14:29:28.568 D/StatsLog( 1484): LAUNCHER_GOOGLE_SEARCH_RESTORE_LIST_SIZE_AFTER_ACTIVITY_RESTART
+11-24 14:29:28.579 V/SDL     ( 9998): onWindowFocusChanged(): true
+11-24 14:29:28.583 I/ImeTracker(  684): com.jaewoo.dcw:72b5b00d: onRequestHide at ORIGIN_SERVER reason HIDE_UNSPECIFIED_WINDOW fromUser false userId 0 displayId 0
+11-24 14:29:28.585 D/InsetsController( 9998): hide(ime())
+11-24 14:29:28.585 I/ImeTracker( 9998): com.jaewoo.dcw:72b5b00d: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+11-24 14:29:28.587 I/GoogleInputMethodService( 6906): GoogleInputMethodService.onFinishInput():2259 
+11-24 14:29:28.587 W/InputChannel-JNI(  684): Channel already disposed.
+11-24 14:29:28.588 I/Module  ( 6906): DeviceLockedStatusModuleProvider$Module.updateDeviceLockedStatus():103 repeatCheckTimes = 0, locked = false
+11-24 14:29:28.588 I/GoogleInputMethodService( 6906): GoogleInputMethodService.onStartInput():1446 onStartInput(EditorInfo{EditorInfo{packageName=com.jaewoo.dcw, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
+11-24 14:29:28.589 I/AndroidIME( 6906): LatinIMEBase.updateInputViewCoverNavigation():322 Update input view padding, isNavbarOverInputWindow=true, bottom inset=63
+11-24 14:29:28.589 I/ImeTracker(  684): system_server:d95e5086: onRequestHide at ORIGIN_SERVER reason IME_REQUESTED_CHANGED_LISTENER fromUser false displayId 0
+11-24 14:29:28.593 I/ImeTracker(  684): system_server:d95e5086: onCancelled at PHASE_SERVER_SHOULD_HIDE
+11-24 14:29:28.595 I/Module  ( 6906): DeviceLockedStatusModuleProvider$Module.updateDeviceLockedStatus():103 repeatCheckTimes = 1, locked = false
+11-24 14:29:28.597 W/PackageConfigPersister(  684): App-specific configuration not found for packageName: com.jaewoo.dcw and userId: 0
+11-24 14:29:28.645 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:28.645 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:28.717 W/AppOps  (  684): Noting op not finished: uid 10205 pkg com.google.android.gms code 113 startTime of in progress event=1795497296665
+11-24 14:29:28.745 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:28.745 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:28.846 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:28.847 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:28.868 I/com.jaewoo.dcw( 9998): Compiler allocated 5239KB to compile void android.view.ViewRootImpl.performTraversals(long)
+11-24 14:29:28.934 W/libbinder.IPCThreadState(  594): Sending oneway calls to frozen process.
+11-24 14:29:28.935 D/WindowOnBackDispatcher( 1169): setTopOnBackInvokedCallback (unwrapped): null
+11-24 14:29:28.935 D/CoreBackPreview(  684): Window{247c5ab u0 Splash Screen com.jaewoo.dcw EXITING}: Setting back callback null
+11-24 14:29:28.949 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:28.949 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:29.050 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:29.050 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:29.151 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:29.260 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:29.777 I/HalDevMgr(  684): bestIfaceCreationProposal is null, requestIface=STA, existingIface=[name=wlan0 type=STA]
+11-24 14:29:29.814 I/python  ( 9998): Initialized python
+11-24 14:29:29.831 I/python  ( 9998): testing python print redirection
+11-24 14:29:29.895 I/python  ( 9998): Android kivy bootstrap done. __name__ is __main__
+11-24 14:29:30.146 D/SatelliteController( 1295): isInCarrierRoamingNbIotNtn: satellite is disabled
+11-24 14:29:30.146 D/SatelliteController( 1295): getCarrierRoamingNtnConnectType: Checking connect type from PLMN config for subId: 1
+11-24 14:29:30.146 D/TelephonyConfigUpdateInstallReceiver( 1295): getConfigParser: domain=satellite
+11-24 14:29:30.146 V/SatelliteController( 1295): satelliteConfigParser is not ready
+11-24 14:29:30.146 D/SatelliteController( 1295): isSatelliteAttachSupportedViaConfigupdater: return null (satelliteConfig is null)
+11-24 14:29:30.146 D/SatelliteController( 1295): getSatellitePerPlmnConfiguration: invalid subId or not supported via carrier.
+11-24 14:29:30.146 D/SatelliteController( 1295): getCarrierRoamingNtnConnectType: config: null
+11-24 14:29:30.146 D/TelephonyConfigUpdateInstallReceiver( 1295): getConfigParser: domain=satellite
+11-24 14:29:30.146 V/SatelliteController( 1295): satelliteConfigParser is not ready
+11-24 14:29:30.146 D/SatelliteController( 1295): getCarrierRoamingNtnConnectTypeViaConfigUpdater: return null (satelliteConfig is null)
+11-24 14:29:30.146 D/SatelliteController( 1295): getCarrierRoamingNtnConnectType: Falling back to global carrier config connect type: 0
+11-24 14:29:30.146 D/TelephonyConfigUpdateInstallReceiver( 1295): getConfigParser: domain=satellite
+11-24 14:29:30.146 V/SatelliteController( 1295): satelliteConfigParser is not ready
+11-24 14:29:30.146 D/SatelliteController( 1295): isSatelliteAttachSupportedViaConfigupdater: return null (satelliteConfig is null)
+11-24 14:29:30.147 D/SatelliteController( 1295): getCarrierRoamingNtnConnectType: Checking connect type from PLMN config for subId: 1
+11-24 14:29:30.147 D/TelephonyConfigUpdateInstallReceiver( 1295): getConfigParser: domain=satellite
+11-24 14:29:30.147 V/SatelliteController( 1295): satelliteConfigParser is not ready
+11-24 14:29:30.147 D/SatelliteController( 1295): isSatelliteAttachSupportedViaConfigupdater: return null (satelliteConfig is null)
+11-24 14:29:30.147 D/SatelliteController( 1295): getSatellitePerPlmnConfiguration: invalid subId or not supported via carrier.
+11-24 14:29:30.147 D/SatelliteController( 1295): getCarrierRoamingNtnConnectType: config: null
+11-24 14:29:30.147 D/TelephonyConfigUpdateInstallReceiver( 1295): getConfigParser: domain=satellite
+11-24 14:29:30.147 V/SatelliteController( 1295): satelliteConfigParser is not ready
+11-24 14:29:30.147 D/SatelliteController( 1295): getCarrierRoamingNtnConnectTypeViaConfigUpdater: return null (satelliteConfig is null)
+11-24 14:29:30.147 D/SatelliteController( 1295): getCarrierRoamingNtnConnectType: Falling back to global carrier config connect type: 0
+11-24 14:29:30.147 D/TelephonyConfigUpdateInstallReceiver( 1295): getConfigParser: domain=satellite
+11-24 14:29:30.147 V/SatelliteController( 1295): satelliteConfigParser is not ready
+11-24 14:29:30.147 D/SatelliteController( 1295): isSatelliteAttachSupportedViaConfigupdater: return null (satelliteConfig is null)
+11-24 14:29:30.176 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:30.244 D/android.hardware.audio@7.1-impl.ranchu(  483): threadLoop: entering standby, frames: 3324928
+11-24 14:29:30.244 D/android.hardware.audio@7.1-impl.ranchu(  483): ~TinyalsaSink: joining consumeThread
+11-24 14:29:30.244 D/android.hardware.audio@7.1-impl.ranchu(  483): consumeThread: exiting
+11-24 14:29:30.722 E/TaskPersister(  684): File error accessing recents directory (directory doesn't exist?).
+11-24 14:29:31.879 I/python  ( 9998): [INFO   ] [Logger      ] Record log in /data/user/0/com.jaewoo.dcw/files/app/.kivy/logs/kivy_26-11-24_3.txt
+11-24 14:29:31.880 I/python  ( 9998): [INFO   ] [Kivy        ] v2.3.1
+11-24 14:29:31.881 I/python  ( 9998): [INFO   ] [Kivy        ] Installed at "/data/user/0/com.jaewoo.dcw/files/app/_python_bundle/site-packages/kivy/__init__.pyc"
+11-24 14:29:31.881 I/python  ( 9998): [INFO   ] [Python      ] v3.14.2 (main, Nov  4 2026, 12:02:11) [Clang 19.0.1 (https://android.googlesource.com/toolchain/llvm-project 97a699bf4
+11-24 14:29:31.882 I/python  ( 9998): [INFO   ] [Python      ] Interpreter at "/data/user/0/com.jaewoo.dcw/files/app/.bin/python"
+11-24 14:29:31.882 I/python  ( 9998): [INFO   ] [Logger      ] Purge log fired. Processing...
+11-24 14:29:31.887 I/python  ( 9998): [INFO   ] [Logger      ] Purge finished!
+11-24 14:29:32.784 I/HalDevMgr(  684): bestIfaceCreationProposal is null, requestIface=STA, existingIface=[name=wlan0 type=STA]
+11-24 14:29:33.596 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:34.236 I/python  ( 9998): [INFO   ] [Factory     ] 195 symbols loaded
+11-24 14:29:34.580 I/adbd    ( 1891): adbd service requested 'shell,v2,raw:dumpsys package com.google.android.gms'
+11-24 14:29:34.695 I/artd    ( 8103): GetBestInfo: odex next to the dex file (/data/app/~~XyRqs_p8pvUPo0WrPqrDHA==/com.google.android.gms-0QYT0PgqC9Vo4buRvYhf2g==/oat/x86_64/base.odex) is kOatUpToDate with filter 'speed-profile' executable 'false'
+11-24 14:29:34.697 I/artd    ( 8103): GetBestInfo: dm (/data/app/~~XyRqs_p8pvUPo0WrPqrDHA==/com.google.android.gms-0QYT0PgqC9Vo4buRvYhf2g==/split_AdsDynamite_installtime.dm) is kOatUpToDate with filter 'verify' executable 'false'
+11-24 14:29:34.698 I/artd    ( 8103): GetBestInfo: odex next to the dex file (/data/app/~~XyRqs_p8pvUPo0WrPqrDHA==/com.google.android.gms-0QYT0PgqC9Vo4buRvYhf2g==/oat/x86_64/split_CronetDynamite_installtime.odex) is kOatUpToDate with filter 'speed-profile' executable 'false'
+11-24 14:29:34.699 I/artd    ( 8103): GetBestInfo: dm (/data/app/~~XyRqs_p8pvUPo0WrPqrDHA==/com.google.android.gms-0QYT0PgqC9Vo4buRvYhf2g==/split_DynamiteLoader_installtime.dm) is kOatUpToDate with filter 'verify' executable 'false'
+11-24 14:29:34.700 I/artd    ( 8103): GetBestInfo: dm (/data/app/~~XyRqs_p8pvUPo0WrPqrDHA==/com.google.android.gms-0QYT0PgqC9Vo4buRvYhf2g==/split_DynamiteModulesA_installtime.dm) is kOatUpToDate with filter 'verify' executable 'false'
+11-24 14:29:34.701 I/artd    ( 8103): GetBestInfo: dm (/data/app/~~XyRqs_p8pvUPo0WrPqrDHA==/com.google.android.gms-0QYT0PgqC9Vo4buRvYhf2g==/split_DynamiteModulesC_installtime.dm) is kOatUpToDate with filter 'verify' executable 'false'
+11-24 14:29:34.702 I/artd    ( 8103): GetBestInfo: dm (/data/app/~~XyRqs_p8pvUPo0WrPqrDHA==/com.google.android.gms-0QYT0PgqC9Vo4buRvYhf2g==/split_GoogleCertificates_installtime.dm) is kOatUpToDate with filter 'verify' executable 'false'
+11-24 14:29:34.703 I/artd    ( 8103): GetBestInfo: dm (/data/app/~~XyRqs_p8pvUPo0WrPqrDHA==/com.google.android.gms-0QYT0PgqC9Vo4buRvYhf2g==/split_MapsDynamite_installtime.dm) is kOatUpToDate with filter 'verify' executable 'false'
+11-24 14:29:34.705 I/artd    ( 8103): GetBestInfo: dm (/data/app/~~XyRqs_p8pvUPo0WrPqrDHA==/com.google.android.gms-0QYT0PgqC9Vo4buRvYhf2g==/split_MeasurementDynamite_installtime.dm) is kOatUpToDate with filter 'verify' executable 'false'
+11-24 14:29:34.706 I/artd    ( 8103): GetBestInfo: dm (/data/app/~~XyRqs_p8pvUPo0WrPqrDHA==/com.google.android.gms-0QYT0PgqC9Vo4buRvYhf2g==/split_all_locale_splits.dm) is kOatUpToDate with filter 'verify' executable 'false'
+11-24 14:29:34.707 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/00000008/dl-Appsearch.optional_261136100800.apk has no usable artifacts
+11-24 14:29:34.708 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/00000001/CronetDynamite.apk has no usable artifacts
+11-24 14:29:34.709 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/0000000e/dl-MlkitOcrCommon.optional_261136100800.apk has no usable artifacts
+11-24 14:29:34.710 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/0000000d/dl-VisionOcr.optional_261136100000.apk has no usable artifacts
+11-24 14:29:34.711 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/00000002/DynamiteLoader.apk has no usable artifacts
+11-24 14:29:34.711 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/00000005/GoogleCertificates.apk has no usable artifacts
+11-24 14:29:34.712 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/00000015/dl-PlayCloudSearch.optional_264531100000.apk has no usable artifacts
+11-24 14:29:34.713 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/00000011/dl-Appsearch.optional_264531100800.apk has no usable artifacts
+11-24 14:29:34.714 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/00000009/dl-IdentityCredentialsPlatform.optional_261136100800.apk has no usable artifacts
+11-24 14:29:34.715 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/00000013/dl-MlkitBarcodeUi.optional_264531100800.apk has no usable artifacts
+11-24 14:29:34.717 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/0000000f/dl-PlayCloudSearch.optional_261136100000.apk has no usable artifacts
+11-24 14:29:34.718 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/0000000a/dl-TfliteDynamiteDynamite.integ_264010405100800.apk has no usable artifacts
+11-24 14:29:34.719 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/00000010/dl-VisionOcr.optional_264531100000.apk has no usable artifacts
+11-24 14:29:34.720 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/00000012/dl-IdentityCredentialsPlatform.optional_264531100800.apk has no usable artifacts
+11-24 14:29:34.721 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/00000007/MeasurementDynamite.apk has no usable artifacts
+11-24 14:29:34.722 I/artd    ( 8103): GetBestInfo: vdex next to the dex file (/data/user/0/com.google.android.gms/app_dg_cache/BCD37DA6707F74E3F78AB9C0F65BC34E65B1F2E1/oat/x86_64/the.vdex) is kOatUpToDate with filter 'verify' executable 'false'
+11-24 14:29:34.723 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/0000001a/dl-MlkitDocscanUi.optional_264531100800.apk has no usable artifacts
+11-24 14:29:34.725 I/artd    ( 8103): GetBestInfo: /data/user_de/0/com.google.android.gms/app_chimera/m/0000000b/dl-MlkitBarcodeUi.optional_261136100800.apk has no usable artifacts
+11-24 14:29:34.754 W/ProcessStats(  684): Tracking association SourceState{3371da2 com.google.android.gms/10205 BFgs #12719} whose proc state 4 is better than process ProcessState{6cb2a33 com.google.android.gms.unstable/10205 pkg=com.google.android.gms (sub)} proc state 14 (19 skipped)
+11-24 14:29:34.939 I/python  ( 9998): [INFO   ] [Image       ] Providers: img_tex, img_dds, img_sdl2 (img_pil, img_ffpyplayer ignored)
+11-24 14:29:35.146 I/python  ( 9998): [INFO   ] [Clipboard   ] Provider: android
+11-24 14:29:35.192 I/python  ( 9998): [INFO   ] [Window      ] Provider: sdl2
+11-24 14:29:35.230 V/hidapi  ( 9998): initialize(true, false)
+11-24 14:29:35.233 E/hidapi  ( 9998): hid_init threw an exception: com.jaewoo.dcw: One of RECEIVER_EXPORTED or RECEIVER_NOT_EXPORTED should be specified when a receiver isn't being registered exclusively for system broadcasts
+11-24 14:29:35.241 V/SDL     ( 9998): setOrientation() requestedOrientation=1 width=800 height=600 resizable=true hint=Portrait
+11-24 14:29:35.244 W/libc    ( 9998): Access denied finding property "vendor.mesa.virtgpu.kumquat"
+11-24 14:29:35.248 V/SDL     ( 9998): setOrientation() requestedOrientation=1 width=800 height=600 resizable=true hint=Portrait
+11-24 14:29:35.253 I/SDL/APP ( 9998): pixel format wanted SDL_PIXELFORMAT_RGBA8888 (1), got SDL_PIXELFORMAT_RGBA8888 (1)
+11-24 14:29:35.271 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:35.278 I/python  ( 9998): [INFO   ] [GL          ] Using the "OpenGL ES 2" graphics system
+11-24 14:29:35.280 I/python  ( 9998): [INFO   ] [GL          ] Backend used <sdl2>
+11-24 14:29:35.284 I/python  ( 9998): [INFO   ] [GL          ] OpenGL version <b'OpenGL ES 3.0 (4.5.0 - Build 32.0.101.8508)'>
+11-24 14:29:35.288 I/python  ( 9998): [INFO   ] [GL          ] OpenGL vendor <b'Google (Intel)'>
+11-24 14:29:35.291 I/python  ( 9998): [INFO   ] [GL          ] OpenGL renderer <b'Android Emulator OpenGL ES Translator (Intel(R) Arc(TM) Graphics)'>
+11-24 14:29:35.293 I/python  ( 9998): [INFO   ] [GL          ] OpenGL parsed version: 3, 0
+11-24 14:29:35.294 I/python  ( 9998): [INFO   ] [GL          ] Texture max size <16384>
+11-24 14:29:35.295 I/python  ( 9998): [INFO   ] [GL          ] Texture max units <32>
+11-24 14:29:35.372 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:35.382 I/python  ( 9998): [INFO   ] [Window      ] auto add sdl2 input provider
+11-24 14:29:35.418 I/python  ( 9998): [INFO   ] [Window      ] virtual keyboard not allowed, single mode, not docked
+11-24 14:29:35.435 I/python  ( 9998): [INFO   ] [Text        ] Provider: sdl2
+11-24 14:29:35.789 I/HalDevMgr(  684): bestIfaceCreationProposal is null, requestIface=STA, existingIface=[name=wlan0 type=STA]
+11-24 14:29:35.806 I/python  ( 9998): [INFO   ] [GL          ] NPOT texture support is available
+11-24 14:29:35.901 D/BoundBrokerSvc( 8205): onUnbind: Intent { act=com.google.android.gms.onboardingconsent.api.ConsentManagerApiService.START dat=chimera-action:/... xflg=0x4 cmp=com.google.android.gms/.chimera.GmsApiService }
+11-24 14:29:36.154 I/python  ( 9998):  Traceback (most recent call last):
+11-24 14:29:36.155 I/python  ( 9998):    File "/home/user/dutchpay/.buildozer/android/app/main.py", line 2486, in <module>
+11-24 14:29:36.155 I/python  ( 9998):    File "/home/user/dutchpay/.buildozer/android/platform/build-arm64-v8a/build/python-installs/dcw/arm64-v8a/kivy/app.py", line 955, in run
+11-24 14:29:36.156 I/python  ( 9998):    File "/home/user/dutchpay/.buildozer/android/platform/build-arm64-v8a/build/python-installs/dcw/arm64-v8a/kivy/app.py", line 925, in _run_prepare
+11-24 14:29:36.156 I/python  ( 9998):    File "/home/user/dutchpay/.buildozer/android/app/main.py", line 2428, in build
+11-24 14:29:36.157 I/python  ( 9998):    File "/home/user/dutchpay/.buildozer/android/app/main.py", line 958, in __init__
+11-24 14:29:36.157 I/python  ( 9998):    File "/home/user/dutchpay/.buildozer/android/app/main.py", line 1013, in build_ui
+11-24 14:29:36.157 I/python  ( 9998):    File "/home/user/dutchpay/.buildozer/android/app/main.py", line 343, in make_ghost_button
+11-24 14:29:36.157 I/python  ( 9998):  TypeError: __main__.SoftButton() got multiple values for keyword argument 'color'
+11-24 14:29:36.158 I/python  ( 9998): Python for android ended.
+11-24 14:29:36.346 W/libc    ( 9998): Access denied finding property "vendor.mesa.virtgpu.kumquat"
+11-24 14:29:36.355 I/adbd    ( 1891): Remote process closed the socket (on MSG_PEEK)
+11-24 14:29:36.373 W/InputDispatcher(  684): channel '4310b03 com.jaewoo.dcw/org.kivy.android.PythonActivity' ~ Consumer closed input channel or an error occurred.  events=0x9
+11-24 14:29:36.373 E/InputDispatcher(  684): channel '4310b03 com.jaewoo.dcw/org.kivy.android.PythonActivity' ~ Channel is unrecoverably broken and will be disposed!
+11-24 14:29:36.373 I/WindowManager(  684): WINDOW DIED Window{4310b03 u0 com.jaewoo.dcw/org.kivy.android.PythonActivity}
+11-24 14:29:36.373 I/ActivityManager(  684): Process com.jaewoo.dcw (pid 9998) has died: fg  TOP 
+11-24 14:29:36.374 D/SensorService(  684): Unregistering client listener for PID 9998
+11-24 14:29:36.374 I/ImeTracker(  684): com.jaewoo.dcw:1c69fee0: onRequestHide at ORIGIN_SERVER reason HIDE_REMOVE_CLIENT fromUser false userId 0 displayId 0
+11-24 14:29:36.374 I/ImeTracker(  684): com.jaewoo.dcw:1c69fee0: onCancelled at PHASE_SERVER_SHOULD_HIDE
+11-24 14:29:36.375 I/ImeTracker(  684): system_server:3a33279c: onRequestHide at ORIGIN_SERVER reason IME_REQUESTED_CHANGED_LISTENER fromUser false displayId 0
+11-24 14:29:36.375 W/InputChannel-JNI( 6906): Channel already disposed.
+11-24 14:29:36.376 I/ImeTracker(  684): system_server:3a33279c: onCancelled at PHASE_SERVER_SHOULD_HIDE
+11-24 14:29:36.378 W/ActivityTaskManager(  684): Force removing ActivityRecord{132888304 u0 com.jaewoo.dcw/org.kivy.android.PythonActivity t20}: app died, no saved state
+11-24 14:29:36.379 D/InetDiagMessage(  684): Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+11-24 14:29:36.379 D/InetDiagMessage(  684): Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+11-24 14:29:36.379 D/InetDiagMessage(  684): Destroyed live tcp sockets for uids={10237} in 1ms
+11-24 14:29:36.379 V/WindowManagerShell( 1169): Transition requested (#72): android.os.BinderProxy@a373b45 TransitionRequestInfo { type = CLOSE, triggerTask = TaskInfo{userId=0 taskId=20 effectiveUid=10237 displayId=0 isRunning=true baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=com.jaewoo.dcw/org.kivy.android.PythonActivity } baseActivity=ComponentInfo{com.jaewoo.dcw/org.kivy.android.PythonActivity} topActivity=ComponentInfo{com.jaewoo.dcw/org.kivy.android.PythonActivity} origActivity=null realActivity=ComponentInfo{com.jaewoo.dcw/org.kivy.android.PythonActivity} realActivityIsAppLockEnabled=false numActivities=1 lastActiveTime=1273144 supportsMultiWindow=true supportsMultiWindowWithoutConstraints=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{android.os.BinderProxy@1f29ebe} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=Rect(0, 0 - 0, 0) topActivityInfo=ActivityInfo{9f1729a org.kivy.android.PythonActivity} launchCookies=[android.os.BinderProxy@4197e6c] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=true isInteractive=true isVisible=true isVisibleRequested=true isTopActivityNoDisplay=false isSleeping=false locusId=null displayAreaFeatureId=1 isTopActivityTransparent=false isActivityStackTransparent=false lastNonFullscreenBounds=null leafTaskBoundsFromOptions= false capturedLink=null capturedLinkTimestamp=0 requestedVisibleTypes=503 topActivityRequestOpenInBrowserEducationTimestamp=0 appCompatTaskInfo=AppCompatTaskInfo { topActivityInSizeCompat=false isLeafTask= true eligibleForLetterboxEducation= false isLetterboxEducationEnabled= true isLetterboxDoubleTapEnabled= false eligibleForUserAspectRatioButton= false topActivityBoundsLetterboxed= false isFromLetterboxDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 topActivityAppBounds=Rect(0, 0 - 1080, 2337) isUserFullscreenOverrideEnabled=false isSystemFullscreenOverrideEnabled=false hasMinAspectRatioOverride=false topActivityLetterboxBounds=null topNonResizableActivityAspectRatio=-1.0} topActivityMainWindowFrame=null isAppBubble=false}, pipChange = null, remoteTransitionInfo = null, displayChanges = null, requestedLocation = null, userChange = null, windowingLayerChange = null, fullscreenRequestChange = null, flags = 0, debugId = 72 }
+11-24 14:29:36.379 W/DisconnectHandler( 1169): No disconnect change found in the transition, not handling request.
+11-24 14:29:36.379 D/InetDiagMessage(  684): Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+11-24 14:29:36.379 V/ShellDesktopMode( 1169): DesktopTasksController: skipping handleRequest reason=triggerTask's display doesn't support desktop mode
+11-24 14:29:36.379 D/InetDiagMessage(  684): Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+11-24 14:29:36.380 D/InetDiagMessage(  684): Destroyed live tcp sockets for uids={20237} in 0ms
+11-24 14:29:36.380 I/libbinder.BpBinder(  525): onLastStrongRef automatically unlinking death recipients for binder (0x76f537624980) with descriptor: '(not cached)'
+11-24 14:29:36.383 V/WindowManager(  684): Defer transition id=72 for TaskFragmentTransaction=android.os.Binder@3828e42
+11-24 14:29:36.383 D/ViewRootImpl( 1484): Skipping stats log for color mode
+11-24 14:29:36.384 W/ActivityManager(  684): setHasOverlayUi called on unknown pid: 9998
+11-24 14:29:36.384 D/BaseActivity( 1484): Launcher flags updated: [state_started] +[state_started]
+11-24 14:29:36.384 I/libprocessgroup(  684): Removed cgroup /sys/fs/cgroup/apps/uid_10237/pid_9998
+11-24 14:29:36.384 I/Zygote  (  477): Process 9998 exited cleanly (255)
+11-24 14:29:36.385 D/BaseActivity( 1484): Launcher flags updated: [state_started|state_resumed|state_user_active] +[state_resumed|state_user_active]
+11-24 14:29:36.385 V/ShellTaskOrganizer( 1169): Task vanished taskId=20
+11-24 14:29:36.385 V/ShellTaskOrganizer( 1169): Fullscreen Task Vanished: #20
+11-24 14:29:36.385 V/ShellDesktopMode( 1169): Task Vanished: #20 closed=true
+11-24 14:29:36.385 D/ShellPackageUpdate( 1169): PackageUpdateController: Removing handlePackageUpdate for task: 20
+11-24 14:29:36.385 D/BaseActivity( 1484): Launcher flags updated: [state_started|state_resumed|state_user_active] +[]
+11-24 14:29:36.385 D/BaseActivity( 1484): Launcher flags updated: [state_started|state_resumed|state_deferred_resumed|state_user_active] +[state_deferred_resumed]
+11-24 14:29:36.385 E/WindowOrganizerController(  684): Attempting to externally change a non-organized container: Task{eba3469 #20 type=standard A=10237:com.jaewoo.dcw}={handlePackageUpdate:false,} playercount=2 taskorg=android.window.ITaskOrganizer$Stub$Proxy@ebb59fe
+11-24 14:29:36.385 D/StatsLog( 1484): LAUNCHER_ONRESUME
+11-24 14:29:36.386 V/RecentTasksController( 1169): Notify recent tasks changed
+11-24 14:29:36.387 D/ShellDesktopMode( 1169): AppToWebRepository: Task 20 is vanishing. Removing task data from repository
+11-24 14:29:36.388 D/QuickstepModelDelegate( 1484): notifyAppTargetEvent action=1 launchLocation=workspace/1/[-1,-1]/[1,1]
+11-24 14:29:36.389 D/SmartspaceInteractor( 1484): notifySmartspaceEvent: SmartspaceTargetEvent{mSmartspaceTarget=null, mSmartspaceActionId='null', mEventType=6}
+11-24 14:29:36.390 I/Surface ( 1484): Creating surface for consumer unnamed-1484-171 with slotExpansion=1 for 64 slots
+11-24 14:29:36.390 I/AiAiEcho( 1887): Predicting[0]:  [CONTEXT sampling_count=5 ]
+11-24 14:29:36.391 I/AiAiEcho( 1887): EchoTargets: 
+11-24 14:29:36.391 I/AiAiEcho( 1887): Filtered by AiAi flag check: 
+11-24 14:29:36.391 I/AiAiEcho( 1887): [CONTEXT ratelimit_period="10 SECONDS" ]
+11-24 14:29:36.391 I/Surface ( 1484): Creating surface for consumer VRI[NexusLauncherActivity]#9(BLAST Consumer)9 with slotExpansion=1 for 64 slots
+11-24 14:29:36.391 D/WindowManager(  684): setClientSurface Surface(name=VRI-com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity#610)/@0xefade53 for 1327174 com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity
+11-24 14:29:36.391 I/AiAiEcho( 1887): #remoteViewsTwiddler: feature disabled.
+11-24 14:29:36.392 D/BaseDepthController( 1484): setSurface:
+11-24 14:29:36.392 D/BaseDepthController( 1484): 	mWaitingOnSurfaceValidity: false
+11-24 14:29:36.392 D/BaseDepthController( 1484): 	mBaseSurface: Surface(name=VRI-com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity#610)/@0x6b15f0f
+11-24 14:29:36.392 V/BaseDepthController( 1484): Applying blur: 0 to Surface(name=VRI-com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity#610)/@0x6b15f0f applyImmediately: false
+11-24 14:29:36.393 D/BaseDepthController( 1484): shouldBlurWorkspace: false targetState: Normal currentStableState: Normal mCurrentBlur: 0 mLauncher.getDepthBlurTargets(): [com.android.launcher3.Workspace{9163b9c V.ED..... .......D 0,0-1080,2400 #7f0a0486 app:id/workspace}, com.android.launcher3.Hotseat{b4919a5 V.ED..... .......D 0,1905-1080,2400 #7f0a01f6 app:id/hotseat}]
+11-24 14:29:36.395 I/AiAiEcho( 1887): #postPredictionTargets: Sending updates to UISurface home with targets# 0 (types=[])
+11-24 14:29:36.396 V/AppCompat( 1169): SingleSurfaceLetterboxController: []
+11-24 14:29:36.396 V/AppCompat( 1169): MultiSurfaceLetterboxController: []
+11-24 14:29:36.396 V/AppCompat( 1169): LetterboxInputController: []
+11-24 14:29:36.396 V/AppCompat( 1169): RoundedCornersLetterboxController: {}
+11-24 14:29:36.396 V/RecentTasksController( 1169): Notify recent tasks changed
+11-24 14:29:36.397 D/WindowManagerShell( 1169): setLauncherKeepClearAreaHeight: visible=true, height=495
+11-24 14:29:36.411 V/WindowManager(  684): Unknown focus tokens, dropping reportFocusChanged
+11-24 14:29:36.417 D/WallpaperService( 1169): onVisibilityChanged(true): com.android.systemui.wallpapers.ImageWallpaper$CanvasEngine@dde04a2
+11-24 14:29:36.426 D/RecentsView( 1484): onTaskRemoved: 20, not handling task stack changes
+11-24 14:29:36.427 D/RecentsView( 1484): onTaskRemoved: 20, not handling task stack changes
+11-24 14:29:36.427 D/RecentTasksList( 1484): invalidateLoadedTasks - previous requestLoadId: -1
+11-24 14:29:36.428 D/RecentTasksList( 1484): invalidateLoadedTasks - previous requestLoadId: -1
+11-24 14:29:36.430 V/WindowManager(  684): Continue transition id=72 for TaskFragmentTransaction=android.os.Binder@3828e42
+11-24 14:29:36.434 V/WindowManager(  684): Sent Transition (#72) createdAt=11-24 14:29:36.378 via request=TransitionRequestInfo { type = CLOSE, triggerTask = TaskInfo{userId=0 taskId=20 effectiveUid=10237 displayId=0 isRunning=true baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=com.jaewoo.dcw/org.kivy.android.PythonActivity } baseActivity=ComponentInfo{com.jaewoo.dcw/org.kivy.android.PythonActivity} topActivity=ComponentInfo{com.jaewoo.dcw/org.kivy.android.PythonActivity} origActivity=null realActivity=ComponentInfo{com.jaewoo.dcw/org.kivy.android.PythonActivity} realActivityIsAppLockEnabled=false numActivities=1 lastActiveTime=1273144 supportsMultiWindow=true supportsMultiWindowWithoutConstraints=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{RemoteToken{f92bc20 Task{eba3469 #20 type=standard A=10237:com.jaewoo.dcw}}} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=Rect(0, 0 - 0, 0) topActivityInfo=ActivityInfo{78c09d9 org.kivy.android.PythonActivity} launchCookies=[android.os.BinderProxy@8767f9e] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=true isInteractive=true isVisible=true isVisibleRequested=true isTopActivityNoDisplay=false isSleeping=false locusId=null displayAreaFeatureId=1 isTopActivityTransparent=false isActivityStackTransparent=false lastNonFullscreenBounds=null leafTaskBoundsFromOptions= false capturedLink=null capturedLinkTimestamp=0 requestedVisibleTypes=503 topActivityRequestOpenInBrowserEducationTimestamp=0 appCompatTaskInfo=AppCompatTaskInfo { topActivityInSizeCompat=false isLeafTask= true eligibleForLetterboxEducation= false isLetterboxEducationEnabled= true isLetterboxDoubleTapEnabled= false eligibleForUserAspectRatioButton= false topActivityBoundsLetterboxed= false isFromLetterboxDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 topActivityAppBounds=Rect(0, 0 - 1080, 2337) isUserFullscreenOverrideEnabled=false isSystemFullscreenOverrideEnabled=false hasMinAspectRatioOverride=false topActivityLetterboxBounds=null topNonResizableActivityAspectRatio=-1.0} topActivityMainWindowFrame=null isAppBubble=false}, pipChange = null, remoteTransitionInfo = null, displayChanges = null, requestedLocation = null, userChange = null, windowingLayerChange = null, fullscreenRequestChange = null, flags = 0, debugId = 72 }
+11-24 14:29:36.434 V/WindowManager(  684):     startWCT=WindowContainerTransaction { changes= {} hops= [] flags= 0 errorCallbackToken=null taskFragmentOrganizer=null }
+11-24 14:29:36.434 V/WindowManager(  684):     info={id=72 t=CLOSE f=0x0 trk=0 r=[0@Point(0, 0)] c=[
+11-24 14:29:36.434 V/WindowManager(  684):         {WCT{RemoteToken{a6e04c5 Task{9cd3267 #1 type=home}}} m=TO_FRONT f=SHOW_WALLPAPER|MOVE_TO_TOP|FLAG_CHANGED_INTERACTIVE leash=Surface(name=Task=1#35)/@0x354c10d sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0 taskParent=-1 winMode=1 userId=0},
+11-24 14:29:36.434 V/WindowManager(  684):         {m=TO_FRONT f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{307fb3f}#51)/@0x1306e6d sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0}
+11-24 14:29:36.434 V/WindowManager(  684):     ]}
+11-24 14:29:36.434 V/WindowManagerShell( 1169): onTransitionReady(transaction=2937757635303)
+11-24 14:29:36.435 V/WindowManagerShell( 1169): onTransitionReady (#72) android.os.BinderProxy@a373b45: {id=72 t=CLOSE f=0x0 trk=0 r=[0@Point(0, 0)] c=[
+11-24 14:29:36.435 V/WindowManagerShell( 1169):         {m=TO_FRONT f=SHOW_WALLPAPER|MOVE_TO_TOP|FLAG_CHANGED_INTERACTIVE leash=Surface(name=Task=1#35)/@0x9d4e7cb sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0 taskParent=-1 winMode=1 userId=0},
+11-24 14:29:36.435 V/WindowManagerShell( 1169):         {m=TO_FRONT f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{307fb3f}#51)/@0x48bba8 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0}
+11-24 14:29:36.435 V/WindowManagerShell( 1169):     ]}
+11-24 14:29:36.435 V/WindowManagerShell( 1169): Playing animation for (#72) android.os.BinderProxy@a373b45@0
+11-24 14:29:36.435 D/ShellSplitScreen( 1169): startAnimation: transition=72 isSplitActive=false
+11-24 14:29:36.435 V/ShellRecents( 1169): RecentsTransitionHandler.startAnimation: no controller found
+11-24 14:29:36.435 V/ShellDesktopMode( 1169): DesktopMixedTransitionHandler: No pending desktop transition
+11-24 14:29:36.435 V/WindowManagerShell( 1169): Transition doesn't have explicit remote, search filters for match for {id=72 t=CLOSE f=0x0 trk=0 r=[0@Point(0, 0)] c=[{m=TO_FRONT f=SHOW_WALLPAPER|MOVE_TO_TOP|FLAG_CHANGED_INTERACTIVE leash=Surface(name=Task=1#35)/@0x9d4e7cb sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0 taskParent=-1 winMode=1 userId=0},{m=TO_FRONT f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{307fb3f}#51)/@0x48bba8 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0}]}
+11-24 14:29:36.435 V/WindowManagerShell( 1169):  Checking filter Pair{{types=[] flags=0x0 notFlags=0x0 checks=[{atype=undefined independent=true modes=[CLOSE,TO_BACK] flags=IN_TASK_WITH_EMBEDDED_ACTIVITY mustBeTask=false order=ANY topActivity=null launchCookie=null taskFragmentToken=android.os.BinderProxy@5e2191c windowingMode=undefined isCrossDisplayMove=false}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@c936925, appThread = android.app.IApplicationThread$Stub$Proxy@c6b3afa, debugName = overlayBackTransition, filter = {types=[] flags=0x0 notFlags=0x0 checks=[{atype=undefined independent=true modes=[CLOSE,TO_BACK] flags=IN_TASK_WITH_EMBEDDED_ACTIVITY mustBeTask=false order=ANY topActivity=null launchCookie=null taskFragmentToken=android.os.BinderProxy@5e2191c windowingMode=undefined isCrossDisplayMove=false}]} }}
+11-24 14:29:36.436 V/WindowManagerShell( 1169):  Checking filter Pair{{types=[] flags=0x0 notFlags=0x0 checks=[{atype=dream independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null windowingMode=undefined isCrossDisplayMove=false},{atype=home independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null windowingMode=undefined isCrossDisplayMove=false}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@cfc78ab, appThread = android.app.IApplicationThread$Stub$Proxy@385ab08, debugName = LauncherToDream, filter = {types=[] flags=0x0 notFlags=0x0 checks=[{atype=dream independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null windowingMode=undefined isCrossDisplayMove=false},{atype=home independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null windowingMode=undefined isCrossDisplayMove=false}]} }}
+11-24 14:29:36.436 V/WindowManagerShell( 1169):  Checking filter Pair{{types=[] flags=0x0 notFlags=0x0 checks=[{atype=standard independent=false modes=[CHANGE] flags=NONE mustBeTask=true order=ANY topActivity=null launchCookie=null windowingMode=undefined isCrossDisplayMove=true}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@a3672a1, appThread = android.app.IApplicationThread$Stub$Proxy@9a20cc6, debugName = QuickstepDisplayMove, filter = {types=[] flags=0x0 notFlags=0x0 checks=[{atype=standard independent=false modes=[CHANGE] flags=NONE mustBeTask=true order=ANY topActivity=null launchCookie=null windowingMode=undefined isCrossDisplayMove=true}]} }}
+11-24 14:29:36.436 V/WindowManagerShell( 1169):  Checking filter Pair{{types=[] flags=0x0 notFlags=0x100 checks=[{atype=home independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=ANY topActivity=ComponentInfo{com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity} launchCookie=null windowingMode=undefined isCrossDisplayMove=false},{atype=standard independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null windowingMode=undefined isCrossDisplayMove=false},{NOT atype=undefined independent=true modes=[] flags=NONE mustBeTask=true order=ANY topActivity=null launchCookie=null customAnim=true windowingMode=undefined isCrossDisplayMove=false}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@107f487, appThread = android.app.IApplicationThread$Stub$Proxy@44e6fb4, debugName = QuickstepLaunchHome, filter = {types=[] flags=0x0 notFlags=0x100 checks=[{atype=home independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=ANY topActivity=ComponentInfo{com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity} launchCookie=null windowingMode=undefined isCrossDisplayMove=false},{atype=standard independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null windowingMode=undefined isCrossDisplayMove=false},{NOT atype=undefined independent=true modes=[] flags=NONE mustBeTask=true order=ANY topActivity=null launchCookie=null customAnim=true windowingMode=undefined isCrossDisplayMove=false}]} }}
+11-24 14:29:36.436 V/WindowManagerShell( 1169):  Checking filter Pair{{types=[OPEN,TO_FRONT] flags=0x0 notFlags=0x0 checks=[{atype=standard independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=true order=ANY topActivity=null launchCookie=null windowingMode=freeform isCrossDisplayMove=false}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@5554dd1, appThread = null, debugName = DesktopWindowLimitUnminimize, filter = {types=[OPEN,TO_FRONT] flags=0x0 notFlags=0x0 checks=[{atype=standard independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=true order=ANY topActivity=null launchCookie=null windowingMode=freeform isCrossDisplayMove=false}]} }}
+11-24 14:29:36.436 V/WindowManagerShell( 1169):  Delegate animation for (#72) to null
+11-24 14:29:36.436 V/WindowManagerShell( 1169): start default transition animation, info = {id=72 t=CLOSE f=0x0 trk=0 r=[0@Point(0, 0)] c=[{m=TO_FRONT f=SHOW_WALLPAPER|MOVE_TO_TOP|FLAG_CHANGED_INTERACTIVE leash=Surface(name=Task=1#35)/@0x9d4e7cb sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0 taskParent=-1 winMode=1 userId=0},{m=TO_FRONT f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{307fb3f}#51)/@0x48bba8 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) epz=Point(1080, 2400) d=0}]}
+11-24 14:29:36.436 V/WindowManagerShell( 1169): loadAnimation: anim=android.view.animation.AnimationSet@2e41e66 animAttr=0x10 type=CLOSE isEntrance=true
+11-24 14:29:36.436 V/WindowManagerShell( 1169):  animated by com.android.wm.shell.transition.DefaultTransitionHandler@c5ea02d
+11-24 14:29:36.440 E/BpTransactionCompletedListener(  525): Failed to transact (-32)
+11-24 14:29:36.440 D/SsBaseTemplateCard( 1484): Passed-in item info is null
+11-24 14:29:36.441 D/SsBaseTemplateCard( 1484): Passed-in item info is null
+11-24 14:29:36.441 D/SsBaseTemplateCard( 1484): Passed-in item info is null
+11-24 14:29:36.441 D/SsBaseTemplateCard( 1484): Passed-in item info is null
+11-24 14:29:36.441 I/SsBaseTemplateCard( 1484): Secondary card pane is null
+11-24 14:29:36.445 D/BaseActivity( 1484): Launcher flags updated: [state_started|state_resumed|state_deferred_resumed|state_window_focused|state_user_active] +[state_window_focused]
+11-24 14:29:36.446 I/ImeTracker(  684): com.google.android.apps.nexuslauncher:b4eb737d: onRequestHide at ORIGIN_SERVER reason HIDE_UNSPECIFIED_WINDOW fromUser false userId 0 displayId 0
+11-24 14:29:36.446 D/InsetsController( 1484): hide(ime())
+11-24 14:29:36.447 I/ImeTracker( 1484): com.google.android.apps.nexuslauncher:b4eb737d: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+11-24 14:29:36.447 I/GoogleInputMethodService( 6906): GoogleInputMethodService.onFinishInput():2259 
+11-24 14:29:36.448 W/InputChannel-JNI(  684): Channel already disposed.
+11-24 14:29:36.448 I/Module  ( 6906): DeviceLockedStatusModuleProvider$Module.updateDeviceLockedStatus():103 repeatCheckTimes = 0, locked = false
+11-24 14:29:36.449 I/GoogleInputMethodService( 6906): GoogleInputMethodService.onStartInput():1446 onStartInput(EditorInfo{EditorInfo{packageName=com.google.android.apps.nexuslauncher, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
+11-24 14:29:36.449 I/ImeTracker(  684): system_server:fe837cb9: onRequestHide at ORIGIN_SERVER reason IME_REQUESTED_CHANGED_LISTENER fromUser false displayId 0
+11-24 14:29:36.449 I/AndroidIME( 6906): LatinIMEBase.updateInputViewCoverNavigation():322 Update input view padding, isNavbarOverInputWindow=true, bottom inset=63
+11-24 14:29:36.449 I/ImeTracker(  684): system_server:fe837cb9: onCancelled at PHASE_SERVER_SHOULD_HIDE
+11-24 14:29:36.450 I/Module  ( 6906): DeviceLockedStatusModuleProvider$Module.updateDeviceLockedStatus():103 repeatCheckTimes = 1, locked = false
+11-24 14:29:36.452 W/PackageConfigPersister(  684): App-specific configuration not found for packageName: com.google.android.apps.nexuslauncher and userId: 0
+11-24 14:29:36.534 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:36.534 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:36.635 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:36.635 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:36.690 V/WindowManagerShell( 1169): Transition animation finished (aborted=false), notifying core (#72) android.os.BinderProxy@a373b45@0
+11-24 14:29:36.693 V/WindowManager(  684): Finish Transition (#72): created at 11-24 14:29:36.378 collect-started=0.021ms request-sent=0.135ms started=5.873ms ready=51.801ms sent=55.009ms commit=7.728ms finished=314.383ms
+11-24 14:29:36.694 V/WindowManagerShell( 1169): Track 0 became idle
+11-24 14:29:36.694 V/WindowManagerShell( 1169): All active transition animations finished
+11-24 14:29:36.737 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:36.737 W/skia    (  525): AGTM parsing failed flags.readFromStream(s) at 159
+11-24 14:29:38.115 D/androidtc(  684): Initializing SystemTextClassifier, type = System
+11-24 14:29:38.117 I/AiAiTextClassifier( 1887): onCreateTextClassificationSession = TextClassificationSessionId {5569c8d1-3c23-48e1-bcd5-bdde59c3ce29}
+11-24 14:29:38.117 E/ClipboardService(  684): Denying clipboard access to com.android.chrome, application is not in focus nor is it a system service for user 0
+11-24 14:29:38.122 I/AiAiTranslate( 1887): C2T - not in a conversation
+11-24 14:29:38.122 I/ClipboardListener( 1169): Clipboard overlay suppressed.
+11-24 14:29:38.123 I/AiAiTextClassifier( 1887): GenerateLinks did not find valid links, returning empty result
+11-24 14:29:38.124 E/ClipboardService(  684): Denying clipboard access to com.android.chrome, application is not in focus nor is it a system service for user 0
+11-24 14:29:38.127 I/ClipboardListener( 1169): Clipboard overlay suppressed.
+11-24 14:29:38.127 I/AiAiTextClassifier( 1887): GenerateLinks did not find valid links, returning empty result
+11-24 14:29:38.794 I/HalDevMgr(  684): bestIfaceCreationProposal is null, requestIface=STA, existingIface=[name=wlan0 type=STA]
+11-24 14:29:39.383 E/TaskPersister(  684): File error accessing recents directory (directory doesn't exist?).
+11-24 14:29:40.148 D/SatelliteController( 1295): isInCarrierRoamingNbIotNtn: satellite is disabled
+11-24 14:29:40.148 D/SatelliteController( 1295): getCarrierRoamingNtnConnectType: Checking connect type from PLMN config for subId: 1
+11-24 14:29:40.148 D/TelephonyConfigUpdateInstallReceiver( 1295): getConfigParser: domain=satellite
+11-24 14:29:40.148 V/SatelliteController( 1295): satelliteConfigParser is not ready
+11-24 14:29:40.148 D/SatelliteController( 1295): isSatelliteAttachSupportedViaConfigupdater: return null (satelliteConfig is null)
+11-24 14:29:40.149 D/SatelliteController( 1295): getSatellitePerPlmnConfiguration: invalid subId or not supported via carrier.
+11-24 14:29:40.149 D/SatelliteController( 1295): getCarrierRoamingNtnConnectType: config: null
+11-24 14:29:40.149 D/TelephonyConfigUpdateInstallReceiver( 1295): getConfigParser: domain=satellite
+11-24 14:29:40.149 V/SatelliteController( 1295): satelliteConfigParser is not ready
+11-24 14:29:40.149 D/SatelliteController( 1295): getCarrierRoamingNtnConnectTypeViaConfigUpdater: return null (satelliteConfig is null)
+11-24 14:29:40.149 D/SatelliteController( 1295): getCarrierRoamingNtnConnectType: Falling back to global carrier config connect type: 0
+11-24 14:29:40.150 D/TelephonyConfigUpdateInstallReceiver( 1295): getConfigParser: domain=satellite
+11-24 14:29:40.150 V/SatelliteController( 1295): satelliteConfigParser is not ready
+11-24 14:29:40.150 D/SatelliteController( 1295): isSatelliteAttachSupportedViaConfigupdater: return null (satelliteConfig is null)
+11-24 14:29:40.150 D/SatelliteController( 1295): getCarrierRoamingNtnConnectType: Checking connect type from PLMN config for subId: 1
+11-24 14:29:40.150 D/TelephonyConfigUpdateInstallReceiver( 1295): getConfigParser: domain=satellite
+11-24 14:29:40.150 V/SatelliteController( 1295): satelliteConfigParser is not ready
+11-24 14:29:40.150 D/SatelliteController( 1295): isSatelliteAttachSupportedViaConfigupdater: return null (satelliteConfig is null)
+11-24 14:29:40.150 D/SatelliteController( 1295): getSatellitePerPlmnConfiguration: invalid subId or not supported via carrier.
+11-24 14:29:40.150 D/SatelliteController( 1295): getCarrierRoamingNtnConnectType: config: null
+11-24 14:29:40.150 D/TelephonyConfigUpdateInstallReceiver( 1295): getConfigParser: domain=satellite
+11-24 14:29:40.150 V/SatelliteController( 1295): satelliteConfigParser is not ready
+11-24 14:29:40.150 D/SatelliteController( 1295): getCarrierRoamingNtnConnectTypeViaConfigUpdater: return null (satelliteConfig is null)
+11-24 14:29:40.150 D/SatelliteController( 1295): getCarrierRoamingNtnConnectType: Falling back to global carrier config connect type: 0
+11-24 14:29:40.150 D/TelephonyConfigUpdateInstallReceiver( 1295): getConfigParser: domain=satellite
+11-24 14:29:40.150 V/SatelliteController( 1295): satelliteConfigParser is not ready
+11-24 14:29:40.150 D/SatelliteController( 1295): isSatelliteAttachSupportedViaConfigupdater: return null (satelliteConfig is null)
+11-24 14:29:40.569 I/adbd    ( 1891): adbd service requested 'shell,v2:export ANDROID_LOG_TAGS=''; exec logcat '-d' '-v' 'time''
