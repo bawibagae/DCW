@@ -303,27 +303,58 @@ def make_label(text="", font_size=16, bold=False, **kwargs):
 
 
 class SoftButton(Button):
-    def __init__(self, tone, radius=12, **kwargs):
+    """Shared button surface with role-aware colors and restrained press feedback."""
+    def __init__(self, tone, radius=12, role="secondary", **kwargs):
+        self.role = role
+        self._base_tone = tone
+        self._base_text_color = kwargs.get("color", COLOR_TEXT)
         super().__init__(background_normal="", background_down="", background_color=(0,0,0,0), **kwargs)
         with self.canvas.before:
             self._tone = Color(*tone)
             self._shape = RoundedRectangle(radius=[dp(radius)])
+            self._outline_color = Color(0, 0, 0, 0)
+            self._outline = Line(rounded_rectangle=(0, 0, 0, 0, dp(radius)), width=1)
         self.bind(pos=self._draw, size=self._draw, state=self._draw, disabled=self._draw)
         self._draw()
     def _draw(self,*_):
         self._shape.pos=self.pos
         self._shape.size=self.size
-        self._tone.a=0.45 if self.disabled else (0.7 if self.state=="down" else 1)
+        self._outline.rounded_rectangle = (self.x, self.y, self.width, self.height, dp(12))
+        self._outline_color.rgba = COLOR_BORDER if self.role == "secondary" else (0, 0, 0, 0)
+        if self.disabled:
+            self._tone.rgba = (0.88, 0.89, 0.91, 1) if self.role == "primary" else (0.94, 0.94, 0.93, 1)
+            self.color = COLOR_MUTED
+        else:
+            self._tone.rgba = self._base_tone
+            self.color = self._base_text_color
+        self.opacity = 0.88 if self.state == "down" else 1
 
 
 def make_button(text="",bold=False,**kwargs):
-    return SoftButton(COLOR_PRIMARY_LIGHT,text=text,font_name=FONT_BOLD if bold else FONT_REGULAR,
-                      font_size=dp(15),color=COLOR_PRIMARY,**kwargs)
+    kwargs.setdefault("size_hint_y", None)
+    kwargs.setdefault("height", dp(50))
+    return SoftButton(COLOR_SURFACE, role="secondary", text=text, font_name=FONT_BOLD if bold else FONT_REGULAR,
+                      font_size=dp(15),color=COLOR_TEXT,**kwargs)
+
+
+def make_ghost_button(text="", bold=False, **kwargs):
+    kwargs.setdefault("size_hint_y", None)
+    kwargs.setdefault("height", dp(44))
+    return SoftButton((0, 0, 0, 0), role="ghost", radius=10, text=text,
+                      font_name=FONT_BOLD if bold else FONT_REGULAR,
+                      font_size=dp(14), color=COLOR_MUTED, **kwargs)
+
+
+def make_destructive_button(text="", **kwargs):
+    kwargs.setdefault("size_hint_y", None)
+    kwargs.setdefault("height", dp(50))
+    return SoftButton((1, .94, .93, 1), role="destructive", radius=12, text=text,
+                      font_name=FONT_BOLD, font_size=dp(15), color=(.72, .22, .19, 1), **kwargs)
 
 
 def make_header_button(text="", bold=False, width=None):
-    """헤더(맨 위) 전용 작은 버튼: 높이 36dp, 글자 13dp, 모서리 8dp"""
-    return SoftButton(COLOR_PRIMARY_LIGHT, radius=8, text=text,
+    """헤더 전용 compact 버튼."""
+    return SoftButton(COLOR_PRIMARY_LIGHT, role="compact", radius=10, text=text,
                       font_name=FONT_BOLD if bold else FONT_REGULAR,
                       font_size=dp(13), color=COLOR_PRIMARY,
                       size_hint=(None, None), width=width or dp(60), height=dp(36),
@@ -331,7 +362,9 @@ def make_header_button(text="", bold=False, width=None):
 
 
 def make_primary_button(text="",**kwargs):
-    return SoftButton(COLOR_PRIMARY,text=text,font_name=FONT_BOLD,font_size=dp(16),color=(1,1,1,1),**kwargs)
+    kwargs.setdefault("size_hint_y", None)
+    kwargs.setdefault("height", dp(54))
+    return SoftButton(COLOR_PRIMARY, role="primary", text=text,font_name=FONT_BOLD,font_size=dp(16),color=(1,1,1,1),**kwargs)
 
 
 class ModernTextInput(TextInput):
@@ -865,11 +898,11 @@ class HomeScreen(Screen):
         help_card.add_widget(make_label("영수증을 촬영하고, 함께한 사람을 선택하면 끝이에요.", 14, color=COLOR_MUTED))
         main.add_widget(help_card)
 
-        nav = BoxLayout(size_hint_y=None, height=dp(64), spacing=dp(12))
-        home_nav = SoftButton(COLOR_SURFACE_BLUE, text="홈", font_name=FONT_BOLD, font_size=dp(13), color=COLOR_PRIMARY)
-        pay_nav = SoftButton(COLOR_SURFACE, text="새 정산", font_name=FONT_BOLD, font_size=dp(13), color=COLOR_MUTED)
+        nav = BoxLayout(size_hint_y=None, height=dp(58), spacing=dp(8), padding=[dp(4), dp(4)])
+        home_nav = SoftButton(COLOR_SURFACE_BLUE, radius=12, role="nav_active", text="⌂  홈", font_name=FONT_BOLD, font_size=dp(13), color=COLOR_PRIMARY)
+        pay_nav = SoftButton(COLOR_SURFACE, radius=12, role="nav", text="＋  새 정산", font_name=FONT_BOLD, font_size=dp(13), color=COLOR_MUTED)
         pay_nav.bind(on_release=self.start_new_settlement)
-        more_nav = SoftButton(COLOR_SURFACE, text="내 정보", font_name=FONT_BOLD, font_size=dp(13), color=COLOR_MUTED)
+        more_nav = SoftButton(COLOR_SURFACE, radius=12, role="nav", text="●  내 정보", font_name=FONT_BOLD, font_size=dp(13), color=COLOR_MUTED)
         more_nav.bind(on_release=lambda *_: setattr(self.manager, "current", "mypage" if user else "login"))
         nav.add_widget(home_nav); nav.add_widget(pay_nav); nav.add_widget(more_nav); main.add_widget(nav)
 
@@ -977,7 +1010,7 @@ class LoginScreen(Screen):
         login.bind(on_press=self.do_login)
         main.add_widget(login)
 
-        signup = Button(
+        signup = make_ghost_button(
             text="계정이 없으신가요? 회원가입",
             background_normal='',
             background_color=(0,0,0,0),
@@ -1063,7 +1096,7 @@ class SignupScreen(Screen):
         submit.bind(on_press=self.do_signup)
         main.add_widget(submit)
 
-        cancel = Button(
+        cancel = make_ghost_button(
             text="로그인으로 돌아가기",
             background_normal='',
             background_color=(0,0,0,0),
@@ -1205,7 +1238,7 @@ class MyPageScreen(Screen):
         
         main.add_widget(Widget(size_hint_y=None, height=dp(10)))
 
-        logout = SoftButton(COLOR_BORDER, text="로그아웃", font_name=FONT_BOLD, font_size=dp(15), color=COLOR_TEXT, size_hint_y=None, height=dp(55))
+        logout = make_destructive_button("로그아웃", height=dp(52))
         logout.bind(on_press=self.do_logout)
         main.add_widget(logout)
         main.add_widget(Widget())
@@ -1540,7 +1573,7 @@ class CameraScreen(Screen):
             line.add_widget(make_label(f"영수증 {i}", 16, True, size_hint_x=0.35))
             line.add_widget(make_label(f"{receipt['total']:,}원", 16, True, color=COLOR_PRIMARY, size_hint_x=0.45,
                                        halign="right", valign="middle"))
-            delete = SoftButton(COLOR_BORDER, text="삭제", color=COLOR_MUTED, font_size=dp(13), size_hint_x=None, width=dp(60))
+            delete = make_ghost_button("삭제", size_hint_x=None, width=dp(60), height=dp(40))
             delete.bind(on_press=lambda *_x, idx=i-1: self.remove_receipt(idx))
             line.add_widget(delete)
             card.add_widget(line)
@@ -2044,7 +2077,7 @@ class SettleScreen(Screen):
         row.member_input = inp
         self.name_inputs.append(inp)
 
-        minus = SoftButton(COLOR_BORDER, text="삭제", bold=True, color=COLOR_MUTED, size_hint_x=None, width=dp(65))
+        minus = make_ghost_button("삭제", bold=True, size_hint_x=None, width=dp(65), height=dp(42))
         minus.bind(on_press=lambda *_: self.remove_member_field(inp))
 
         if len(self.name_inputs) == 1:

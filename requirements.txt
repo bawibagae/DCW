@@ -1,3 +1,6 @@
 google-cloud-vision
 Flask
 gunicorn
+PyMySQL>=1.1,<2
+Pillow>=10,<12
+python-dotenv>=1.0,<2
